@@ -1,0 +1,27 @@
+User stories:
+Church wants to know how many households are food insecure
+Researcher wants to run survey
+User wants to provide a service
+User wants to hire someone to do a service
+User wants to make an account
+User wants to delete an account
+User wants to view general statistics
+Admin can send out mass messages
+User wants to send an enquiry to community leader (i.e. admin, for a church to give out free food, they contact admin)
+
+
+Essential requirements
+
+
+
+
+
+
+
+
+
+
+Roles
+SM - Kholo
+DataBase - Faresa
+UI design - Dzanga
