@@ -18,6 +18,10 @@ user wants to chat with another user for enquiries
 Researcher wants to run/take down a survey to get data or remove the survey
 Researcher wants to schedule interview/workshop to notify participants 
 Researcher wants to build a survey for participants to complete
+Researcher wants to capture informed consent for survey to be ethical
+Researcher wants to track/confirm honorarium payments to make sure everyne got paid correctly
+Researcher wants to reschedule/cancel a session to warn changes to participants in time
+Researcher wants to message all participants in a survey at once to share updates
 
 Admin wants to send out mass message to alert certain people of certain things
 Admin wants to moderate services to check if there is no illegal activities going on
@@ -25,6 +29,10 @@ Admin wants to manage users to delete users information apon request
 
 Community member wants to apply for services and surverys to participate or provide service
 Community wants to advertise/hire someone to do a service
+Community member wants to book/reserve a slot for an interview/workshop to confirm participation
+Community member wants to switch language to use the app comfortably
+Community member wants to know how data is used and stored to trust the platform with personal information
+Community member wants app to work well on low-end phone/slow connection to facilitate poor connectivity
 
 
 
