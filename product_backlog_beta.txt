@@ -1,15 +1,31 @@
 User stories:
 Church wants to find food insecure households so that they can know how many people they can feed
 
+User(community member and Researcher)
 
-Researcher wants to run survey to get data
-User wants to provide a service to get paid
-User wants to hire someone to do a service 
 User wants to make an account to access community features
 User wants to delete an account to remove their personal information from the server
 User wants to view general statistics to know how many people live their
+User wants to see surverys and services history to track them
+User wants to be notified of available message or announcements to see check them
+User wants to see analytics to see survey results
+User wants to search/browse available services to see opportunities available
+User wants to edit profile to update details
+User wants to see applicants of services to opt them in
+User wants to see upcoming events so that they can attend
+user wants to chat with another user for enquiries
+
+Researcher wants to run/take down a survey to get data or remove the survey
+Researcher wants to schedule interview/workshop to notify participants 
+Researcher wants to build a survey for participants to complete
+
 Admin wants to send out mass message to alert certain people of certain things
-User wants to send an enquiry to community leader (i.e. admin, for a church to give out free food, they contact admin
+Admin wants to moderate services to check if there is no illegal activities going on
+Admin wants to manage users to delete users information apon request
+
+Community member wants to apply for services and surverys to participate or provide service
+Community wants to advertise/hire someone to do a service
+
 
 
 Essential requirements (i.e. Product Backlog)
