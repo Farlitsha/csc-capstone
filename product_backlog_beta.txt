@@ -42,18 +42,17 @@ ID	Requirement									Priority
 	
 5	Set up posts and surverys							5
 
-6	Design mobile landing screen
+6	make mobile landing screen
 
 7	Design posts
 
-8 	Design desktop landing screen
+8 	make desktop landing screen
 
 9	set up announcements
 
 10	Set up NGO/church contacting admin for lists and stuff
 
-
-
+11
 
 Roles
 SM - Kholo
