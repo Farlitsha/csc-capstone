@@ -40,7 +40,7 @@ ID	Requirement									Priority
 	
 4	Set up accounts									4
 	
-5	Set up posts and surverys							5
+5	Set up posts and surverys 							5
 
 6	make mobile landing screen
 
@@ -52,7 +52,21 @@ ID	Requirement									Priority
 
 10	Set up NGO/church contacting admin for lists and stuff
 
-11
+11  set up notifications reciept by users
+
+12  enable search/browse of services
+
+13  make profile page(edit update)
+
+14  set up meeting schedule
+
+15  set up survey and services teardown
+
+16  set up role access
+
+17  
+
+18  
 
 Roles
 SM - Kholo
