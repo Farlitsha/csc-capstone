@@ -3,9 +3,8 @@ Church wants to find food insecure households so that they can know how many peo
 
 User(community member and Researcher)
 
-User wants to make an account to access community features
-User wants to delete an account to remove their personal information from the server
-User wants to view general statistics to know how many people live their
+User wants to manage account an personal information in case they want to update certain information or remove/delete account
+User wants to view general statistics to know how many people live their ---
 User wants to see surverys and services history to track them
 User wants to be notified of available message or announcements to see check them
 User wants to see analytics to see survey results
@@ -72,7 +71,7 @@ ID	Requirement									Priority
 
 16  set up role access
 
-17  
+17  Implement user notifications for new messages and announcements, with real‑time delivery, UI badge, and read/dismiss functionality
 
 18  
 
