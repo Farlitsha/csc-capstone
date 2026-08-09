@@ -1,0 +1,112 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2">
+  <diagram name="Use Case Diagram" id="use-case-diagram-1">
+    <mxGraphModel dx="1426" dy="875" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boundary1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=16;fillColor=none;strokeColor=#000000;align=center;spacingTop=8;" value="Inethi Community hub System" vertex="1">
+          <mxGeometry height="770" width="900" x="300" y="26" as="geometry" />
+        </mxCell>
+        <mxCell id="actor_cm" parent="1" style="shape=umlActor;whiteSpace=wrap;html=1;outlineConnect=0;verticalLabelPosition=bottom;verticalAlign=top;fontSize=12;fontStyle=1;" value="Community Member" vertex="1">
+          <mxGeometry height="80" width="40" x="90" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="actor_res" parent="1" style="shape=umlActor;whiteSpace=wrap;html=1;outlineConnect=0;verticalLabelPosition=bottom;verticalAlign=top;fontSize=12;fontStyle=1;" value="Researcher" vertex="1">
+          <mxGeometry height="80" width="40" x="710" y="880" as="geometry" />
+        </mxCell>
+        <mxCell id="actor_admin" parent="1" style="shape=umlActor;whiteSpace=wrap;html=1;outlineConnect=0;verticalLabelPosition=bottom;verticalAlign=top;fontSize=12;fontStyle=1;" value="Administrator" vertex="1">
+          <mxGeometry height="80" width="40" x="1300" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cm_1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Register / Login" vertex="1">
+          <mxGeometry height="50" width="260" x="300" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cm_2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Manage Profile" vertex="1">
+          <mxGeometry height="50" width="260" x="300" y="148" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cm_3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Browse Services" vertex="1">
+          <mxGeometry height="50" width="260" x="300" y="226" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cm_4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Post Service" vertex="1">
+          <mxGeometry height="50" width="260" x="300" y="304" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cm_5" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Apply for Service" vertex="1">
+          <mxGeometry height="50" width="260" x="300" y="382" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cm_6" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Participate in Surveys" vertex="1">
+          <mxGeometry height="50" width="260" x="300" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_cm_7" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Register for Workshops/Interviews" vertex="1">
+          <mxGeometry height="50" width="260" x="300" y="538" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_res_1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Create Research Project" vertex="1">
+          <mxGeometry height="50" width="260" x="600" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_res_2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Create Survey" vertex="1">
+          <mxGeometry height="50" width="260" x="600" y="308" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_res_3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Recruit Participants" vertex="1">
+          <mxGeometry height="50" width="260" x="600" y="386" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_res_4" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Schedule Interview/Workshop" vertex="1">
+          <mxGeometry height="50" width="260" x="600" y="464" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_res_5" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="View Survey Results" vertex="1">
+          <mxGeometry height="50" width="260" x="600" y="542" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_admin_1" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Manage Users" vertex="1">
+          <mxGeometry height="50" width="260" x="900" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_admin_2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Assign Roles" vertex="1">
+          <mxGeometry height="50" width="260" x="900" y="308" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_admin_3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fontSize=12;" value="Moderate Content" vertex="1">
+          <mxGeometry height="50" width="260" x="900" y="386" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cm_1" edge="1" parent="1" source="actor_cm" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_cm_1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cm_2" edge="1" parent="1" source="actor_cm" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_cm_2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cm_3" edge="1" parent="1" source="actor_cm" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_cm_3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cm_4" edge="1" parent="1" source="actor_cm" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_cm_4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cm_5" edge="1" parent="1" source="actor_cm" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_cm_5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cm_6" edge="1" parent="1" source="actor_cm" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_cm_6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cm_7" edge="1" parent="1" source="actor_cm" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_cm_7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_res_1" edge="1" parent="1" source="actor_res" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_res_1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_res_2" edge="1" parent="1" source="actor_res" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_res_2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_res_3" edge="1" parent="1" source="actor_res" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_res_3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_res_4" edge="1" parent="1" source="actor_res" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_res_4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_res_5" edge="1" parent="1" source="actor_res" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_res_5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_admin_1" edge="1" parent="1" source="actor_admin" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_admin_1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_admin_2" edge="1" parent="1" source="actor_admin" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_admin_2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_admin_3" edge="1" parent="1" source="actor_admin" style="edgeStyle=none;html=1;endArrow=none;startArrow=none;rounded=0;" target="uc_admin_3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
