@@ -1,0 +1,81 @@
+User stories:
+Church wants to find food insecure households so that they can know how many people they can feed
+
+User(community member and Researcher)
+
+User wants to manage account an personal information in case they want to update certain information or remove/delete account
+User wants to view general statistics to know how many people live their ---
+User wants to see surverys and services history to track them
+User wants to be notified of available message or announcements to see check them
+User wants to see analytics to see survey results
+User wants to search/browse available services to see opportunities available
+User wants to edit profile to update details
+User wants to see applicants of services to opt them in
+User wants to see upcoming events so that they can attend
+user wants to chat with another user for enquiries
+
+Researcher wants to run/take down a survey to get data or remove the survey
+Researcher wants to schedule interview/workshop to notify participants 
+Researcher wants to build a survey for participants to complete
+Researcher wants to capture informed consent for survey to be ethical
+Researcher wants to track/confirm honorarium payments to make sure everyne got paid correctly
+Researcher wants to reschedule/cancel a session to warn changes to participants in time
+Researcher wants to message all participants in a survey at once to share updates
+
+Admin wants to send out mass message to alert certain people of certain things
+Admin wants to moderate services to check if there is no illegal activities going on
+Admin wants to manage users to delete users information apon request
+
+Community member wants to apply for services and surverys to participate or provide service
+Community wants to advertise/hire someone to do a service
+Community member wants to book/reserve a slot for an interview/workshop to confirm participation
+Community member wants to switch language to use the app comfortably
+Community member wants to know how data is used and stored to trust the platform with personal information
+Community member wants app to work well on low-end phone/slow connection to facilitate poor connectivity
+
+
+
+Essential requirements (i.e. Product Backlog)
+ID	Requirement									Priority
+
+1	Make a python webpage that's viewable on localhost network (i.e. offline) 	1
+	and that runs in a Inethi server (there's instructions online)
+	
+2	Make the website viewable online from anywhere					2
+	
+3	Make an SQL database								3
+	
+4	Set up accounts									4
+	
+5	Set up posts and surverys 							5
+
+6	make mobile landing screen
+
+7	Design posts
+
+8 	make desktop landing screen
+
+9	set up announcements
+
+10	Set up NGO/church contacting admin for lists and stuff
+
+11  set up notifications reciept by users
+
+12  enable search/browse of services
+
+13  make profile page(edit update)
+
+14  set up meeting schedule
+
+15  set up survey and services teardown
+
+16  set up role access
+
+17  Implement user notifications for new messages and announcements, with real‑time delivery, UI badge, and read/dismiss functionality
+
+18  
+
+Roles
+SM - Kholo
+DataBase - Faresa
+UI design - Dzanga
