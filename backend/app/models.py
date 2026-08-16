@@ -9,6 +9,7 @@ class User(Base):
     username = Column(String(255), nullable = False, unique = True)
     email = Column(String(255), nullable = False, unique = True)
     password = Column(String(255), nullable = False)
+    role = Column(String(20), nullable = False, default='user')
     time = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
 
 class Post(Base):
