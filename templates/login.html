@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Community Hub Login</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <h1>Community Hub</h1>
+
+    <form action="/login" method="post">
+
+        <label>Username</label>
+
+        <input
+            type="text"
+            name="username"
+            required
+        >
+
+        <label>Password</label>
+
+        <input
+            type="text"
+            name="password"
+            required
+        >
+
+        <button type="submit">
+            Login
+        </button>
+
+    </form>
+
+    <p class="error">
+        {{ error }}
+    </p>
+
+</div>
+
+</body>
+
+</html>
