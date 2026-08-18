@@ -39,6 +39,9 @@ from PyQt5.QtWidgets import (
     QMessageBox
 )
 
+#Gloabl variables for each instance of the program running
+Username = ""
+User = 0
 
 class MainWindow(QMainWindow):
     """
@@ -84,14 +87,7 @@ class MainWindow(QMainWindow):
         self.mainStackedLayout = QStackedLayout()
         self.mainStackedLayoutWidget = QWidget()
 
-        #Create a scroll area for, well scrolling
-        self.scrollArea1 = QScrollArea()
-
-        #Scroll Area Properties
-        self.scrollArea1.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scrollArea1.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scrollArea1.setWidgetResizable(True)
-        self.scrollArea1.verticalScrollBar().value()
+        
 
         #Initialize windows
         self.createLoginWindow()
@@ -103,14 +99,11 @@ class MainWindow(QMainWindow):
         self.loginWindowLayout.addWidget(self.loginWindowGroupBox)
 
         #make widgets and set layouts
-        widgetLogin = QWidget()
-        widgetLogin.setLayout(self.loginWindowLayout)
-
-        #Set scroll areas
-        self.scrollArea1.setWidget(widgetLogin)
+        self.widgetLogin = QWidget()
+        self.widgetLogin.setLayout(self.loginWindowLayout)
 
         #Add scroll areas to main stacked layout
-        self.mainStackedLayout.addWidget(self.scrollArea1)
+        self.mainStackedLayout.addWidget(self.widgetLogin)
         self.mainStackedLayoutWidget.setLayout(self.mainStackedLayout)
 
         #Finally, add to over everything layout
@@ -123,6 +116,7 @@ class MainWindow(QMainWindow):
     def createLoginWindow(self):
 
         self.loginWindowGroupBox = QGroupBox("Main stacked window")
+        # self.loginWindowGroupBox.setStyleSheet("background-color: gray")
         self.loginWindowGroupBoxLayout = QGridLayout()
 
         login = QLabel("Login username:")
@@ -142,25 +136,110 @@ class MainWindow(QMainWindow):
         self.loginWindowGroupBoxLayout.addWidget(self.userNameTextBox,0,1)
         self.loginWindowGroupBoxLayout.addWidget(self.passwordTextBox,1,1)
 
-        self.button = QPushButton('Done. Show text', self)
-        self.button.clicked.connect(self.loginDoneClicked)
-        self.loginWindowGroupBoxLayout.addWidget(self.button, 3,0)
+        button = QPushButton('Done. Show text')
+        button.resize(300,100)
+        button.clicked.connect(self.loginDoneClicked)
+        self.loginWindowGroupBoxLayout.addWidget(button, 3,0)
 
         self.loginWindowGroupBox.setLayout(self.loginWindowGroupBoxLayout)
 
+    def createUserProfileWindow(self):
+        return 0
+
+    def createUserHomePageWindow(self):
+        """Creates the home page for the user showing name, unread messages, services near you, etc...
+        """
+
+        #Main boxes
+        self.userHomeScrollArea = QScrollArea()
+        self.userHomeScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.userHomeScrollArea.setWidgetResizable(True)
+        self.userHomeWidget = QWidget()
+        self.userHomeWidgetLayout = QVBoxLayout()
+
+        #TRACE FOR TESTING
+        # self.userHomeWidget.setStyleSheet("border: 1px; border-color: black")
+
+        ##Sub boxes/widgets, organized per vertical level
+        #Top box containing qlabel and serach button
+        topWidget = QWidget()
+        topWidgetLayout = QGridLayout()
+
+        OrgLogo = QLabel("CommHub")
+        usernameLogo = QLabel("Welcome "+Username)
+        searchButton = QPushButton("Search")
+        searchButton.setStyleSheet("border-radius: 10px; border-color: black")
+        searchButton.clicked.connect(self.searchButtonClicked)
+        topWidgetLayout.addWidget(OrgLogo,0,0)
+        topWidgetLayout.addWidget(usernameLogo,0,2)
+        topWidgetLayout.addWidget(QLabel("       "),0,1) #Padding
+        topWidgetLayout.addWidget(QLabel("                       "),0,3) #Padding
+        topWidgetLayout.addWidget(QLabel("                       "),0,4) #Padding
+
+        topWidgetLayout.addWidget(searchButton,0,5)
+
+        #SetLayouts to widgets
+        topWidget.setLayout(topWidgetLayout)
+
+
+        #Finally, adding everything to the main boxes
+        self.userHomeWidgetLayout.addWidget(topWidget)
+
+
+
+        #Set the layout and Main widget
+        self.userHomeWidget.setLayout(self.userHomeWidgetLayout)
+        self.userHomeScrollArea.setWidget(self.userHomeWidget)
+
+        #Check if there's already someone logged in. If so, remove them
+        number_of_widgets = self.mainStackedLayout.count()
+        print("Currently, ",number_of_widgets, "widgets")
+
+        # if number_of_widgets >1:
+        #     widget = self.mainStackedLayout.itemAt(1)
+        #     self.mainStackedLayout.replaceWidget(widget, self.userHomeScrollArea)
+        # else:
+        #     self.mainStackedLayout.insertWidget(1, self.userHomeScrollArea)
+
+        self.mainStackedLayout.insertWidget(1, self.userHomeScrollArea)
+
+
+
+    def createAdvertsWindow(self):
+        return 0
 
     def loginDoneClicked(self):
 
         userName = self.userNameTextBox.text().strip()
         passWord = self.passwordTextBox.text().strip()
+
+        global Username
+        Username = userName
         QMessageBox.question(self, "Alert title", 
                             "You typed: username = "+userName+ " | password = "+passWord,
                             QMessageBox.Ok, QMessageBox.Ok)
         self.userNameTextBox.setText("")
         self.passwordTextBox.setText("")
+        self.createUserHomePageWindow()
+
+    def searchButtonClicked(self):
+        return 0
 
 
+    def keyPressEvent(self, event):
+        """Always running, traks all keyboard events, loop executed by QApplication.exec()
 
+        Args:
+            event (_type = i dunno_): the unix code of the keyboard key pressed
+        """
+        if event.key() == Qt.Key_D: #D is used to represent the roght arow, or scroll right. arrow keys have different unix values on windows and linux so can't use those
+            if self.mainStackedLayout.currentIndex() == 0:
+                self.mainStackedLayout.setCurrentIndex(1)
+            elif self.mainStackedLayout.currentIndex() == 1:
+                self.mainStackedLayout.setCurrentIndex(0)
+
+        elif event.key() == Qt.Key_K:
+            self.mainStackedLayout.setCurrentIndex(2)
 
 
 
