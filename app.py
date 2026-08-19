@@ -1,11 +1,17 @@
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 import uvicorn
 
 from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key="some-long-secure-secret-key"  #TODO TRACE replace with some long super secret key
+)
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -30,7 +36,8 @@ def login(
 
     # replace this with real authentication
     if username == "admin" and password == "password":
-        print(username,password)
+        print("TRACE: ","user: ",username,password)
+        request.session["username"] = username
         return RedirectResponse("/home", status_code=303)
 
     return templates.TemplateResponse(
@@ -41,16 +48,29 @@ def login(
         }
     )
 
+@app.get("/logout")
+def logout(request: Request):
 
-# @app.get("/home")
-# def home(request: Request):
-#     return templates.TemplateResponse(
-#         "home.html",
-#         {
-#             "request": request,
-#             "username": "Kholo"
-#         }
-#     )
+    request.session.clear()
+
+    return RedirectResponse("/", status_code=303)
+
+@app.get("/home")
+def home(request: Request):
+
+    username = request.session.get("username")
+
+    if username is None:
+        return RedirectResponse("/", status_code=303)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="home.html",
+        context={
+            "username": username
+        }
+    )
+
 
 @app.get("/search")
 def search_page(request: Request):

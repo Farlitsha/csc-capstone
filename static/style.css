@@ -28,6 +28,27 @@ body{
 
 }
 
+.nav-button {
+
+    display: inline-block;
+
+    padding: 10px 20px;
+
+    background: #4CAF50;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+}
+.nav-button:hover {
+
+    background: #45a049;
+
+}
+
 input{
 
     width:100%;
