@@ -1,0 +1,38 @@
+body {
+    width: 90%;
+    max-width: 600px;
+    margin: 40px auto;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input,
+select {
+    padding: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+button {
+    margin-top: 25px;
+    padding: 10px 20px;
+
+    border: 1px solid black;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.warning {
+    color: red;
+}

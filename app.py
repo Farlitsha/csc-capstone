@@ -30,6 +30,16 @@ def login_page(request: Request):
         }
     )
 
+#For "Back to login" GET request
+@app.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "message": ""
+        }
+    )
 
 @app.post("/login")
 def login(
@@ -157,6 +167,44 @@ def adverts_page(request: Request):
         name="adverts.html",
         context={
             "adverts": adverts
+        }
+    )
+
+@app.get("/register")
+def register_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="register.html",
+        context={
+            "message": ""
+        }
+    )
+
+@app.post("/register")
+def register_user(
+    request: Request,
+    username: str = Form(),
+    email: str = Form(),
+    password: str = Form()
+):
+    username = username.strip()
+    email = email.strip()
+
+    # Create the new user
+    new_user = {
+        "username": username,
+        "email": email,
+        "password": password,
+        "role": "user"
+    }
+
+    # Add new_user to database here
+
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html",
+        context={
+            "message": "Account created successfully. Please log in."
         }
     )
 
