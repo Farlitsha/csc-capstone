@@ -3,45 +3,61 @@
 
 <head>
     <title>Search</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style_search.css">
 </head>
 
 <body>
 
-<h1>Search users, posts,...</h1>
+    <h1>Search users, posts,...</h1>
 
-<form action="/search" method="post">
+    <form action="/search" method="post">
 
-    <input
-        type="text"
-        name="query"
-        value="{{ query }}"
-        placeholder="Search..."
-    >
+        <input
+            type="text"
+            name="query"
+            value="{{ query }}"
+            placeholder="Search..."
+        >
 
-    <button type="submit">
-        Search
-    </button>
+        <button type="submit">
+            Search
+        </button>
 
-</form>
+    </form>
 
-<hr>
+    <hr>
 
-{% if results %}
+    {% if message %}
+        <p class="warning">{{ message }}</p>
+    {% endif %}
 
-    {% for result in results %}
+    {% if results %}
 
-        <div class="result">
+        <div class="results">
 
-            <h3>{{ result.title }}</h3>
+            {% for result in results %}
 
-            <p>{{ result.description }}</p>
+                <div class="result-card">
+
+                    <h3>{{ result.title }}</h3>
+
+                    <p class="result-description">
+                        {{ result.description }}
+                    </p>
+
+                    <div class="result-buttons">
+                        <button type="button">
+                            View More
+                        </button>
+                    </div>
+
+                </div>
+
+            {% endfor %}
 
         </div>
 
-    {% endfor %}
-
-{% endif %}
+    {% endif %}
 
 </body>
 

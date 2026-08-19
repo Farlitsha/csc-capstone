@@ -1,0 +1,57 @@
+.adverts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.advert-card {
+    display: flex;
+
+    width: 90%;
+    margin: 0 auto;
+    padding: 20px;
+
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: white;
+
+    gap: 25px;
+}
+
+.advert-image {
+    width: 200px;
+    min-width: 200px;
+}
+
+.advert-image img {
+    width: 200px;
+    height: 150px;
+
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.advert-content {
+    flex: 1;
+}
+
+.advert-content h2 {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.category {
+    font-weight: bold;
+}
+
+.description {
+    margin-top: 15px;
+}
+
+.advert-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+}

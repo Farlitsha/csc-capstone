@@ -6,6 +6,10 @@ import uvicorn
 
 from fastapi.staticfiles import StaticFiles
 
+#Defaults
+DEFAULT_ADVERT_IMAGE = "/static/images/default_advert_image.png"
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -86,13 +90,26 @@ def search_page(request: Request):
 @app.post("/search")
 def do_search(
     request: Request,
-    query: str = Form(...)
+    query: str = Form("") #no ... cause field is not required
 ):
-
+    #if they press the button without entering search
+    query = query.strip()
+    print(type(query))
+    if not query:
+        return templates.TemplateResponse(
+            request=request,
+            name="search.html",
+            context={
+                "query": "",
+                "results": [],
+                "message": "Please enter something to search."
+            }
+        )
     # Placeholder results for now
+    results = [ { "title": "No results found", "description": " "}] #Placeholder for no results
     results = [
         {
-            "title": "Food Bank",
+            "title": "Food Baank",
             "description": "Provides meals every Tuesday."
         },
         {
@@ -109,6 +126,40 @@ def do_search(
             "results": results
         }
     )
+
+@app.get("/adverts")
+def adverts_page(request: Request):
+
+    adverts = [
+        {
+            "title": "Free Maths Tutoring",
+            "category": "Education",
+            "poster": "John Smith",
+            "description": "Free tutoring every Wednesday.",
+            "image": None
+        },
+        {
+            "title": "Community Garden",
+            "category": "Volunteering",
+            "poster": "Sarah Williams",
+            "description": "Volunteers needed this Saturday.",
+            "image": "/static/images/garden.jpg"
+        }
+    ]
+
+    # Give adverts without an image the default image
+    for advert in adverts:
+        if not advert.get("image"):
+            advert["image"] = DEFAULT_ADVERT_IMAGE
+
+    return templates.TemplateResponse(
+        request=request,
+        name="adverts.html",
+        context={
+            "adverts": adverts
+        }
+    )
+
 
 if __name__ == "__main__":
     uvicorn.run(app)

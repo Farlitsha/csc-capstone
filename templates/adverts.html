@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Community Hub - Adverts</title>
+
+    <link rel="stylesheet" href="/static/style_adverts.css">
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">
+        Community Hub
+    </div>
+
+    <div class="nav-buttons">
+
+        <span class="username">
+            Welcome, {{ username }}
+        </span>
+
+        <a href="/home" class="nav-button">Home</a>
+
+        <a href="/search" class="nav-button">Search</a>
+
+        <a href="/logout" class="nav-button">Logout</a>
+
+    </div>
+
+</header>
+
+<h1>Community Adverts</h1>
+<div class="adverts-container">
+
+    {% for advert in adverts %}
+
+    <div class="advert-card">
+
+        <div class="advert-image">
+            <img src="{{ advert.image }}" alt="{{ advert.title }}">
+        </div>
+
+        <div class="advert-content">
+
+            <h2>{{ advert.title }}</h2>
+
+            <p class="category">{{ advert.category }}</p>
+
+            <p>Posted by: {{ advert.poster }}</p>
+
+            <p class="description">
+                {{ advert.description }}
+            </p>
+
+            <div class="advert-buttons">
+                <button>View More</button>
+                <button>Contact</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+</body>
+
+</html>
