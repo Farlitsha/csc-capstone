@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "iNethi CommHub"
+  },
+  "nav": {
+    "home": "Home",
+    "directory": "Service Directory",
+    "studies": "Research",
+    "profile": "Profile",
+    "login": "Log In",
+    "logout": "Log Out"
+  },
+  "language": {
+    "toggle_label": "Language",
+    "english": "English",
+    "afrikaans": "Afrikaans"
+  },
+  "directory": {
+    "heading": "Community Service Directory",
+    "subheading": "Browse services offered by community members",
+    "search_placeholder": "Search services...",
+    "post_service_button": "Advertise a Service",
+    "no_results": "No services found",
+    "contact_button": "Contact"
+  },
+  "studies": {
+    "heading": "Research Studies",
+    "subheading": "Join surveys and workshops",
+    "apply_button": "Apply",
+    "closed_label": "Closed",
+    "live_label": "Open",
+    "participant_limit": "Participant limit",
+    "no_studies": "No active studies"
+  },
+  "profile": {
+    "heading": "My Profile",
+    "name_label": "Name",
+    "role_label": "Role",
+    "save_button": "Save",
+    "edit_button": "Edit"
+  },
+  "login": {
+    "heading": "Welcome to CommHub",
+    "username_label": "Username",
+    "password_label": "Password",
+    "login_button": "Log In",
+    "signup_prompt": "Don't have an account yet?",
+    "signup_link": "Sign up here"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Something went wrong"
+  }
+}
