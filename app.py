@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, File, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -153,7 +153,7 @@ def adverts_page(request: Request):
             "category": "Volunteering",
             "poster": "Sarah Williams",
             "description": "Volunteers needed this Saturday.",
-            "image": "/static/images/garden.jpg"
+            "image": None
         }
     ]
 
@@ -208,6 +208,45 @@ def register_user(
         }
     )
 
+@app.get("/post_advert")
+def post_advert_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="post_advert.html",
+        context={
+            "message": ""
+        }
+    )
+
+@app.post("/post_advert")
+def post_advert(
+    request: Request,
+    title: str = Form(),
+    content: str = Form(),
+    category: str = Form(),
+    image: UploadFile | None = File(None)
+):
+
+    title = title.strip()
+    content = content.strip()
+
+    # The image is optional
+    if image is not None:
+        print("Image uploaded:", image.filename)
+
+    print("Title:", title)
+    print("Content:", content)
+    print("Category:", category)
+
+    # Save advert to database here
+
+    return templates.TemplateResponse(
+        request=request,
+        name="post_advert.html",
+        context={
+            "message": "Advert posted successfully."
+        }
+    )
 
 if __name__ == "__main__":
     uvicorn.run(app)

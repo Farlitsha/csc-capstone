@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Post Advert</title>
+    <link rel="stylesheet" href="/static/style_post_advert.css">
+</head>
+
+<body>
+
+    <h1>Create Advert</h1>
+
+    {% if message %}
+        <p class="message">{{ message }}</p>
+    {% endif %}
+
+    <form action="/post_advert" method="post" enctype="multipart/form-data">
+
+        <label for="title">
+            Title
+        </label>
+
+        <input
+            type="text"
+            id="title"
+            name="title"
+            required
+        >
+
+        <label for="content">
+            Content
+        </label>
+
+        <textarea
+            id="content"
+            name="content"
+            rows="8"
+            required
+        ></textarea>
+
+        <label for="category">
+            Category
+        </label>
+
+        <select
+            id="category"
+            name="category"
+            required
+        >
+            <option value="">Select a category</option>
+            <option value="education">Education</option>
+            <option value="volunteering">Volunteering</option>
+            <option value="research">Research</option>
+            <option value="other">Other</option>
+        </select>
+
+        <label for="image">
+            Image (optional)
+        </label>
+
+        <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+        >
+
+        <button type="submit">
+            Post Advert
+        </button>
+
+    </form>
+
+    <a href="/home" class="nav-button">
+        Back to Home
+    </a>
+
+</body>
+
+</html>
