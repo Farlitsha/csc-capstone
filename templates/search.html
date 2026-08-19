@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Search</title>
+    <link rel="stylesheet" href="/static/style_search.css">
+</head>
+
+<body>
+
+    <h1>Search users, posts,...</h1>
+
+    <form action="/search" method="post">
+
+        <input
+            type="text"
+            name="query"
+            value="{{ query }}"
+            placeholder="Search..."
+        >
+
+        <button type="submit">
+            Search
+        </button>
+
+    </form>
+
+    <hr>
+
+    {% if message %}
+        <p class="warning">{{ message }}</p>
+    {% endif %}
+
+    {% if results %}
+
+        <div class="results">
+
+            {% for result in results %}
+
+                <div class="result-card">
+
+                    <h3>{{ result.title }}</h3>
+
+                    <p class="result-description">
+                        {{ result.description }}
+                    </p>
+
+                    <div class="result-buttons">
+                        <button type="button">
+                            View More
+                        </button>
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% endif %}
+
+</body>
+
+</html>
