@@ -36,13 +36,13 @@ async def create_study(study: schemas.StudyListingCreate, db: Session = Depends(
     researcher = db.query(models.User).filter(models.User.id == study.researcher_id).first()
     if not researcher:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Researcher account not found")
-    if researcher.role != models.UserRole.researcher:
+    if researcher.role != models.UserRole.RESEARCHER:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only accounts with the researcher role can post study listings"
         )
 
-    db_study = models.StudyListing(**study.dict(), status=models.StudyStatus.live)
+    db_study = models.StudyListing(**study.dict(), state=models.StudyState.LIVE)
     db.add(db_study)
     db.commit()
     db.refresh(db_study)
@@ -51,8 +51,8 @@ async def create_study(study: schemas.StudyListingCreate, db: Session = Depends(
 
 @app.get("/studies/", response_model=List[schemas.StudyListingOut])
 async def list_studies(db: Session = Depends(get_db)):
-    """Browse all currently open (live) studies — this is what community members see."""
-    return db.query(models.StudyListing).filter(models.StudyListing.status == models.StudyStatus.live).all()
+    """Browse all currently open (live) studies."""
+    return db.query(models.StudyListing).filter(models.StudyListing.state == models.StudyState.LIVE).all()
 
 
 @app.get("/studies/{study_id}", response_model=schemas.StudyListingOut)
@@ -69,7 +69,7 @@ async def close_study(study_id: int, db: Session = Depends(get_db)):
     study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
     if not study:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
-    study.status = models.StudyStatus.closed
+    study.state = models.StudyState.CLOSED
     db.commit()
     db.refresh(study)
     return study
@@ -84,7 +84,7 @@ async def apply_to_study(study_id: int, application: schemas.ApplicationCreate, 
     if not study:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
 
-    if study.status != models.StudyStatus.live:
+    if study.state != models.StudyState.LIVE:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This study is not currently accepting participants")
 
     already_applied = db.query(models.Application).filter(
@@ -97,7 +97,7 @@ async def apply_to_study(study_id: int, application: schemas.ApplicationCreate, 
     if study.participant_limit is not None:
         accepted_count = db.query(models.Application).filter(
             models.Application.study_id == study_id,
-            models.Application.status == models.ApplicationStatus.accepted
+            models.Application.status == models.ApplicationStatus.ACCEPTED
         ).count()
         if accepted_count >= study.participant_limit:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This study has reached its participant limit")
