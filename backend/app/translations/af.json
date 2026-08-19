@@ -1,0 +1,57 @@
+{
+  "app": {
+    "title": "iNethi CommHub"
+  },
+  "nav": {
+    "home": "Tuisblad",
+    "directory": "Diensgids",
+    "studies": "Navorsing",
+    "profile": "Profiel",
+    "login": "Meld aan",
+    "logout": "Meld af"
+  },
+  "language": {
+    "toggle_label": "Taal",
+    "english": "Engels",
+    "afrikaans": "Afrikaans"
+  },
+  "directory": {
+    "heading": "Gemeenskap Diensgids",
+    "subheading": "Blaai deur dienste wat deur gemeenskapslede aangebied word",
+    "search_placeholder": "Soek dienste...",
+    "post_service_button": "Adverteer 'n diens",
+    "no_results": "Geen dienste gevind nie",
+    "contact_button": "Kontak"
+  },
+  "studies": {
+    "heading": "Navorsingsprojekte",
+    "subheading": "Sluit aan by opnames en werkswinkels",
+    "apply_button": "Doen aansoek",
+    "closed_label": "Gesluit",
+    "live_label": "Oop",
+    "participant_limit": "Deelnemerslimiet",
+    "no_studies": "Geen aktiewe studies nie"
+  },
+  "profile": {
+    "heading": "My Profiel",
+    "name_label": "Naam",
+    "role_label": "Rol",
+    "save_button": "Stoor",
+    "edit_button": "Wysig"
+  },
+  "login": {
+    "heading": "Welkom by CommHub",
+    "username_label": "Gebruikersnaam",
+    "password_label": "Wagwoord",
+    "login_button": "Meld aan",
+    "signup_prompt": "Nog geen rekening nie?",
+    "signup_link": "Registreer hier"
+  },
+  "common": {
+    "cancel": "Kanselleer",
+    "submit": "Dien in",
+    "close": "Sluit",
+    "loading": "Laai...",
+    "error": "Iets het verkeerd geloop"
+  }
+}
