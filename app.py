@@ -10,6 +10,31 @@ from fastapi.staticfiles import StaticFiles
 DEFAULT_ADVERT_IMAGE = "/static/images/default_advert_image.png"
 
 
+#Method so that we can display the first 2 adverts or services on the home page
+def create_service(
+    id,
+    title,
+    description,
+    category,
+    service_type,
+    amount,
+    posted_by,
+    image=None
+):
+    if not image:
+        image = "/static/images/default_advert.png"
+
+    return {
+        "id": id,
+        "title": title,
+        "description": description,
+        "category": category,
+        "service_type": service_type,
+        "amount": amount,
+        "image": image,
+        "posted_by": posted_by
+    }
+
 app = FastAPI()
 
 app.add_middleware(
@@ -70,21 +95,66 @@ def logout(request: Request):
     return RedirectResponse("/", status_code=303)
 
 @app.get("/home")
-def home(request: Request):
+def home_page(request: Request):
 
     username = request.session.get("username")
 
     if username is None:
         return RedirectResponse("/", status_code=303)
 
+    offered_services = [
+        create_service(
+            1,
+            "Free Maths Tutoring",
+            "Free tutoring every Wednesday.",
+            "education",
+            "offering",
+            0.00,
+            "Tshepo Malepo"
+        ),
+
+        create_service(
+            2,
+            "Garden Maintenance",
+            "Garden maintenance available on weekends.",
+            "other",
+            "offering",
+            150.00,
+            "Prince Adams",
+            "/static/images/garden.jpg"
+        )
+    ]
+    requested_services = [
+        create_service(
+            3,
+            "Looking for a Physics Tutor",
+            "Need help preparing for exams.",
+            "education",
+            "requesting",
+            200.00,
+            "Alice Charlie"
+        ),
+
+        create_service(
+            4,
+            "Need Help Painting",
+            "Looking for someone to help paint a house.",
+            "other",
+            "requesting",
+            500.00,
+            "Malicious Miranda"
+        )
+    ]
+
     return templates.TemplateResponse(
         request=request,
         name="home.html",
         context={
-            "username": username
+            "username": username,
+            "offered_services": offered_services[:2],
+            "requested_services": requested_services[:2]
         }
     )
-
 
 @app.get("/search")
 def search_page(request: Request):
@@ -120,11 +190,19 @@ def do_search(
     results = [
         {
             "title": "Food Baank",
-            "description": "Provides meals every Tuesday."
+            "service_type": "offering",
+            "category": "education",
+            "description": "Provides meals every Tuesday.",
+            "amount": 0.00,
+            "posted_by": "Prince Adams"
         },
         {
             "title": "Tutoring",
-            "description": "Free maths tutoring."
+            "service_type": "requesting",
+            "category": "education",
+            "description": "Free maths tutoring.",
+            "amount": 0.00,
+            "posted_by": "Malicious Miranda"
         }
     ]
 
@@ -144,14 +222,18 @@ def adverts_page(request: Request):
         {
             "title": "Free Maths Tutoring",
             "category": "Education",
-            "poster": "John Smith",
+            "posted_by": "John Smith",
+            "service_type": "offering",
+            "amount": 0.00,
             "description": "Free tutoring every Wednesday.",
             "image": None
         },
         {
             "title": "Community Garden",
             "category": "Volunteering",
-            "poster": "Sarah Williams",
+            "posted_by": "Sarah Williams",
+            "service_type": "offering",
+            "amount": 0.00,
             "description": "Volunteers needed this Saturday.",
             "image": None
         }
@@ -221,9 +303,11 @@ def post_advert_page(request: Request):
 @app.post("/post_advert")
 def post_advert(
     request: Request,
+    service_type: str = Form(),
     title: str = Form(),
     content: str = Form(),
     category: str = Form(),
+    amount: float | None = Form(None),
     image: UploadFile | None = File(None)
 ):
 

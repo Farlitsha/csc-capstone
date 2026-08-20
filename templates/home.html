@@ -2,42 +2,217 @@
 <html>
 
 <head>
-
-    <title>Home Page</title>
-
-    <link rel="stylesheet" href="/static/style.css">
-
+    <title>Ocean View Community Hub</title>
+    <link rel="stylesheet" href="/static/style_home.css">
 </head>
 
 <body>
-        <header class="navbar">
+
+    <!-- Header -->
+    <header class="header">
 
         <div class="logo">
-            Community Hub, Welcom, {{ username }}
+            <img src="/static/images/Logo.png" alt="Community Hub Logo">
         </div>
 
-
-        <!-- might want to span something else later-->
-        <!-- <span class="username">        
-            Welcome, {{ username }}
-        </span> -->
-
-        <div class="nav-buttons">
-            <!-- Low data mode/High data mode button togle for downloading images-->
-            <a href="/post_advert" class="nav-button"> Post Advert</a>
-            
-            <a href="/adverts" class="nav-button">Adverts</a>
-             
-            <a href="/search" class="nav-button">Search</a>
-
-            <a href="/profile" class="nav-button">Profile</a>
-
-            <a href="/logout" class="nav-button">Logout</a>
-
+        <div class="user-info">
+            <span>Welcome, {{ username }}!</span>
         </div>
 
     </header>
 
+
+    <!-- Navigation -->
+    <nav class="nav-bar">
+
+        <a href="/home">Home</a>
+        <a href="/search">Search</a>
+        <a href="/post_advert">Post Service</a>
+        <a href="/profile">Profile</a>
+        <a href="/logout">Logout</a>
+
+    </nav>
+
+
+    <!-- Main content -->
+    <main class="home-container">
+
+        <!-- Welcome section -->
+        <section class="welcome-section">
+
+            <h1>Ocean View Community Hub</h1>
+
+            <p>
+                We can maybe put some tag-line here, or solgan
+            </p>
+
+        </section>
+
+
+        <!-- Quick actions -->
+        <section class="quick-actions">
+
+            <h2>Quick Actions</h2>
+
+            <div class="action-buttons">
+
+                <a href="/post_advert" class="action-button">
+                    + Post a Service
+                </a>
+
+                <a href="/search" class="action-button">
+                    Search Services
+                </a>
+
+            </div>
+
+        </section>
+
+
+        <!-- Offered services -->
+        <section class="service-section">
+
+            <div class="section-heading">
+
+                <h2>Services Being Offered</h2>
+
+                <a href="/adverts?type=offering">
+                    View All →
+                </a>
+
+            </div>
+
+
+            <div class="service-list">
+
+                {% for advert in offered_services %}
+
+                    <div class="service-card">
+
+                        <div class="service-card-content">
+
+                            <span class="service-type {{ advert.service_type | lower }}">
+                                {{ advert.service_type }}
+                            </span>
+
+                            <h3>{{ advert.title }}</h3>
+
+                            <p class="category">
+                                {{ advert.category }}
+                            </p>
+
+                            <p>
+                                {{ advert.description }}
+                            </p>
+
+                            <p class="poster">
+                                Posted by: {{ advert.poster }}
+                            </p>
+
+                        </div>
+
+                        <div class="service-card-button">
+
+                            <a href="/advert/{{ advert.id }}">
+                                View More
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+                {% if not offered_services %}
+
+                    <p class="no-services">
+                        There are currently no services being offered.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Requested services -->
+        <section class="service-section">
+
+            <div class="section-heading">
+
+                <h2>Services Requested</h2>
+
+                <a href="/adverts?type=requesting">
+                    View All →
+                </a>
+
+            </div>
+
+
+            <div class="service-list">
+
+                {% for advert in requested_services %}
+
+                    <div class="service-card">
+
+                        <div class="service-card-content">
+
+                            <span class="service-type {{ advert.service_type | lower }}">
+                                {{ advert.service_type }}
+                            </span>
+
+                            <h3>{{ advert.title }}</h3>
+
+                            <p class="category">
+                                {{ advert.category }}
+                            </p>
+
+                            <p>
+                                {{ advert.description }}
+                            </p>
+
+                            <p class="poster">
+                                Posted by: {{ advert.poster }}
+                            </p>
+
+                        </div>
+
+                        <div class="service-card-button">
+
+                            <a href="/advert/{{ advert.id }}">
+                                View More
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+                {% if not requested_services %}
+
+                    <p class="no-services">
+                        There are currently no services being requested.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Browse all -->
+        <div class="browse-all">
+
+            <a href="/adverts">
+                Browse All Community Services
+            </a>
+
+        </div>
+
+    </main>
 
 </body>
 

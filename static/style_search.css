@@ -64,6 +64,25 @@ input {
     cursor: pointer;
 }
 
+.service-type {
+    display: inline-block;
+
+    padding: 5px 10px;
+    margin-bottom: 10px;
+
+    border-radius: 5px;
+    font-weight: bold;
+    color: white;
+}
+
+.offering {
+    background-color: #4CAF50;
+}
+
+.requesting {
+    background-color: #f39c12;
+}
+
 .error {
     color: red;
 }

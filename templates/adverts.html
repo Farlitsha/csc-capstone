@@ -38,32 +38,49 @@
 
     {% for advert in adverts %}
 
-    <div class="advert-card">
+        <div class="advert-card">
 
-        <div class="advert-image">
-            <img src="{{ advert.image }}" alt="{{ advert.title }}">
-        </div>
+            <div class="advert-image">
+                <img src="{{ advert.image }}" alt="{{ advert.title }}">
+            </div>
 
-        <div class="advert-content">
+            <div class="advert-content">
 
-            <h2>{{ advert.title }}</h2>
+                <span class="service-type {{ advert.service_type | lower }}">
+                    {{ advert.service_type }}
+                </span>
 
-            <p class="category">{{ advert.category }}</p>
+                <h2>{{ advert.title }}</h2>
 
-            <p>Posted by: {{ advert.poster }}</p>
+                <p class="category">
+                    {{ advert.category }}
+                </p>
 
-            <p class="description">
-                {{ advert.description }}
-            </p>
+                <p>
+                    Posted by: {{ advert.posted_by }}
+                </p>
 
-            <div class="advert-buttons">
-                <button>View More</button>
-                <button>Contact</button>
+                <p class="description">
+                    {{ advert.description }}
+                </p>
+
+                <p class="amount">
+                    R{{ "%.2f"|format(advert.amount) }}
+                </p>
+
+                <div class="advert-buttons">
+                    <button type="button">
+                        View More
+                    </button>
+
+                    <button type="button">
+                        Contact
+                    </button>
+                </div>
+
             </div>
 
         </div>
-
-    </div>
 
     {% endfor %}
 

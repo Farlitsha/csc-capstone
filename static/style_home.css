@@ -1,0 +1,331 @@
+body {
+    margin: 0;
+
+    font-family: Arial, sans-serif;
+
+    background-color: #f5f5f5;
+    color: #222;
+}
+
+
+/* =========================
+   HEADER
+   ========================= */
+
+.header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px 5%;
+
+    background-color: white;
+
+    border-bottom: 1px solid #ddd;
+}
+
+.logo img {
+    width: 100px;
+    height: auto;
+}
+
+.user-info {
+    font-weight: bold;
+}
+
+
+/* =========================
+   NAVIGATION
+   ========================= */
+
+.nav-bar {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 12px;
+
+    background-color: #4CAF50;
+}
+
+.nav-bar a {
+    padding: 10px 20px;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+}
+
+.nav-bar a:hover {
+    background-color: #45a049;
+}
+
+
+/* =========================
+   MAIN CONTAINER
+   ========================= */
+
+.home-container {
+    width: 90%;
+    max-width: 1000px;
+
+    margin: 30px auto;
+}
+
+
+/* =========================
+   WELCOME
+   ========================= */
+
+.welcome-section {
+    padding: 30px;
+
+    margin-bottom: 25px;
+
+    background-color: white;
+
+    border-radius: 12px;
+
+    border: 1px solid #ddd;
+}
+
+.welcome-section h1 {
+    margin-top: 0;
+}
+
+.welcome-section p {
+    margin-bottom: 0;
+
+    color: #666;
+}
+
+
+/* =========================
+   QUICK ACTIONS
+   ========================= */
+
+.quick-actions {
+    margin-bottom: 35px;
+}
+
+.quick-actions h2 {
+    margin-bottom: 15px;
+}
+
+.action-buttons {
+    display: flex;
+
+    gap: 15px;
+}
+
+.action-button {
+    padding: 12px 20px;
+
+    background-color: #4CAF50;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+}
+
+.action-button:hover {
+    background-color: #45a049;
+}
+
+
+/* =========================
+   SERVICE SECTIONS
+   ========================= */
+
+.service-section {
+    margin-bottom: 35px;
+}
+
+.section-heading {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+.section-heading h2 {
+    margin: 0;
+}
+
+.section-heading a {
+    color: #4CAF50;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+.section-heading a:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================
+   SERVICE LIST
+   ========================= */
+
+.service-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+}
+
+
+/* =========================
+   SERVICE CARD
+   ========================= */
+
+.service-card {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 20px;
+
+    background-color: white;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+}
+
+.service-card-content {
+    flex: 1;
+}
+
+.service-card h3 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.service-card p {
+    margin: 8px 0;
+}
+
+.category {
+    font-weight: bold;
+}
+
+.poster {
+    font-size: 14px;
+
+    color: #666;
+}
+
+
+/* =========================
+   OFFERING / REQUESTING
+   ========================= */
+
+.service-type {
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    border-radius: 5px;
+
+    color: white;
+
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
+.offering {
+    background-color: #4CAF50;
+}
+
+.requesting {
+    background-color: #f39c12;
+}
+
+
+/* =========================
+   VIEW MORE BUTTON
+   ========================= */
+
+.service-card-button a {
+    display: inline-block;
+
+    padding: 10px 15px;
+
+    border: 1px solid #333;
+
+    border-radius: 8px;
+
+    color: #222;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+.service-card-button a:hover {
+    background-color: #eee;
+}
+
+
+/* =========================
+   NO SERVICES
+   ========================= */
+
+.no-services {
+    padding: 20px;
+
+    background-color: white;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    color: #666;
+}
+
+
+/* =========================
+   BROWSE ALL
+   ========================= */
+
+.browse-all {
+    text-align: center;
+
+    margin: 40px 0;
+}
+
+.browse-all a {
+    display: inline-block;
+
+    padding: 14px 25px;
+
+    background-color: #4CAF50;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    font-weight: bold;
+}
+
+.browse-all a:hover {
+    background-color: #45a049;
+}
