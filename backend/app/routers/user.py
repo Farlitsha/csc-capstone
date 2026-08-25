@@ -52,3 +52,5 @@ async def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.delete(db_user)
     db.commit()
     return {"message": "User deleted successfully"}
+
+    
