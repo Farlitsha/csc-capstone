@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <title>{{ t("profile.heading") }}</title>
+    <link rel="stylesheet" href="/static/style_profile.css">
+</head>
+
+<body>
+
+    <header class="header">
+
+        <div class="logo">
+            <img src="/static/images/Logo.png" alt="Community Hub Logo">
+        </div>
+
+        <div class="user-info">
+            <span>{{ t("common.welcome") }}, {{ user.name }}!</span>
+        </div>
+
+        <div class="lang-toggle">
+            {% if lang == "en" %}
+                <a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>
+            {% else %}
+                <a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>
+            {% endif %}
+        </div>
+
+    </header>
+
+    <nav class="nav-bar">
+        <a href="/home">{{ t("nav.home") }}</a>
+        <a href="/search">{{ t("nav.directory") }}</a>
+        <a href="/post_advert">{{ t("directory.post_service_button") }}</a>
+        <a href="/profile">{{ t("nav.profile") }}</a>
+        <a href="/logout">{{ t("nav.logout") }}</a>
+    </nav>
+
+    <main class="profile-container">
+        <h1>{{ t("profile.heading") }}</h1>
+
+        <div class="profile-card">
+
+            <p><strong>{{ t("profile.name_label") }}:</strong> {{ user.name }}</p>
+            <p><strong>{{ t("profile.surname_label") }}:</strong> {{ user.surname }}</p>
+            <p><strong>{{ t("profile.email_label") }}:</strong> {{ user.email }}</p>
+            <p><strong>{{ t("profile.role_label") }}:</strong> {{ user.role }}</p>
+
+            <div class="profile-buttons">
+                <a href="/edit-profile">{{ t("profile.edit_button") }}</a>
+                <a href="/change-password">{{ t("profile.change_password") }}</a>
+            </div>
+
+        </div>
+
+        <h2>{{ t("profile.my_services") }}</h2>
+
+        {% for service in my_services %}
+
+        <div class="service-card">
+            <div class="service-card-content">
+
+                <span class="service-type {{ service.service_type }}">
+                    {{ service.service_type|capitalize }}
+                </span>
+
+                <h3>{{ service.title }}</h3>
+                <p>{{ service.category|capitalize }}</p>
+                <p>R{{ "%.2f"|format(service.amount) }}</p>
+
+                <div class="service-buttons">
+                    <a href="/edit-service/{{ service.id }}">{{ t("profile.edit_button") }}</a>
+                    <a href="/delete-service/{{ service.id }}">{{ t("profile.delete_button") }}</a>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    </main>
+
+</body>
+</html>

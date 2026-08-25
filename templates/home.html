@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ lang }}">
 
 <head>
-    <title>Ocean View Community Hub</title>
+    <title>{{ t("app.title") }}</title>
     <link rel="stylesheet" href="/static/style_home.css">
 </head>
 
 <body>
 
-    <!-- Header -->
     <header class="header">
 
         <div class="logo">
@@ -16,204 +15,106 @@
         </div>
 
         <div class="user-info">
-            <span>Welcome, {{ username }}!</span>
+            <span>{{ t("common.welcome") }}, {{ username }}!</span>
+        </div>
+
+        <div class="lang-toggle">
+            {% if lang == "en" %}
+                <a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>
+            {% else %}
+                <a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>
+            {% endif %}
         </div>
 
     </header>
 
-
-    <!-- Navigation -->
     <nav class="nav-bar">
-
-        <a href="/home">Home</a>
-        <a href="/search">Search</a>
-        <a href="/post_advert">Post Service</a>
-        <a href="/profile">Profile</a>
-        <a href="/logout">Logout</a>
-
+        <a href="/home">{{ t("nav.home") }}</a>
+        <a href="/search">{{ t("nav.directory") }}</a>
+        <a href="/post_advert">{{ t("directory.post_service_button") }}</a>
+        <a href="/profile">{{ t("nav.profile") }}</a>
+        <a href="/logout">{{ t("nav.logout") }}</a>
     </nav>
 
-
-    <!-- Main content -->
     <main class="home-container">
 
-        <!-- Welcome section -->
         <section class="welcome-section">
-
-            <h1>Ocean View Community Hub</h1>
-
-            <p>
-                We can maybe put some tag-line here, or solgan
-            </p>
-
+            <h1>{{ t("app.title") }}</h1>
         </section>
 
-
-        <!-- Quick actions -->
         <section class="quick-actions">
-
-            <h2>Quick Actions</h2>
-
+            <h2>{{ t("directory.quick_actions") }}</h2>
             <div class="action-buttons">
-
-                <a href="/post_advert" class="action-button">
-                    + Post a Service
-                </a>
-
-                <a href="/search" class="action-button">
-                    Search Services
-                </a>
-
+                <a href="/post_advert" class="action-button">+ {{ t("directory.post_service_button") }}</a>
+                <a href="/search" class="action-button">{{ t("common.search") }}</a>
             </div>
-
         </section>
 
-
-        <!-- Offered services -->
         <section class="service-section">
-
             <div class="section-heading">
-
-                <h2>Services Being Offered</h2>
-
-                <a href="/adverts?type=offering">
-                    View All →
-                </a>
-
+                <h2>{{ t("directory.services_offered_heading") }}</h2>
+                <a href="/adverts?type=offering">{{ t("directory.view_all") }}</a>
             </div>
-
 
             <div class="service-list">
-
                 {% for advert in offered_services %}
-
                     <div class="service-card">
-
                         <div class="service-card-content">
-
                             <span class="service-type {{ advert.service_type | lower }}">
                                 {{ advert.service_type }}
                             </span>
-
                             <h3>{{ advert.title }}</h3>
-
-                            <p class="category">
-                                {{ advert.category }}
-                            </p>
-
-                            <p>
-                                {{ advert.description }}
-                            </p>
-
-                            <p class="poster">
-                                Posted by: {{ advert.poster }}
-                            </p>
-
+                            <p class="category">{{ advert.category }}</p>
+                            <p>{{ advert.description }}</p>
+                            <p class="poster">{{ t("directory.posted_by") }}: {{ advert.posted_by }}</p>
                         </div>
-
                         <div class="service-card-button">
-
-                            <a href="/advert/{{ advert.id }}">
-                                View More
-                            </a>
-
+                            <a href="/advert/{{ advert.id }}">{{ t("directory.view_more") }}</a>
                         </div>
-
                     </div>
-
                 {% endfor %}
 
                 {% if not offered_services %}
-
-                    <p class="no-services">
-                        There are currently no services being offered.
-                    </p>
-
+                    <p class="no-services">{{ t("directory.no_results") }}</p>
                 {% endif %}
-
             </div>
-
         </section>
 
-
-        <!-- Requested services -->
         <section class="service-section">
-
             <div class="section-heading">
-
-                <h2>Services Requested</h2>
-
-                <a href="/adverts?type=requesting">
-                    View All →
-                </a>
-
+                <h2>{{ t("directory.services_requested_heading") }}</h2>
+                <a href="/adverts?type=requesting">{{ t("directory.view_all") }}</a>
             </div>
 
-
             <div class="service-list">
-
                 {% for advert in requested_services %}
-
                     <div class="service-card">
-
                         <div class="service-card-content">
-
                             <span class="service-type {{ advert.service_type | lower }}">
                                 {{ advert.service_type }}
                             </span>
-
                             <h3>{{ advert.title }}</h3>
-
-                            <p class="category">
-                                {{ advert.category }}
-                            </p>
-
-                            <p>
-                                {{ advert.description }}
-                            </p>
-
-                            <p class="poster">
-                                Posted by: {{ advert.poster }}
-                            </p>
-
+                            <p class="category">{{ advert.category }}</p>
+                            <p>{{ advert.description }}</p>
+                            <p class="poster">{{ t("directory.posted_by") }}: {{ advert.posted_by }}</p>
                         </div>
-
                         <div class="service-card-button">
-
-                            <a href="/advert/{{ advert.id }}">
-                                View More
-                            </a>
-
+                            <a href="/advert/{{ advert.id }}">{{ t("directory.view_more") }}</a>
                         </div>
-
                     </div>
-
                 {% endfor %}
 
                 {% if not requested_services %}
-
-                    <p class="no-services">
-                        There are currently no services being requested.
-                    </p>
-
+                    <p class="no-services">{{ t("directory.no_results") }}</p>
                 {% endif %}
-
             </div>
-
         </section>
 
-
-        <!-- Browse all -->
         <div class="browse-all">
-
-            <a href="/adverts">
-                Browse All Community Services
-            </a>
-
+            <a href="/adverts">{{ t("directory.browse_all") }}</a>
         </div>
 
     </main>
 
 </body>
-
 </html>

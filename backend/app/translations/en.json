@@ -21,7 +21,26 @@
     "search_placeholder": "Search services...",
     "post_service_button": "Advertise a Service",
     "no_results": "No services found",
-    "contact_button": "Contact"
+    "contact_button": "Contact",
+    "view_more": "View More",
+    "view_all": "View All →",
+    "posted_by": "Posted by",
+    "services_offered_heading": "Services Being Offered",
+    "services_requested_heading": "Services Requested",
+    "quick_actions": "Quick Actions",
+    "offering_label": "Offering a Service",
+    "requesting_label": "Requesting a Service",
+    "browse_all": "Browse All Community Services",
+    "category_label": "Category",
+    "category_select": "Select a category",
+    "category_education": "Education",
+    "category_volunteering": "Volunteering",
+    "category_research": "Research",
+    "category_other": "Other",
+    "title_label": "Title",
+    "content_label": "Description",
+    "amount_label": "Amount (R)",
+    "image_label": "Image (optional)"
   },
   "studies": {
     "heading": "Research Studies",
@@ -34,10 +53,15 @@
   },
   "profile": {
     "heading": "My Profile",
+    "my_services": "My Services",
     "name_label": "Name",
+    "surname_label": "Surname",
+    "email_label": "Email",
     "role_label": "Role",
     "save_button": "Save",
-    "edit_button": "Edit"
+    "edit_button": "Edit",
+    "delete_button": "Delete",
+    "change_password": "Change Password"
   },
   "login": {
     "heading": "Welcome to CommHub",
@@ -45,13 +69,18 @@
     "password_label": "Password",
     "login_button": "Log In",
     "signup_prompt": "Don't have an account yet?",
-    "signup_link": "Sign up here"
+    "signup_link": "Sign up here",
+    "create_account": "Create Account",
+    "back_to_login": "Back to Login"
   },
   "common": {
     "cancel": "Cancel",
     "submit": "Submit",
     "close": "Close",
     "loading": "Loading...",
-    "error": "Something went wrong"
+    "error": "Something went wrong",
+    "welcome": "Welcome",
+    "back_to_home": "Back to Home",
+    "search": "Search"
   }
 }

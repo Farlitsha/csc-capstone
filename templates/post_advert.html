@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ lang }}">
 
 <head>
-    <title>Post Advert</title>
+    <title>{{ t("directory.post_service_button") }}</title>
     <link rel="stylesheet" href="/static/style_post_advert.css">
 </head>
 
 <body>
 
-    <h1>Create Advert</h1>
+    <div class="lang-toggle">
+        {% if lang == "en" %}
+            <a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>
+        {% else %}
+            <a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>
+        {% endif %}
+    </div>
+
+    <h1>{{ t("directory.post_service_button") }}</h1>
 
     {% if message %}
         <p class="message">{{ message }}</p>
@@ -16,101 +24,43 @@
 
     <form action="/post_advert" method="post" enctype="multipart/form-data">
 
-        <!-- choosing whether they're are offering a service or requesting one-->
         <div class="radio-group">
-
             <label>
-                <input
-                    type="radio"
-                    name="service_type"
-                    value="offering"
-                    required
-                >
-                Offering a Service
+                <input type="radio" name="service_type" value="offering" required>
+                {{ t("directory.offering_label") }}
             </label>
-
             <label>
-                <input
-                    type="radio"
-                    name="service_type"
-                    value="requesting"
-                >
-                Requesting a Service
+                <input type="radio" name="service_type" value="requesting">
+                {{ t("directory.requesting_label") }}
             </label>
-        </div> 
-        
-        <label for="title">
-            Title
-        </label>
+        </div>
 
-        <input
-            type="text"
-            id="title"
-            name="title"
-            required
-        >
+        <label for="title">{{ t("directory.title_label") }}</label>
+        <input type="text" id="title" name="title" required>
 
-        <label for="content">
-            Content
-        </label>
+        <label for="content">{{ t("directory.content_label") }}</label>
+        <textarea id="content" name="content" rows="8" required></textarea>
 
-        <textarea
-            id="content"
-            name="content"
-            rows="8"
-            required
-        ></textarea>
-
-        <label for="category">
-            Category
-        </label>
-
-        <select
-            id="category"
-            name="category"
-            required
-        >
-            <option value="">Select a category</option>
-            <option value="education">Education</option>
-            <option value="volunteering">Volunteering</option>
-            <option value="research">Research</option>
-            <option value="other">Other</option>
+        <label for="category">{{ t("directory.category_label") }}</label>
+        <select id="category" name="category" required>
+            <option value="">{{ t("directory.category_select") }}</option>
+            <option value="education">{{ t("directory.category_education") }}</option>
+            <option value="volunteering">{{ t("directory.category_volunteering") }}</option>
+            <option value="research">{{ t("directory.category_research") }}</option>
+            <option value="other">{{ t("directory.category_other") }}</option>
         </select>
 
-        <label for="amount">
-            Amount (R)
-        </label>
+        <label for="amount">{{ t("directory.amount_label") }}</label>
+        <input type="number" id="amount" name="amount" min="0" step="0.01" placeholder="0.00">
 
-        <input
-            type="number"
-            id="amount"
-            name="amount"
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-        >
+        <label for="image">{{ t("directory.image_label") }}</label>
+        <input type="file" id="image" name="image" accept="image/*">
 
-        <label for="image">
-            Image (optional)
-        </label>
-
-        <input
-            type="file"
-            id="image"
-            name="image"
-            accept="image/*"
-        >
-
-        <button type="submit">
-            Post Advert
-        </button>
+        <button type="submit">{{ t("common.submit") }}</button>
 
     </form>
 
-    <a href="/home" class="nav-button">
-        Back to Home
-    </a>
+    <a href="/home" class="nav-button">{{ t("common.back_to_home") }}</a>
 
 </body>
-
 </html>

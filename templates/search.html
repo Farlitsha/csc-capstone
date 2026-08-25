@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ lang }}">
 
 <head>
-    <title>Search</title>
+    <title>{{ t("nav.directory") }}</title>
     <link rel="stylesheet" href="/static/style_search.css">
 </head>
 
 <body>
 
-    <h1>Search users, posts,...</h1>
+    <div class="lang-toggle">
+        {% if lang == "en" %}
+            <a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>
+        {% else %}
+            <a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>
+        {% endif %}
+    </div>
+
+    <h1>{{ t("directory.heading") }}</h1>
 
     <form action="/search" method="post">
 
@@ -16,12 +24,10 @@
             type="text"
             name="query"
             value="{{ query }}"
-            placeholder="Search..."
+            placeholder="{{ t('directory.search_placeholder') }}"
         >
 
-        <button type="submit">
-            Search
-        </button>
+        <button type="submit">{{ t("common.search") }}</button>
 
     </form>
 
@@ -31,7 +37,6 @@
         <p class="warning">{{ message }}</p>
     {% endif %}
 
-    <!-- First we must check if there are any results-->
     {% if results %}
 
         <div class="results">
@@ -45,29 +50,13 @@
                     </span>
 
                     <h3>{{ result.title }}</h3>
-
-                    <p class="result-category">
-                        {{ result.category }}
-                    </p>
-
-                    <p class="result-description">
-                        {{ result.description }}
-                    </p>
-
-                    <p class="result-amount">
-                        R{{ "%.2f"|format(result.amount) }}
-                    </p>
-
-                    <p class="result-posted_by">
-                        Posted by: {{ result.posted_by }}
-                    </p>
+                    <p class="result-category">{{ result.category }}</p>
+                    <p class="result-description">{{ result.description }}</p>
+                    <p class="result-amount">R{{ "%.2f"|format(result.amount) }}</p>
+                    <p class="result-posted_by">{{ t("directory.posted_by") }}: {{ result.posted_by }}</p>
 
                     <div class="result-buttons">
-
-                        <button type="button">
-                            View More
-                        </button>
-
+                        <button type="button">{{ t("directory.contact_button") }}</button>
                     </div>
 
                 </div>
@@ -76,12 +65,11 @@
 
         </div>
 
+    {% elif query %}
+        <p>{{ t("directory.no_results") }}</p>
     {% endif %}
 
-    <a href="/home" class="nav-button">
-        Back to Home
-    </a>
+    <a href="/home" class="nav-button">{{ t("common.back_to_home") }}</a>
 
 </body>
-
 </html>

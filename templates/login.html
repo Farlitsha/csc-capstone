@@ -1,53 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ lang }}">
 
 <head>
-
-    <title>Welcome to CommHub</title>
-
+    <title>{{ t("login.heading") }}</title>
     <link rel="stylesheet" href="/static/style.css">
-
 </head>
 
 <body>
 
 <div class="login-box">
 
-    <h1>Community Hub</h1>
+    <!-- Language toggle -->
+    <div class="lang-toggle">
+        {% if lang == "en" %}
+            <a href="/set-language/af">🇿🇦 Afrikaans</a>
+        {% else %}
+            <a href="/set-language/en">🇬🇧 English</a>
+        {% endif %}
+    </div>
+
+    <h1>{{ t("app.title") }}</h1>
 
     <form action="/login" method="post">
 
-        <label>Username</label>
+        <label>{{ t("login.username_label") }}</label>
+        <input type="text" name="username" required>
 
-        <input
-            type="text"
-            name="username"
-            required
-        >
+        <label>{{ t("login.password_label") }}</label>
+        <input type="text" name="password" required>
 
-        <label>Password</label>
+        <button type="submit">{{ t("login.login_button") }}</button>
 
-        <input
-            type="text"
-            name="password"
-            required
-        >
-
-        <button type="submit">
-            Login
-        </button>
-        <a href="/register" class="button">
-            Create New User
-        </a>
+        <a href="/register" class="button">{{ t("login.signup_link") }}</a>
 
     </form>
 
-    <p class="error">
-        {{ error }}
-    </p>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if message %}
+        <p class="message">{{ message }}</p>
+    {% endif %}
 
 </div>
 
 </body>
-
 </html>

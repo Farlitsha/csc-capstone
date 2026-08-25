@@ -1,39 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ lang }}">
 
 <head>
-
-    <title>Community Hub - Adverts</title>
-
+    <title>{{ t("directory.heading") }}</title>
     <link rel="stylesheet" href="/static/style_adverts.css">
-
 </head>
 
 <body>
 
 <header class="navbar">
 
-    <div class="logo">
-        Community Hub
-    </div>
+    <div class="logo">{{ t("app.title") }}</div>
 
     <div class="nav-buttons">
 
-        <span class="username">
-            Welcome, {{ username }}
-        </span>
+        <div class="lang-toggle">
+            {% if lang == "en" %}
+                <a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>
+            {% else %}
+                <a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>
+            {% endif %}
+        </div>
 
-        <a href="/home" class="nav-button">Home</a>
-
-        <a href="/search" class="nav-button">Search</a>
-
-        <a href="/logout" class="nav-button">Logout</a>
+        <a href="/home" class="nav-button">{{ t("nav.home") }}</a>
+        <a href="/search" class="nav-button">{{ t("nav.directory") }}</a>
+        <a href="/logout" class="nav-button">{{ t("nav.logout") }}</a>
 
     </div>
 
 </header>
 
-<h1>Community Adverts</h1>
+<h1>{{ t("directory.heading") }}</h1>
+<p>{{ t("directory.subheading") }}</p>
+
 <div class="adverts-container">
 
     {% for advert in adverts %}
@@ -51,41 +50,25 @@
                 </span>
 
                 <h2>{{ advert.title }}</h2>
-
-                <p class="category">
-                    {{ advert.category }}
-                </p>
-
-                <p>
-                    Posted by: {{ advert.posted_by }}
-                </p>
-
-                <p class="description">
-                    {{ advert.description }}
-                </p>
-
-                <p class="amount">
-                    R{{ "%.2f"|format(advert.amount) }}
-                </p>
+                <p class="category">{{ advert.category }}</p>
+                <p>{{ t("directory.posted_by") }}: {{ advert.posted_by }}</p>
+                <p class="description">{{ advert.description }}</p>
+                <p class="amount">R{{ "%.2f"|format(advert.amount) }}</p>
 
                 <div class="advert-buttons">
-                    <button type="button">
-                        View More
-                    </button>
-
-                    <button type="button">
-                        Contact
-                    </button>
+                    <button type="button">{{ t("directory.view_more") }}</button>
+                    <button type="button">{{ t("directory.contact_button") }}</button>
                 </div>
 
             </div>
 
         </div>
 
+    {% else %}
+        <p>{{ t("directory.no_results") }}</p>
     {% endfor %}
 
 </div>
 
 </body>
-
 </html>

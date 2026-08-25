@@ -21,7 +21,26 @@
     "search_placeholder": "Soek dienste...",
     "post_service_button": "Adverteer 'n diens",
     "no_results": "Geen dienste gevind nie",
-    "contact_button": "Kontak"
+    "contact_button": "Kontak",
+    "view_more": "Sien meer",
+    "view_all": "Sien almal →",
+    "posted_by": "Geplaas deur",
+    "services_offered_heading": "Dienste wat aangebied word",
+    "services_requested_heading": "Dienste wat versoek word",
+    "quick_actions": "Vinnige aksies",
+    "offering_label": "Bied 'n diens aan",
+    "requesting_label": "Versoek 'n diens",
+    "browse_all": "Blaai deur alle gemeenskapsdienste",
+    "category_label": "Kategorie",
+    "category_select": "Kies 'n kategorie",
+    "category_education": "Onderwys",
+    "category_volunteering": "Vrywilligerswerk",
+    "category_research": "Navorsing",
+    "category_other": "Ander",
+    "title_label": "Titel",
+    "content_label": "Beskrywing",
+    "amount_label": "Bedrag (R)",
+    "image_label": "Prent (opsioneel)"
   },
   "studies": {
     "heading": "Navorsingsprojekte",
@@ -34,10 +53,15 @@
   },
   "profile": {
     "heading": "My Profiel",
+    "my_services": "My Dienste",
     "name_label": "Naam",
+    "surname_label": "Van",
+    "email_label": "E-pos",
     "role_label": "Rol",
     "save_button": "Stoor",
-    "edit_button": "Wysig"
+    "edit_button": "Wysig",
+    "delete_button": "Verwyder",
+    "change_password": "Verander wagwoord"
   },
   "login": {
     "heading": "Welkom by CommHub",
@@ -45,13 +69,18 @@
     "password_label": "Wagwoord",
     "login_button": "Meld aan",
     "signup_prompt": "Nog geen rekening nie?",
-    "signup_link": "Registreer hier"
+    "signup_link": "Registreer hier",
+    "create_account": "Skep rekening",
+    "back_to_login": "Terug na aanmelding"
   },
   "common": {
     "cancel": "Kanselleer",
     "submit": "Dien in",
     "close": "Sluit",
     "loading": "Laai...",
-    "error": "Iets het verkeerd geloop"
+    "error": "Iets het verkeerd geloop",
+    "welcome": "Welkom",
+    "back_to_home": "Terug na tuisblad",
+    "search": "Soek"
   }
 }

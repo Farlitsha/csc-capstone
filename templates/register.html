@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ lang }}">
 
 <head>
-    <title>Create User</title>
+    <title>{{ t("login.create_account") }}</title>
     <link rel="stylesheet" href="/static/style_register.css">
 </head>
 
 <body>
 
-    <h1>Create New User</h1>
+    <div class="lang-toggle">
+        {% if lang == "en" %}
+            <a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>
+        {% else %}
+            <a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>
+        {% endif %}
+    </div>
+
+    <h1>{{ t("login.create_account") }}</h1>
 
     {% if message %}
         <p class="warning">{{ message }}</p>
@@ -16,49 +24,23 @@
 
     <form action="/register" method="post">
 
-        <label for="username">
-            Username
-        </label>
+        <label for="Name">{{ t("profile.name_label") }}</label>
+        <input type="text" id="Name" name="Name" required>
 
-        <input
-            type="text"
-            id="username"
-            name="username"
-            required
-        >
+        <label for="Surname">{{ t("profile.surname_label") }}</label>
+        <input type="text" id="Surname" name="Surname" required>
 
-        <label for="email">
-            Email
-        </label>
+        <label for="email">{{ t("profile.email_label") }}</label>
+        <input type="email" id="email" name="email" required>
 
-        <input
-            type="email"
-            id="email"
-            name="email"
-            required
-        >
+        <label for="password">{{ t("login.password_label") }}</label>
+        <input type="password" id="password" name="password" required>
 
-        <label for="password">
-            Password
-        </label>
-
-        <input
-            type="password"
-            id="password"
-            name="password"
-            required
-        >
-
-        <button type="submit">
-            Create Account
-        </button>
+        <button type="submit">{{ t("login.create_account") }}</button>
 
     </form>
 
-    <a href="/login" class="nav-button">
-        Back to Login
-    </a>
+    <a href="/login" class="nav-button">{{ t("login.back_to_login") }}</a>
 
 </body>
-
 </html>
