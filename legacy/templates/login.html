@@ -12,11 +12,10 @@
 
     <!-- Language toggle -->
     <div class="lang-toggle">
-        {% if lang == "en" %}
-            <a href="/set-language/af">🇿🇦 Afrikaans</a>
-        {% else %}
-            <a href="/set-language/en">🇬🇧 English</a>
-        {% endif %}
+        {% if lang != "en" %}<a href="/set-language/en">🇬🇧 English</a>{% endif %}
+        {% if lang != "af" %}<a href="/set-language/af">🇿🇦 Afrikaans</a>{% endif %}
+        {% if lang != "xh" %}<a href="/set-language/xh">🇿🇦 Xhosa</a>{% endif %}
+        {% if lang != "zu" %}<a href="/set-language/zu">🇿🇦 Zulu</a>{% endif %}
     </div>
 
     <h1>{{ t("app.title") }}</h1>

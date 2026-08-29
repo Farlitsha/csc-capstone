@@ -1,0 +1,88 @@
+{
+  "app": {
+    "title": "iNethi CommHub"
+  },
+  "nav": {
+    "home": "Ikhaya",
+    "directory": "Uhlu Lwezinsizakalo",
+    "studies": "Ucwaningo",
+    "profile": "Iphrofayela",
+    "login": "Ngena",
+    "logout": "Phuma"
+  },
+  "language": {
+    "toggle_label": "Ulimi",
+    "english": "IsiNgisi",
+    "afrikaans": "IsiBhunu",
+    "xhosa": "IsiXhosa",
+    "zulu": "IsiZulu"
+  },
+  "directory": {
+    "heading": "Uhlu Lwezinsizakalo Zomphakathi",
+    "subheading": "Buka izinsizakalo ezinikezwa amalungu omphakathi",
+    "search_placeholder": "Sesha izinsizakalo...",
+    "post_service_button": "Khangisa Inkonzo",
+    "no_results": "Ayikho insizakalo etholakele",
+    "contact_button": "Xhumana",
+    "view_more": "Buka okwengeziwe",
+    "view_all": "Buka Konke →",
+    "posted_by": "Kuthunyelwe ngu",
+    "services_offered_heading": "Izinsizakalo Ezinikezwayo",
+    "services_requested_heading": "Izinsizakalo Eziceliwe",
+    "quick_actions": "Izenzo Ezisheshayo",
+    "offering_label": "Ukunikeza Insizakalo",
+    "requesting_label": "Ukucela Insizakalo",
+    "browse_all": "Buka Zonke Izinsizakalo Zomphakathi",
+    "category_label": "Isigaba",
+    "category_select": "Khetha isigaba",
+    "category_education": "Imfundo",
+    "category_volunteering": "Ukuzinikela",
+    "category_research": "Ucwaningo",
+    "category_other": "Okunye",
+    "title_label": "Isihloko",
+    "content_label": "Incazelo",
+    "amount_label": "Imali (R)",
+    "image_label": "Isithombe (akuphoqelekile)"
+  },
+  "studies": {
+    "heading": "Ucwaningo Lwezifundo",
+    "subheading": "Joyina izinhlolovo nemihlangano yokuqeqeshwa",
+    "apply_button": "Faka isicelo",
+    "closed_label": "Ivaliwe",
+    "live_label": "Iyasebenza",
+    "participant_limit": "Umkhawulo wababambiqhaza",
+    "no_studies": "Azikho izifundo ezisebenzayo"
+  },
+  "profile": {
+    "heading": "Iphrofayela Yami",
+    "my_services": "Izinsizakalo Zami",
+    "name_label": "Igama",
+    "surname_label": "Isibongo",
+    "email_label": "I-imeyili",
+    "role_label": "Indima",
+    "save_button": "Londoloza",
+    "edit_button": "Hlela",
+    "delete_button": "Susa",
+    "change_password": "Shintsha Iphasiwedi"
+  },
+  "login": {
+    "heading": "Siyakwamukela ku-CommHub",
+    "username_label": "Igama lomsebenzisi",
+    "password_label": "Iphasiwedi",
+    "login_button": "Ngena",
+    "signup_prompt": "Awunayo i-akhawunti okwamanje?",
+    "signup_link": "Bhalisela lapha",
+    "create_account": "Dala i-Akhawunti",
+    "back_to_login": "Buyela Ekungeneni"
+  },
+  "common": {
+    "cancel": "Khansela",
+    "submit": "Thumela",
+    "close": "Vala",
+    "loading": "Iyalayisha...",
+    "error": "Kukhona okungahambanga kahle",
+    "welcome": "Siyakwamukela",
+    "back_to_home": "Buyela Ekhaya",
+    "search": "Sesha"
+  }
+}

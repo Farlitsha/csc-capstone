@@ -1,0 +1,25 @@
+.ch-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.ch-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 0;
+}
+
+.ch-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.ch-card__body {
+  padding: 12px 0 8px;
+}

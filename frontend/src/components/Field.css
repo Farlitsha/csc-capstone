@@ -1,0 +1,39 @@
+.ch-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.ch-field__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-sage);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ch-field__input {
+  width: 100%;
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--color-teal-700);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.ch-field__input:focus {
+  border-color: var(--color-teal-700);
+}
+
+.ch-field__input::placeholder {
+  color: var(--color-sage);
+}
+
+textarea.ch-field__input {
+  resize: vertical;
+  min-height: 70px;
+}

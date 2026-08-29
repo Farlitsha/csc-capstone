@@ -1,0 +1,88 @@
+{
+  "app": {
+    "title": "iNethi CommHub"
+  },
+  "nav": {
+    "home": "Ikhaya",
+    "directory": "Uluhlu Lweenkonzo",
+    "studies": "Uphando",
+    "profile": "Iprofayile",
+    "login": "Ngena",
+    "logout": "Phuma"
+  },
+  "language": {
+    "toggle_label": "Ulwimi",
+    "english": "IsiNgesi",
+    "afrikaans": "IsiBhulu",
+    "xhosa": "IsiXhosa",
+    "zulu": "IsiZulu"
+  },
+  "directory": {
+    "heading": "Uluhlu Lweenkonzo Zoluntu",
+    "subheading": "Khangela iinkonzo ezinikezelwa ngamalungu oluntu",
+    "search_placeholder": "Khangela iinkonzo...",
+    "post_service_button": "Bhengeza Inkonzo",
+    "no_results": "Akukho nkonzo ifunyenweyo",
+    "contact_button": "Qhagamshelana",
+    "view_more": "Bona ngakumbi",
+    "view_all": "Bona Konke →",
+    "posted_by": "Ithunyelwe ngu",
+    "services_offered_heading": "Iinkonzo Ezinikezelwayo",
+    "services_requested_heading": "Iinkonzo Eziceliweyo",
+    "quick_actions": "Izenzo Ezikhawulezileyo",
+    "offering_label": "Ukunikela Ngenkonzo",
+    "requesting_label": "Ukucela Inkonzo",
+    "browse_all": "Khangela Zonke Iinkonzo Zoluntu",
+    "category_label": "Udidi",
+    "category_select": "Khetha udidi",
+    "category_education": "Imfundo",
+    "category_volunteering": "Ukuvolontiya",
+    "category_research": "Uphando",
+    "category_other": "Okunye",
+    "title_label": "Isihloko",
+    "content_label": "Inkcazo",
+    "amount_label": "Imali (R)",
+    "image_label": "Umfanekiso (akunyanzelekanga)"
+  },
+  "studies": {
+    "heading": "Uphando Lwezifundo",
+    "subheading": "Joyina uvavanyo neenkqubo zoqeqesho",
+    "apply_button": "Faka isicelo",
+    "closed_label": "Ivaliwe",
+    "live_label": "Ivulekile",
+    "participant_limit": "Umda wababambe iqhaza",
+    "no_studies": "Akukho zifundo zisebenzayo"
+  },
+  "profile": {
+    "heading": "Iprofayile Yam",
+    "my_services": "Iinkonzo Zam",
+    "name_label": "Igama",
+    "surname_label": "Ifani",
+    "email_label": "I-imeyili",
+    "role_label": "Indima",
+    "save_button": "Gcina",
+    "edit_button": "Hlela",
+    "delete_button": "Cima",
+    "change_password": "Tshintsha Iphasiwedi"
+  },
+  "login": {
+    "heading": "Wamkelekile kwiCommHub",
+    "username_label": "Igama lomsebenzisi",
+    "password_label": "Iphasiwedi",
+    "login_button": "Ngena",
+    "signup_prompt": "Awunayo iakhawunti okwangoku?",
+    "signup_link": "Bhalisa apha",
+    "create_account": "Yenza iAkhawunti",
+    "back_to_login": "Buyela Ekungeneni"
+  },
+  "common": {
+    "cancel": "Rhoxisa",
+    "submit": "Ngenisa",
+    "close": "Vala",
+    "loading": "Iyalayisha...",
+    "error": "Kukho into engahambanga kakuhle",
+    "welcome": "Wamkelekile",
+    "back_to_home": "Buyela Ekhaya",
+    "search": "Khangela"
+  }
+}

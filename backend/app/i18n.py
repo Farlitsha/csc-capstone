@@ -16,7 +16,7 @@ import os
 from PyQt5.QtCore import QObject, pyqtSignal
 
 TRANSLATIONS_DIR = os.path.join(os.path.dirname(__file__), "translations")
-SUPPORTED_LANGUAGES = ["en", "af"]
+SUPPORTED_LANGUAGES = ["en", "af", "xh", "zu"]
 DEFAULT_LANGUAGE = "en"
 
 
@@ -55,9 +55,10 @@ class Translator(QObject):
         self.language_changed.emit(lang_code)
 
     def toggle(self):
-        """Convenience for a two-language app: flips en <-> af."""
-        other = "af" if self._current_language == "en" else "en"
-        self.set_language(other)
+        """Cycles through SUPPORTED_LANGUAGES in order."""
+        idx = SUPPORTED_LANGUAGES.index(self._current_language)
+        next_lang = SUPPORTED_LANGUAGES[(idx + 1) % len(SUPPORTED_LANGUAGES)]
+        self.set_language(next_lang)
 
     def t(self, dotted_key: str) -> str:
         """

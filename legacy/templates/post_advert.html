@@ -9,11 +9,10 @@
 <body>
 
     <div class="lang-toggle">
-        {% if lang == "en" %}
-            <a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>
-        {% else %}
-            <a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>
-        {% endif %}
+        {% if lang != "en" %}<a href="/set-language/en">🇬🇧 {{ t("language.english") }}</a>{% endif %}
+                {% if lang != "af" %}<a href="/set-language/af">🇿🇦 {{ t("language.afrikaans") }}</a>{% endif %}
+                {% if lang != "xh" %}<a href="/set-language/xh">🇿🇦 {{ t("language.xhosa") }}</a>{% endif %}
+                {% if lang != "zu" %}<a href="/set-language/zu">🇿🇦 {{ t("language.zulu") }}</a>{% endif %}
     </div>
 
     <h1>{{ t("directory.post_service_button") }}</h1>

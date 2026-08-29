@@ -13,7 +13,9 @@
   "language": {
     "toggle_label": "Language",
     "english": "English",
-    "afrikaans": "Afrikaans"
+    "afrikaans": "Afrikaans",
+    "xhosa": "Xhosa",
+    "zulu": "Zulu"
   },
   "directory": {
     "heading": "Community Service Directory",

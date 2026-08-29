@@ -11,7 +11,7 @@ import os
 TRANSLATIONS_DIR = os.path.join(
     os.path.dirname(__file__), "backend", "app", "translations"
 )
-SUPPORTED_LANGUAGES = ("en", "af")
+SUPPORTED_LANGUAGES = ("en", "af", "xh", "zu")
 DEFAULT_LANGUAGE = "en"
 
 # Load once at import time so templates render fast.

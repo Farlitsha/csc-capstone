@@ -74,7 +74,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/set-language/{lang_code}")
 def set_language(lang_code: str, request: Request):
     """Switch the session language and redirect back to where the user was."""
-    if lang_code in ("en", "af"):
+    if lang_code in ("en", "af", "xh", "zu"):
         request.session["lang"] = lang_code
     referer = request.headers.get("referer", "/")
     return RedirectResponse(referer, status_code=303)

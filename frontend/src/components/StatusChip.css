@@ -1,0 +1,27 @@
+.ch-status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-teal-700);
+  white-space: nowrap;
+}
+
+.ch-status-chip--positive {
+  background: var(--color-sage-dim);
+}
+
+.ch-status-chip--warning {
+  background: var(--color-signal-dim);
+}
+
+.ch-status-chip--neutral {
+  background: var(--color-sand);
+}
+
+.ch-status-chip--danger {
+  background: var(--color-danger-dim);
+  color: var(--color-danger);
+}

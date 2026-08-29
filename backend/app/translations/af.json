@@ -13,7 +13,9 @@
   "language": {
     "toggle_label": "Taal",
     "english": "Engels",
-    "afrikaans": "Afrikaans"
+    "afrikaans": "Afrikaans",
+    "xhosa": "Xhosa",
+    "zulu": "Zoeloe"
   },
   "directory": {
     "heading": "Gemeenskap Diensgids",

@@ -1,0 +1,9 @@
+.ch-lang-switcher {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-size: 12px;
+  padding: 5px 8px;
+  cursor: pointer;
+}
