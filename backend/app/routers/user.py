@@ -1,26 +1,48 @@
+import os
+import shutil
+from pathlib import Path
 from .. import models, schemas, utils, oauth2
-from fastapi import Depends, status, HTTPException, APIRouter
+from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 from ..database import get_db
 from sqlalchemy.orm import Session
 
-router = APIRouter(   prefix="/users",tags=["users"])
+router = APIRouter(prefix="/users", tags=["users"])
 
-@router.post("/account/create", status_code = status.HTTP_201_CREATED, response_model=schemas.UserOut) ## works as expected
+# ── Avatar upload config ───────────────────────────────────────────────────────
+AVATAR_DIR = Path("uploads/avatars")
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_AVATAR_BYTES = 2 * 1024 * 1024  # 2 MB
+
+
+# ── Registration & Login ───────────────────────────────────────────────────────
+
+@router.post("/account/create", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
 async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
+    """Register a new user account. Role can be selected (defaults to community_member).
+    Researcher accounts are set to pending verification (Req 1.1, 1.5, 12).
+    """
+    if db.query(models.User).filter(models.User.email == user.email).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="User with this email already exists, please use a different email")
 
-    user_exists = db.query(models.User).filter(models.User.email == user.email).first()
-    if user_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this email already exists, please use a different email")
+    if db.query(models.User).filter(models.User.username == user.username).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="User with this username already exists, please use a different username")
 
-    user_exists = db.query(models.User).filter(models.User.username == user.username).first()
-    if user_exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User with this username already exists, please use a different username")
+    chosen_role = user.role or models.UserRole.COMMUNITY_MEMBER
+    verification_status = (
+        models.VerificationStatus.PENDING
+        if chosen_role == models.UserRole.RESEARCHER
+        else models.VerificationStatus.NONE
+    )
 
-    user.password = utils.hash_password(user.password)
-    # Explicitly set role here rather than leaning on the DB's server_default -
-    # avoids SQLAlchemy's post-insert "eager default fetch" round-trip for this column entirely.
-    db_user = models.User(**user.dict(), role=models.UserRole.COMMUNITY_MEMBER)
+    user_dict = user.dict()
+    user_dict["password"] = utils.hash_password(user.password)
+    user_dict["role"] = chosen_role
+    user_dict["verification_status"] = verification_status
+
+    db_user = models.User(**user_dict)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -33,37 +55,187 @@ async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session 
     user = db.query(models.User).filter(models.User.username == credentials.username).first()
     if not user or not utils.verify_password(credentials.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role.value})
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/me", response_model=schemas.UserOut)
+# ── Own profile endpoints ──────────────────────────────────────────────────────
+
+@router.get("/me", response_model=schemas.PrivateProfileOut)
 async def get_current_user_info(current_user: models.User = Depends(oauth2.get_current_user)):
+    """Return the authenticated user's full private profile."""
     return current_user
 
 
-@router.get("/{user_id}", status_code = status.HTTP_200_OK, response_model=schemas.UserOut)##go to go
-async def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return user
+@router.patch("/me/profile", status_code=status.HTTP_200_OK, response_model=schemas.PrivateProfileOut)
+async def update_profile(
+    payload: schemas.ProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Update the authenticated user's display name, bio, and contact details."""
+    update_data = payload.model_dump(exclude_none=True)
+    for field, value in update_data.items():
+        setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
-@router.get("/accounts/all", status_code = status.HTTP_200_OK, response_model=list[schemas.UserOut])##go to go
-async def get_all_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+
+@router.post("/me/avatar", status_code=status.HTTP_200_OK, response_model=schemas.PrivateProfileOut)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Upload or replace the authenticated user's profile picture.
+    Accepts JPEG, PNG, or WebP images up to 2 MB.
+    The avatar is publicly accessible at the returned avatar_url.
+    """
+    if file.content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unsupported file type '{file.content_type}'. Please upload a JPEG, PNG, or WebP image.",
+        )
+
+    # Read and size-check the upload
+    contents = await file.read()
+    if len(contents) > MAX_AVATAR_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Image must be 2 MB or smaller.",
+        )
+
+    # Derive a stable filename from the user id so re-uploading replaces the old file
+    ext = file.content_type.split("/")[-1]   # jpeg | png | webp
+    if ext == "jpeg":
+        ext = "jpg"
+    filename = f"{current_user.id}.{ext}"
+    dest = AVATAR_DIR / filename
+
+    # Remove any previous avatar files for this user (different extension)
+    for old in AVATAR_DIR.glob(f"{current_user.id}.*"):
+        old.unlink(missing_ok=True)
+
+    with open(dest, "wb") as f:
+        f.write(contents)
+
+    # Store a relative URL that maps to the FastAPI /uploads static mount
+    current_user.avatar_url = f"/uploads/avatars/{filename}"
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+# ── Admin / management endpoints ───────────────────────────────────────────────
+# NOTE: these fixed-path routes MUST be registered before /{user_id} so FastAPI
+# does not accidentally try to parse "admin" or "accounts" as an integer user_id.
+
+@router.get("/admin/stats", status_code=status.HTTP_200_OK, response_model=schemas.AdminStatsOut)
+async def get_admin_stats(
+    db: Session = Depends(get_db),
+    _admin: models.User = Depends(oauth2.require_admin),
+):
+    """Admin views platform summary statistics."""
+    total_users = db.query(models.User).count()
+    researchers = db.query(models.User).filter(models.User.role == models.UserRole.RESEARCHER).count()
+    admins = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).count()
+    community_members = db.query(models.User).filter(models.User.role == models.UserRole.COMMUNITY_MEMBER).count()
+    flagged_listings = db.query(models.Report).count()
+    total_services = db.query(models.Service).count()
+    total_studies = db.query(models.StudyListing).count()
+    total_workshops = db.query(models.Workshop).count()
+    total_workshop_registrations = db.query(models.WorkshopRegistration).count()
+
+    return schemas.AdminStatsOut(
+        total_users=total_users,
+        researchers=researchers,
+        admins=admins,
+        community_members=community_members,
+        flagged_listings=flagged_listings,
+        total_services=total_services,
+        total_studies=total_studies,
+        total_workshops=total_workshops,
+        total_workshop_registrations=total_workshop_registrations,
+    )
+
+
+@router.get("/accounts/all", status_code=status.HTTP_200_OK, response_model=list[schemas.UserOut])
+async def get_all_users(
+    skip: int = 0,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    _admin: models.User = Depends(oauth2.require_admin),
+):
+    """Admin views all accounts (Req 13.1, 13.4)."""
     users = db.query(models.User).order_by(models.User.id).offset(skip).limit(limit).all()
     return users
+
+
+@router.get("/admin/researchers/pending", status_code=status.HTTP_200_OK, response_model=list[schemas.UserOut])
+async def list_pending_researchers(
+    db: Session = Depends(get_db),
+    _admin: models.User = Depends(oauth2.require_admin),
+):
+    """Admin views list of pending researcher accounts (Req 12.3)."""
+    return (
+        db.query(models.User)
+        .filter(
+            models.User.role == models.UserRole.RESEARCHER,
+            models.User.verification_status == models.VerificationStatus.PENDING,
+        )
+        .order_by(models.User.time.desc())
+        .all()
+    )
+
+
+@router.patch("/admin/researchers/{user_id}/approve", status_code=status.HTTP_200_OK, response_model=schemas.UserOut)
+async def approve_researcher(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _admin: models.User = Depends(oauth2.require_admin),
+):
+    """Admin approves a pending researcher account (Req 12.1)."""
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if db_user.role != models.UserRole.RESEARCHER:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is not a researcher")
+    
+    db_user.verification_status = models.VerificationStatus.VERIFIED
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+@router.patch("/admin/researchers/{user_id}/reject", status_code=status.HTTP_200_OK, response_model=schemas.UserOut)
+async def reject_researcher(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _admin: models.User = Depends(oauth2.require_admin),
+):
+    """Admin rejects a pending researcher account (Req 12.2)."""
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not db_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if db_user.role != models.UserRole.RESEARCHER:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is not a researcher")
+    
+    db_user.verification_status = models.VerificationStatus.REJECTED
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 
 
 def _require_admin(current_user: models.User = Depends(oauth2.get_current_user), db: Session = Depends(get_db)) -> models.User:
     if current_user.role == models.UserRole.ADMIN:
         return current_user
-    # Bootstrap: a brand-new database has zero admins, so nobody could ever call this
-    # endpoint otherwise. Until the first admin exists, any logged-in user may promote
-    # (including themselves) - close this off in production once you have a real admin.
+    # Bootstrap: allow any logged-in user to promote until the first admin exists
     admin_exists = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).first()
     if admin_exists is None:
         return current_user
@@ -77,8 +249,7 @@ async def update_user_role(
     db: Session = Depends(get_db),
     _admin: models.User = Depends(_require_admin),
 ):
-    """Admin promotes/demotes a user's role. Everyone signs up as community_member;
-    this is the only way researcher/admin accounts get created."""
+    """Admin promotes/demotes a user's role."""
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -87,24 +258,57 @@ async def update_user_role(
     db.refresh(db_user)
     return db_user
 
-@router.put("/account/update",  status_code = status.HTTP_200_OK)#go to go
-async def update_user(user: schemas.UserBase, user_id: int, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    db_user.email = user.email
-    db_user.password = user.password
-    db.commit()
-    db.refresh(db_user)
-    return db_user
 
-@router.delete("/account/delete", status_code = status.HTTP_200_OK)## go to go
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
+@router.put("/account/update", status_code=status.HTTP_200_OK, response_model=schemas.PrivateProfileOut)
+async def update_account_credentials(
+    user: schemas.UserBase,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),  # auth guard added
+):
+    """Update the authenticated user's login email and password."""
+    current_user.email = user.email
+    current_user.password = utils.hash_password(user.password)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+# ── Public profile (other users) ───────────────────────────────────────────────
+
+@router.get("/{user_id}", status_code=status.HTTP_200_OK, response_model=schemas.PublicProfileOut)
+async def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Return the public profile of any user (display name, bio, avatar only).
+    Requires authentication so anonymous visitors cannot enumerate profiles.
+    """
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
+
+@router.delete("/{user_id}", status_code=status.HTTP_200_OK)
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Admin or the user themselves can delete an account."""
+    if current_user.id != user_id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this user")
+
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Clean up avatar file if present
+    if db_user.avatar_url:
+        avatar_path = Path(db_user.avatar_url.lstrip("/"))
+        avatar_path.unlink(missing_ok=True)
+
     db.delete(db_user)
     db.commit()
     return {"message": "User deleted successfully"}
-
-    

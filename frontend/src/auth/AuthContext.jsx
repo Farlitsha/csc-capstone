@@ -21,10 +21,15 @@ export function AuthProvider({ children }) {
       const me = await api.me();
       setUser(me);
     } catch {
-      // Token invalid/expired - fall back to the JWT payload if we can, else log out.
+      // Token invalid/expired — fall back to the JWT payload if we can, else log out.
       const claims = decodeJwt(currentToken);
       if (claims?.user_id) {
-        setUser({ id: claims.user_id, role: claims.role });
+        setUser({
+          id: claims.user_id,
+          role: claims.role,
+          display_name: null,
+          avatar_url: null,
+        });
       } else {
         localStorage.removeItem(TOKEN_KEY);
         setToken(null);

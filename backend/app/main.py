@@ -1,17 +1,26 @@
 from typing import List
+from pathlib import Path
 from fastapi import FastAPI, Depends, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from app import models, schemas
 from app.database import get_db, Base, engine
 from app.config import settings
 from app.limesurvey import LimeSurveyClient, LimeSurveyError, build_participation_url
 from app.oauth2 import get_current_user
-from .routers import user, services
+from .routers import user, services, announcements, workshops
 
 app = FastAPI()
 
+# Ensure the avatar upload directory exists
+UPLOADS_DIR = Path("uploads/avatars")
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
 Base.metadata.create_all(bind=engine)
+
+# Serve uploaded files (e.g. avatars) at /uploads/...
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +34,9 @@ app.add_middleware(
 
 app.include_router(user.router)
 app.include_router(services.router)
+app.include_router(announcements.router)
+app.include_router(workshops.router)
+
 
 @app.get("/")
 async def check():
@@ -48,11 +60,17 @@ async def create_study(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """A researcher posts a new study/survey listing. no draft flow yet"""
-    if current_user.role != models.UserRole.RESEARCHER:
+    """A researcher posts a new study/survey listing."""
+    if current_user.role != models.UserRole.RESEARCHER and current_user.role != models.UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only accounts with the researcher role can post study listings"
+            detail="Only accounts with the researcher role can post study listings",
+        )
+
+    if current_user.role == models.UserRole.RESEARCHER and current_user.verification_status != models.VerificationStatus.VERIFIED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Researcher account is pending admin verification",
         )
 
     db_study = models.StudyListing(**study.dict(), researcher_id=current_user.id, state=models.StudyState.LIVE)
@@ -65,15 +83,40 @@ async def create_study(
 @app.get("/studies/", response_model=List[schemas.StudyListingOut])
 async def list_studies(db: Session = Depends(get_db)):
     """Browse all currently open (live) studies."""
-    return db.query(models.StudyListing).filter(models.StudyListing.state == models.StudyState.LIVE).all()
+    rows = (
+        db.query(models.StudyListing, models.User.username, models.User.display_name, models.User.avatar_url)
+        .join(models.User, models.StudyListing.researcher_id == models.User.id)
+        .filter(models.StudyListing.state == models.StudyState.LIVE)
+        .all()
+    )
+    return [
+        schemas.StudyListingOut(
+            **{c.key: getattr(study, c.key) for c in models.StudyListing.__table__.columns},
+            researcher_username=username,
+            researcher_display_name=display_name,
+            researcher_avatar_url=avatar_url,
+        )
+        for study, username, display_name, avatar_url in rows
+    ]
 
 
 @app.get("/studies/{study_id}", response_model=schemas.StudyListingOut)
 async def get_study(study_id: int, db: Session = Depends(get_db)):
-    study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
-    if not study:
+    row = (
+        db.query(models.StudyListing, models.User.username, models.User.display_name, models.User.avatar_url)
+        .join(models.User, models.StudyListing.researcher_id == models.User.id)
+        .filter(models.StudyListing.id == study_id)
+        .first()
+    )
+    if not row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
-    return study
+    study, username, display_name, avatar_url = row
+    return schemas.StudyListingOut(
+        **{c.key: getattr(study, c.key) for c in models.StudyListing.__table__.columns},
+        researcher_username=username,
+        researcher_display_name=display_name,
+        researcher_avatar_url=avatar_url,
+    )
 
 
 @app.patch("/studies/{study_id}/close", response_model=schemas.StudyListingOut)
@@ -82,7 +125,7 @@ async def close_study(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Researcher takes down a study once they have enough responses (backlog item 15: survey teardown)."""
+    """Researcher or Admin closes a study listing."""
     study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
     if not study:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
@@ -281,7 +324,7 @@ async def update_application_status(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Researcher accepts or declines an applicant (backlog item: applicant view / opt-in)."""
+    """Researcher or Admin updates the status of an applicant."""
     application = db.query(models.Application).filter(models.Application.id == application_id).first()
     if not application:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Application {application_id} not found")

@@ -6,7 +6,7 @@ export const LANGUAGES = ["en", "af", "xh", "zu"];
 export const translations = {
   en: {
     language: { label: "Language", english: "English", afrikaans: "Afrikaans", xhosa: "Xhosa", zulu: "Zulu" },
-    nav: { home: "Home", services: "Services", studies: "Studies", messages: "Messages", profile: "Profile" },
+    nav: { home: "Home", services: "Services", studies: "Studies", workshops: "Workshops", profile: "Profile" },
     common: { logout: "Log out", loading: "Loading…", cancel: "Cancel", back: "Back", myProfile: "My profile" },
     login: {
       heading: "Welcome to CommHub",
@@ -45,7 +45,7 @@ export const translations = {
       offered: "Offered",
       requested: "Requested",
       apply: "Apply",
-      applied: "Applied ✓",
+      applied: "Applied",
       applying: "Applying…",
       noResults: "No services found.",
       priceOnRequest: "Price on request",
@@ -69,7 +69,7 @@ export const translations = {
       myAppsTab: "My applications",
       noOpen: "No studies are open right now — check back soon.",
       applyButton: "Apply to participate",
-      applied: "Applied ✓",
+      applied: "Applied",
       applying: "Applying…",
       closes: "Closes",
       limit: "Limit",
@@ -98,7 +98,7 @@ export const translations = {
 
   af: {
     language: { label: "Taal", english: "Engels", afrikaans: "Afrikaans", xhosa: "Xhosa", zulu: "Zoeloe" },
-    nav: { home: "Tuis", services: "Dienste", studies: "Studies", messages: "Boodskappe", profile: "Profiel" },
+    nav: { home: "Tuis", services: "Dienste", studies: "Studies", workshops: "Werkswinkels", profile: "Profiel" },
     common: { logout: "Teken uit", loading: "Laai tans…", cancel: "Kanselleer", back: "Terug", myProfile: "My profiel" },
     login: {
       heading: "Welkom by CommHub",
@@ -137,7 +137,7 @@ export const translations = {
       offered: "Aangebied",
       requested: "Versoek",
       apply: "Doen aansoek",
-      applied: "Aansoek gedoen ✓",
+      applied: "Aansoek gedoen",
       applying: "Doen tans aansoek…",
       noResults: "Geen dienste gevind nie.",
       priceOnRequest: "Prys op aanvraag",
@@ -161,7 +161,7 @@ export const translations = {
       myAppsTab: "My aansoeke",
       noOpen: "Geen studies is tans oop nie — kom kyk gou weer.",
       applyButton: "Doen aansoek om deel te neem",
-      applied: "Aansoek gedoen ✓",
+      applied: "Aansoek gedoen",
       applying: "Doen tans aansoek…",
       closes: "Sluit",
       limit: "Limiet",
@@ -190,7 +190,7 @@ export const translations = {
 
   xh: {
     language: { label: "Ulwimi", english: "IsiNgesi", afrikaans: "IsiBhulu", xhosa: "IsiXhosa", zulu: "IsiZulu" },
-    nav: { home: "Ikhaya", services: "Iinkonzo", studies: "Uphando", messages: "Imiyalezo", profile: "Iprofayile" },
+    nav: { home: "Ikhaya", services: "Iinkonzo", studies: "Uphando", workshops: "Iindibano zocweyo", profile: "Iprofayile" },
     common: { logout: "Phuma", loading: "Iyalayisha…", cancel: "Rhoxisa", back: "Buyela", myProfile: "Iprofayile yam" },
     login: {
       heading: "Wamkelekile kwiCommHub",
@@ -229,7 +229,7 @@ export const translations = {
       offered: "Iyanikelwa",
       requested: "Iyaceliwa",
       apply: "Faka isicelo",
-      applied: "Isicelo sifakiwe ✓",
+      applied: "Isicelo sifakiwe",
       applying: "Iyafakwa…",
       noResults: "Akukho nkonzo ifunyenweyo.",
       priceOnRequest: "Ixabiso liyacelwa",
@@ -253,7 +253,7 @@ export const translations = {
       myAppsTab: "Izicelo zam",
       noOpen: "Akukho phando luvulekileyo ngoku - phinda ujonge kamva.",
       applyButton: "Faka isicelo sokubamba iqhaza",
-      applied: "Isicelo sifakiwe ✓",
+      applied: "Isicelo sifakiwe",
       applying: "Iyafakwa…",
       closes: "Iyavalwa",
       limit: "Umda",
@@ -282,7 +282,7 @@ export const translations = {
 
   zu: {
     language: { label: "Ulimi", english: "IsiNgisi", afrikaans: "IsiBhunu", xhosa: "IsiXhosa", zulu: "IsiZulu" },
-    nav: { home: "Ikhaya", services: "Izinsizakalo", studies: "Ucwaningo", messages: "Imilayezo", profile: "Iphrofayela" },
+    nav: { home: "Ikhaya", services: "Izinsizakalo", studies: "Ucwaningo", workshops: "Ama-workshop", profile: "Iphrofayela" },
     common: { logout: "Phuma", loading: "Iyalayisha…", cancel: "Khansela", back: "Buyela", myProfile: "Iphrofayela yami" },
     login: {
       heading: "Siyakwamukela ku-CommHub",
@@ -307,8 +307,8 @@ export const translations = {
       greeting: "Sawubona",
       subtitle: "Isikhungo Somphakathi sase-Ocean View",
       openServices: "IZINSIZAKALO EZIVULEKILE",
-      activeStudies: "UCWANINGO OLUSEBENZAYO",
-      servicesNearYou: "Izinsizakalo eziseduze",
+      activeStudies: "UCWANINGO OLUQHUBEKAYO",
+      servicesNearYou: "Izinsizakalo eziseduze nawe",
       seeAll: "Buka konke",
       noServices: "Azikho izinsizakalo ezithunyelwe okwamanje.",
       postFirst: "Thumela eyokuqala",
@@ -321,7 +321,7 @@ export const translations = {
       offered: "Iyanikezwa",
       requested: "Iyaceliwe",
       apply: "Faka isicelo",
-      applied: "Isicelo sifakiwe ✓",
+      applied: "Isicelo sifakiwe",
       applying: "Iyafakwa…",
       noResults: "Ayikho insizakalo etholakele.",
       priceOnRequest: "Intengo iyacelwa",
@@ -345,7 +345,7 @@ export const translations = {
       myAppsTab: "Izicelo zami",
       noOpen: "Alukho ucwaningo oluvulekile njengamanje - hlola futhi maduze.",
       applyButton: "Faka isicelo sokubamba iqhaza",
-      applied: "Isicelo sifakiwe ✓",
+      applied: "Isicelo sifakiwe",
       applying: "Iyafakwa…",
       closes: "Iyavalwa",
       limit: "Umkhawulo",

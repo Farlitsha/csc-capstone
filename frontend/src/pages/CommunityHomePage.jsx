@@ -6,15 +6,9 @@ import MobileLayout from "../layouts/MobileLayout";
 import StatCard from "../components/StatCard";
 import StatusChip from "../components/StatusChip";
 import Button from "../components/Button";
+import Icon from "../components/Icon";
 import { api } from "../lib/api";
 import "./CommunityHomePage.css";
-
-// Booked/upcoming events aren't backed by an endpoint yet - illustrative content
-// matching the Figma sample data. Services below ARE real (see backend/app/routers/services.py).
-const UPCOMING = [
-  { id: 1, day: "05", month: "AUG", title: "Research interview", meta: "2:00pm · iNethi Research Team" },
-  { id: 2, day: "09", month: "AUG", title: "Feedback workshop", meta: "10:00am · Community Hall" },
-];
 
 export default function CommunityHomePage() {
   const { user } = useAuth();
@@ -22,14 +16,23 @@ export default function CommunityHomePage() {
   const [services, setServices] = useState([]);
   const [servicesCount, setServicesCount] = useState(0);
   const [studiesCount, setStudiesCount] = useState(null);
+  const [workshops, setWorkshops] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.listServices(), api.listStudies().catch(() => [])])
-      .then(([svc, studies]) => {
+    Promise.all([
+      api.listServices().catch(() => []),
+      api.listStudies().catch(() => []),
+      api.listWorkshops().catch(() => []),
+      api.listAnnouncements().catch(() => []),
+    ])
+      .then(([svc, studies, wList, ann]) => {
         setServices(svc.slice(0, 2));
         setServicesCount(svc.length);
         setStudiesCount(studies.length);
+        setWorkshops(wList.slice(0, 3));
+        setAnnouncements(ann);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -40,6 +43,28 @@ export default function CommunityHomePage() {
         <h1>{t("home.greeting")}, {user?.username || "there"}</h1>
         <p>{t("home.subtitle")}</p>
       </section>
+
+      {announcements.length > 0 && (
+        <section className="ch-announcement-section">
+          <div className="ch-announcement-banner">
+            <div className="ch-announcement-banner__head">
+              <span className="ch-announcement-badge">
+                <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
+                Announcement
+              </span>
+              <Link to="/messages" className="ch-announcement-banner__link">
+                View all
+              </Link>
+            </div>
+            <p>{announcements[0].content}</p>
+            <span className="ch-announcement-banner__meta">
+              Posted by @{announcements[0].author_username} • {new Date(announcements[0].created_at).toLocaleDateString()}
+            </span>
+          </div>
+        </section>
+      )}
+
+
 
       <section className="ch-stats-row-mobile">
         <StatCard label={t("home.openServices")} value={loading ? "…" : String(servicesCount)} />
@@ -79,20 +104,33 @@ export default function CommunityHomePage() {
       </section>
 
       <section className="ch-section">
-        <h2>{t("home.upcoming")}</h2>
+        <div className="ch-section__head">
+          <h2>{t("home.upcoming") || "Upcoming workshops & events"}</h2>
+          <Link to="/workshops">{t("home.seeAll") || "See all"}</Link>
+        </div>
         <div className="ch-event-list">
-          {UPCOMING.map((e) => (
-            <div className="ch-event-row" key={e.id}>
-              <div className="ch-event-date">
-                <span>{e.day}</span>
-                <small>{e.month}</small>
-              </div>
-              <div>
-                <p className="ch-event-title">{e.title}</p>
-                <p className="ch-event-meta">{e.meta}</p>
-              </div>
-            </div>
-          ))}
+          {workshops.length === 0 && !loading && (
+            <p style={{ color: "#6b7280", fontSize: "14px", padding: "8px 0" }}>No upcoming workshops scheduled at the moment.</p>
+          )}
+          {workshops.map((w) => {
+            const wDate = new Date(w.date_time);
+            const day = wDate.getDate().toString().padStart(2, "0");
+            const month = wDate.toLocaleString("default", { month: "short" }).toUpperCase();
+            return (
+              <Link to="/workshops" key={w.id} style={{ textDecoration: "none", color: "inherit" }}>
+                <div className="ch-event-row">
+                  <div className="ch-event-date">
+                    <span>{day}</span>
+                    <small>{month}</small>
+                  </div>
+                  <div>
+                    <p className="ch-event-title">{w.title}</p>
+                    <p className="ch-event-meta">{wDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {w.location}</p>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
     </MobileLayout>

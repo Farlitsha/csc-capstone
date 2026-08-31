@@ -10,7 +10,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
     { to: "/", label: t("nav.home") },
     { to: "/services", label: t("nav.services") },
     { to: "/studies", label: t("nav.studies") },
-    { to: "/messages", label: t("nav.messages") },
+    { to: "/workshops", label: t("nav.workshops") || "Workshops" },
     { to: "/profile", label: t("nav.profile") },
   ];
 

@@ -33,3 +33,29 @@
   background: var(--color-white);
   color: var(--color-ink);
 }
+
+.ch-mod-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ch-btn-danger {
+  background: #fde8e8 !important;
+  color: #c53030 !important;
+  border: 1px solid #feb2b2 !important;
+}
+
+.ch-btn-danger:hover {
+  background: #fed7d7 !important;
+}
+
+.ch-announce-success {
+  color: #276749;
+  background: #c6f6d5;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-top: 6px;
+}
+

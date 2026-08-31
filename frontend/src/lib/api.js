@@ -71,7 +71,54 @@ export const api = {
   createService: (payload) => request("/services/", { method: "POST", body: payload }),
   applyToService: (id, message) => request(`/services/${id}/apply`, { method: "POST", body: { message } }),
   closeService: (id) => request(`/services/${id}/close`, { method: "PATCH" }),
+  deleteService: (id) => request(`/services/${id}`, { method: "DELETE" }),
+  reportService: (serviceId, reason) => request(`/services/${serviceId}/report`, { method: "POST", body: { reason } }),
+  listReports: () => request("/services/admin/reports"),
+  dismissReport: (reportId) => request(`/services/admin/reports/${reportId}`, { method: "DELETE" }),
+
   updateUserRole: (id, role) => request(`/users/${id}/role`, { method: "PATCH", body: { role } }),
+  deleteUser: (id) => request(`/users/${id}`, { method: "DELETE" }),
+  getAdminStats: () => request("/users/admin/stats"),
+  listPendingResearchers: () => request("/users/admin/researchers/pending"),
+  approveResearcher: (id) => request(`/users/admin/researchers/${id}/approve`, { method: "PATCH" }),
+  rejectResearcher: (id) => request(`/users/admin/researchers/${id}/reject`, { method: "PATCH" }),
+
+  // ── Profile management ──────────────────────────────────────────────────────
+  getProfile: (userId) => request(`/users/${userId}`),
+  updateProfile: (payload) => request("/users/me/profile", { method: "PATCH", body: payload }),
+  uploadAvatar: async (file) => {
+    const token = localStorage.getItem("commhub_token");
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE_URL}/users/me/avatar`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    const isJson = res.headers.get("content-type")?.includes("application/json");
+    const data = isJson ? await res.json().catch(() => null) : null;
+    if (!res.ok) {
+      const detail = data?.detail || res.statusText;
+      throw new ApiError(typeof detail === "string" ? detail : "Upload failed", res.status, detail);
+    }
+    return data;
+  },
+
+  createAnnouncement: (payload) => request("/announcements/", { method: "POST", body: payload }),
+  listAnnouncements: () => request("/announcements/", { auth: false }),
+
+  // ── Workshops ─────────────────────────────────────────────────────────────
+  listWorkshops: (includeCancelled = false) =>
+    request(`/workshops/${includeCancelled ? "?include_cancelled=true" : ""}`, { auth: false }),
+  getWorkshop: (id) => request(`/workshops/${id}`, { auth: false }),
+  createWorkshop: (payload) => request("/workshops/", { method: "POST", body: payload }),
+  updateWorkshop: (id, payload) => request(`/workshops/${id}`, { method: "PATCH", body: payload }),
+  cancelWorkshop: (id) => request(`/workshops/${id}/cancel`, { method: "PATCH" }),
+  registerForWorkshop: (id) => request(`/workshops/${id}/register`, { method: "POST" }),
+  cancelWorkshopRegistration: (id) => request(`/workshops/${id}/register`, { method: "DELETE" }),
+  getWorkshopRegistrations: (id) => request(`/workshops/${id}/registrations`),
+  getMyWorkshopRegistrations: () => request("/workshops/me/registrations"),
 };
+
 
 export { ApiError, API_BASE_URL };

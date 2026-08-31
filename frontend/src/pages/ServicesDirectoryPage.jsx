@@ -4,14 +4,29 @@ import MobileLayout from "../layouts/MobileLayout";
 import StatusChip from "../components/StatusChip";
 import Chip from "../components/Chip";
 import Button from "../components/Button";
-import { api, ApiError } from "../lib/api";
+import Icon from "../components/Icon";
+import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./ServicesDirectoryPage.css";
 
-// Category values are stored as-is in the database (see PostServicePage) and used
-// as filter query params, so they stay in English as a stable taxonomy rather than
-// being translated - only the surrounding UI copy is localized.
 const CATEGORIES = ["All", "Home repair", "Tutoring", "Food", "Other"];
+
+function avatarSrc(url) {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  return `${API_BASE_URL}${url}`;
+}
+
+function getInitials(displayName, username) {
+  const name = displayName || username || "";
+  return (
+    name
+      .split(" ")
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? "")
+      .join("") || "?"
+  );
+}
 
 export default function ServicesDirectoryPage() {
   const navigate = useNavigate();
@@ -42,6 +57,17 @@ export default function ServicesDirectoryPage() {
       alert(err instanceof ApiError ? err.detail : "Could not apply to this listing.");
     } finally {
       setApplyingId(null);
+    }
+  }
+
+  async function handleReport(serviceId) {
+    const reason = window.prompt("Why are you reporting this listing? (e.g. scam, offensive, inaccurate info):");
+    if (!reason || !reason.trim()) return;
+    try {
+      await api.reportService(serviceId, reason.trim());
+      alert("Thank you. This listing has been flagged for admin review.");
+    } catch (err) {
+      alert(err instanceof ApiError ? err.detail : "Could not submit report.");
     }
   }
 
@@ -76,11 +102,38 @@ export default function ServicesDirectoryPage() {
         {services.map((s) => (
           <div className="ch-service-full-card" key={s.id}>
             <div className="ch-service-full-card__media">Photo</div>
-            <StatusChip
-              label={s.type === "request" ? t("services.requested") : t("services.offered")}
-              tone={s.type === "request" ? "warning" : "positive"}
-            />
+            <div className="ch-service-card-top">
+              <StatusChip
+                label={s.type === "request" ? t("services.requested") : t("services.offered")}
+                tone={s.type === "request" ? "warning" : "positive"}
+              />
+              <button
+                type="button"
+                className="ch-service-report-btn"
+                title="Report listing"
+                onClick={() => handleReport(s.id)}
+              >
+                <Icon name="flag" size={12} style={{ marginRight: 4 }} />
+                Report
+              </button>
+            </div>
             <h3>{s.title}</h3>
+            <div className="ch-poster-row">
+              {avatarSrc(s.poster_avatar_url) ? (
+                <img
+                  className="ch-poster-avatar"
+                  src={avatarSrc(s.poster_avatar_url)}
+                  alt={s.poster_display_name || s.poster_username}
+                />
+              ) : (
+                <span className="ch-poster-avatar ch-poster-avatar--initials">
+                  {getInitials(s.poster_display_name, s.poster_username)}
+                </span>
+              )}
+              <span className="ch-poster-name">
+                {s.poster_display_name || s.poster_username}
+              </span>
+            </div>
             <p>{s.description}</p>
             <div className="ch-service-full-card__foot">
               <span>{s.price || t("services.priceOnRequest")}</span>
@@ -97,4 +150,5 @@ export default function ServicesDirectoryPage() {
       </div>
     </MobileLayout>
   );
+
 }

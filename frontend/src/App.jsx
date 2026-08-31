@@ -8,6 +8,7 @@ import SignupPage from "./pages/SignupPage";
 import HomeRouter from "./pages/HomeRouter";
 import ServicesDirectoryPage from "./pages/ServicesDirectoryPage";
 import StudiesDirectoryPage from "./pages/StudiesDirectoryPage";
+import WorkshopsDirectoryPage from "./pages/WorkshopsDirectoryPage";
 import PostServicePage from "./pages/PostServicePage";
 import MessagesPage from "./pages/MessagesPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/services" element={<ProtectedRoute><ServicesDirectoryPage /></ProtectedRoute>} />
           <Route path="/services/new" element={<ProtectedRoute><PostServicePage /></ProtectedRoute>} />
           <Route path="/studies" element={<ProtectedRoute><StudiesDirectoryPage /></ProtectedRoute>} />
+          <Route path="/workshops" element={<ProtectedRoute><WorkshopsDirectoryPage /></ProtectedRoute>} />
           <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 

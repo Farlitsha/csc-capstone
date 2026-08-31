@@ -5,59 +5,224 @@ import StatCard from "../components/StatCard";
 import StatusChip from "../components/StatusChip";
 import Button from "../components/Button";
 import Card from "../components/Card";
-import { api } from "../lib/api";
+import Field from "../components/Field";
+import Icon from "../components/Icon";
+import { api, ApiError } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 import "./ResearcherDashboardPage.css";
 
-const STATE_TONE = { live: "positive", draft: "neutral", closed: "warning" };
-
-// Booked sessions and honorarium payouts aren't backed by an endpoint yet -
-// kept as illustrative content matching the Figma sample data.
-const SESSIONS = [
-  { id: 1, day: "05", month: "AUG", title: "Interview — N. Mahlangu", meta: "2:00pm · Consent confirmed" },
-  { id: 2, day: "09", month: "AUG", title: "Feedback workshop", meta: "10:00am · 8 participants booked" },
-];
-const HONORARIA = [
-  { id: 1, name: "N. Mahlangu", status: "Paid", tone: "positive" },
-  { id: 2, name: "T. Booysen", status: "Pending", tone: "warning" },
-  { id: 3, name: "F. Adams", status: "Paid", tone: "positive" },
-];
+const STATE_TONE = { live: "positive", draft: "neutral", closed: "warning", scheduled: "positive", cancelled: "warning", completed: "neutral" };
 
 export default function ResearcherDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
   const [studies, setStudies] = useState([]);
+  const [workshops, setWorkshops] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api
-      .listStudies()
-      .then(setStudies)
-      .catch(() => setError("Could not load studies from the server."))
+  // Workshop Scheduling Modal
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [workshopForm, setWorkshopForm] = useState({
+    title: "",
+    description: "",
+    location: "",
+    date_time: "",
+    max_participants: 15,
+  });
+  const [workshopSubmitting, setWorkshopSubmitting] = useState(false);
+  const [workshopError, setWorkshopError] = useState("");
+
+  // Attendees Modal
+  const [selectedWorkshop, setSelectedWorkshop] = useState(null);
+  const [attendees, setAttendees] = useState([]);
+  const [attendeesLoading, setAttendeesLoading] = useState(false);
+
+  function loadData() {
+    setLoading(true);
+    Promise.all([
+      api.me().catch(() => null),
+      api.listStudies().catch(() => []),
+      api.listWorkshops(true).catch(() => []),
+    ])
+      .then(([meData, studiesData, workshopsData]) => {
+        if (meData) setProfile(meData);
+        setStudies(studiesData);
+        setWorkshops(workshopsData);
+      })
+      .catch(() => setError("Could not load dashboard data from the server."))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  useEffect(loadData, []);
+
+  const isPendingVerification = profile?.verification_status === "pending";
+  const isRejected = profile?.verification_status === "rejected";
+  const isVerified = profile?.verification_status === "verified" || profile?.role === "admin";
 
   const liveCount = studies.filter((s) => s.state === "live").length;
-  const totalResponsesLabel = studies.length ? String(studies.length) : "0";
+  const activeWorkshops = workshops.filter((w) => w.status === "scheduled");
+
+  async function handleCreateWorkshop(e) {
+    e.preventDefault();
+    setWorkshopError("");
+    if (!workshopForm.date_time) {
+      setWorkshopError("Please select a date and time.");
+      return;
+    }
+    const chosenDate = new Date(workshopForm.date_time);
+    if (chosenDate <= new Date()) {
+      setWorkshopError("Workshop date and time must be in the future.");
+      return;
+    }
+    setWorkshopSubmitting(true);
+    try {
+      await api.createWorkshop({
+        ...workshopForm,
+        date_time: chosenDate.toISOString(),
+        max_participants: parseInt(workshopForm.max_participants, 10),
+      });
+      setShowScheduleModal(false);
+      setWorkshopForm({ title: "", description: "", location: "", date_time: "", max_participants: 15 });
+      loadData();
+    } catch (err) {
+      setWorkshopError(err instanceof ApiError ? err.detail : "Could not create workshop.");
+    } finally {
+      setWorkshopSubmitting(false);
+    }
+  }
+
+  async function handleViewAttendees(workshop) {
+    setSelectedWorkshop(workshop);
+    setAttendeesLoading(true);
+    try {
+      const data = await api.getWorkshopRegistrations(workshop.id);
+      setAttendees(data);
+    } catch (err) {
+      alert("Could not load attendee list.");
+    } finally {
+      setAttendeesLoading(false);
+    }
+  }
+
+  async function handleCancelWorkshop(workshopId) {
+    if (!window.confirm("Are you sure you want to cancel this workshop? Registered members will be notified.")) return;
+    try {
+      await api.cancelWorkshop(workshopId);
+      loadData();
+    } catch (err) {
+      alert(err instanceof ApiError ? err.detail : "Could not cancel workshop.");
+    }
+  }
 
   return (
     <DesktopLayout
       eyebrow="RESEARCHER WORKSPACE"
-      rightSlot={<Button variant="accent" onClick={() => navigate("/researcher/studies/new")}>New study</Button>}
+      rightSlot={
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Button
+            variant="accent"
+            disabled={!isVerified}
+            onClick={() => setShowScheduleModal(true)}
+          >
+            + Schedule workshop
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={!isVerified}
+            onClick={() => navigate("/researcher/studies/new")}
+          >
+            + New study
+          </Button>
+        </div>
+      }
     >
       <div className="ch-desktop__heading">
-        <h1>Good afternoon, {user?.username || "Researcher"}</h1>
+        <h1>Good afternoon, {profile?.display_name || user?.username || "Researcher"}</h1>
       </div>
+
+      {isPendingVerification && (
+        <div style={{
+          background: "#fef3c7",
+          border: "1px solid #f59e0b",
+          color: "#92400e",
+          padding: "16px 20px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+        }}>
+          <Icon name="hourglass" size={24} />
+          <div>
+            <strong>Account Pending Verification</strong>
+            <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
+              Your researcher account is currently awaiting review by a platform administrator. Study creation and workshop scheduling will unlock once your account is verified.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isRejected && (
+        <div style={{
+          background: "#fee2e2",
+          border: "1px solid #ef4444",
+          color: "#991b1b",
+          padding: "16px 20px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+        }}>
+          <strong>Account Verification Rejected</strong>
+          <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
+            Your researcher registration was not approved. Please contact an administrator if you believe this is an error.
+          </p>
+        </div>
+      )}
 
       <div className="ch-stats-row">
         <StatCard label="LIVE STUDIES" value={String(liveCount)} />
-        <StatCard label="TOTAL STUDIES" value={totalResponsesLabel} />
-        <StatCard label="UPCOMING SESSIONS" value={String(SESSIONS.length)} />
-        <StatCard label="HONORARIA PENDING" value={String(HONORARIA.filter((h) => h.status === "Pending").length)} />
+        <StatCard label="SCHEDULED WORKSHOPS" value={String(activeWorkshops.length)} />
+        <StatCard label="TOTAL WORKSHOP ATTENDEES" value={String(workshops.reduce((acc, w) => acc + (w.registered_count || 0), 0))} />
+        <StatCard label="VERIFICATION" value={profile?.verification_status?.toUpperCase() || "PENDING"} />
       </div>
 
-      <Card title="Your surveys">
+      <Card title="Scheduled workshops & interviews">
+        {loading && <p className="ch-dash-empty">Loading workshops…</p>}
+        {!loading && workshops.length === 0 && (
+          <p className="ch-dash-empty">No workshops scheduled yet. Click "+ Schedule workshop" above to create one.</p>
+        )}
+        {workshops.map((w) => {
+          const wDate = new Date(w.date_time);
+          return (
+            <div className="ch-row" key={w.id}>
+              <div>
+                <p className="ch-row__title">{w.title}</p>
+                <p className="ch-row__meta" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", margin: "4px 0 0 0" }}>
+                  <span><Icon name="calendar" size={13} style={{ marginRight: 4 }} />{wDate.toLocaleDateString()} at {wDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>•</span>
+                  <span><Icon name="location" size={13} style={{ marginRight: 4 }} />{w.location}</span>
+                  <span>•</span>
+                  <span><Icon name="users" size={13} style={{ marginRight: 4 }} />{w.registered_count} / {w.max_participants} booked</span>
+                </p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Button variant="secondary" onClick={() => handleViewAttendees(w)}>
+                  Attendees ({w.registered_count || 0})
+                </Button>
+                {w.status === "scheduled" && (
+                  <Button variant="secondary" className="ch-btn-danger" onClick={() => handleCancelWorkshop(w.id)}>
+                    Cancel
+                  </Button>
+                )}
+                <StatusChip label={w.status} tone={STATE_TONE[w.status] || "neutral"} />
+              </div>
+            </div>
+          );
+        })}
+      </Card>
+
+      <Card title="Your surveys & studies">
         {loading && <p className="ch-dash-empty">Loading…</p>}
         {error && <p className="ch-dash-empty ch-dash-empty--error">{error}</p>}
         {!loading && !error && studies.length === 0 && (
@@ -82,31 +247,147 @@ export default function ResearcherDashboardPage() {
         ))}
       </Card>
 
-      <div className="ch-lower-row">
-        <Card title="Upcoming sessions">
-          {SESSIONS.map((sess) => (
-            <div className="ch-session-row" key={sess.id}>
-              <div className="ch-session-date">
-                <span>{sess.day}</span>
-                <small>{sess.month}</small>
+      {/* Schedule Workshop Modal */}
+      {showScheduleModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "20px",
+        }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: "12px",
+            width: "100%",
+            maxWidth: "520px",
+            padding: "24px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+          }}>
+            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>Schedule a New Workshop / Interview</h2>
+            <form onSubmit={handleCreateWorkshop}>
+              <Field
+                label="Workshop Title"
+                id="w_title"
+                value={workshopForm.title}
+                onChange={(e) => setWorkshopForm((f) => ({ ...f, title: e.target.value }))}
+                required
+              />
+              <Field
+                label="Description & Agenda"
+                id="w_desc"
+                as="textarea"
+                value={workshopForm.description}
+                onChange={(e) => setWorkshopForm((f) => ({ ...f, description: e.target.value }))}
+                required
+              />
+              <Field
+                label="Location (e.g. Community Hall Room 3, or Online link)"
+                id="w_loc"
+                value={workshopForm.location}
+                onChange={(e) => setWorkshopForm((f) => ({ ...f, location: e.target.value }))}
+                required
+              />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+                <div>
+                  <label className="ch-field__label" htmlFor="w_dt">Date & Time</label>
+                  <input
+                    id="w_dt"
+                    type="datetime-local"
+                    className="ch-field__input"
+                    value={workshopForm.date_time}
+                    onChange={(e) => setWorkshopForm((f) => ({ ...f, date_time: e.target.value }))}
+                    style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="ch-field__label" htmlFor="w_max">Max Participants</label>
+                  <input
+                    id="w_max"
+                    type="number"
+                    min="1"
+                    className="ch-field__input"
+                    value={workshopForm.max_participants}
+                    onChange={(e) => setWorkshopForm((f) => ({ ...f, max_participants: e.target.value }))}
+                    style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                    required
+                  />
+                </div>
               </div>
-              <div>
-                <p className="ch-row__title">{sess.title}</p>
-                <p className="ch-row__meta">{sess.meta}</p>
-              </div>
-            </div>
-          ))}
-        </Card>
 
-        <Card title="Honorarium tracker">
-          {HONORARIA.map((h) => (
-            <div className="ch-row" key={h.id}>
-              <p className="ch-row__title">{h.name}</p>
-              <StatusChip label={h.status} tone={h.tone} />
+              {workshopError && <p className="ch-login__error" style={{ color: "#dc2626", marginBottom: "12px" }}>{workshopError}</p>}
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+                <Button variant="secondary" onClick={() => setShowScheduleModal(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="accent" disabled={workshopSubmitting}>
+                  {workshopSubmitting ? "Scheduling…" : "Confirm & Schedule"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Attendees Modal */}
+      {selectedWorkshop && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "20px",
+        }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: "12px",
+            width: "100%",
+            maxWidth: "500px",
+            padding: "24px",
+            maxHeight: "80vh",
+            overflowY: "auto",
+          }}>
+            <h2 style={{ marginTop: 0, marginBottom: "8px" }}>Registered Attendees</h2>
+            <p style={{ color: "#666", marginBottom: "16px" }}>{selectedWorkshop.title}</p>
+
+            {attendeesLoading && <p>Loading participants…</p>}
+            {!attendeesLoading && attendees.length === 0 && (
+              <p className="ch-dash-empty">No community members have registered for this workshop yet.</p>
+            )}
+
+            {!attendeesLoading && attendees.map((a) => (
+              <div key={a.id} className="ch-row" style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}>
+                <div>
+                  <p className="ch-row__title">{a.participant_display_name || a.participant_username}</p>
+                  <p className="ch-row__meta">@{a.participant_username} • Registered {new Date(a.registered_at).toLocaleDateString()}</p>
+                </div>
+                <StatusChip label="Registered" tone="positive" />
+              </div>
+            ))}
+
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+              <Button variant="secondary" onClick={() => setSelectedWorkshop(null)}>
+                Close
+              </Button>
             </div>
-          ))}
-        </Card>
-      </div>
+          </div>
+        </div>
+      )}
     </DesktopLayout>
   );
 }
+

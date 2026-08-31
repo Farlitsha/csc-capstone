@@ -7,9 +7,6 @@ import Card from "../components/Card";
 import { api, ApiError } from "../lib/api";
 import "./BuildSurveyPage.css";
 
-// The actual question builder lives in LimeSurvey (see backend/app/limesurvey.py) -
-// CommHub just stores study metadata + the LimeSurvey survey ID it links to.
-// These sample questions mirror the Figma mock and aren't sent anywhere yet.
 const SAMPLE_QUESTIONS = [
   { id: "Q1", type: "MULTIPLE CHOICE", text: "Do you use the iNethi network daily?" },
   { id: "Q2", type: "RATING", text: "How would you rate your connection speed?" },

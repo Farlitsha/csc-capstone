@@ -80,6 +80,28 @@
   color: var(--color-teal-700);
 }
 
+.ch-service-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ch-service-report-btn {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  color: var(--color-sage);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.ch-service-report-btn:hover {
+  background: #fde8e8;
+  color: #c53030;
+}
+
 .ch-services-empty {
   text-align: center;
   color: var(--color-sage);
@@ -89,4 +111,36 @@
 
 .ch-services-empty--error {
   color: var(--color-danger);
+}
+
+/* ── Poster identity row (shared with studies cards) ── */
+.ch-poster-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ch-poster-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ch-poster-avatar--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-sand);
+  color: var(--color-teal-700);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ch-poster-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-sage);
 }

@@ -1,3 +1,4 @@
+/* ── Page container ─────────────────────────────────────────────────────────── */
 .ch-profile {
   display: flex;
   flex-direction: column;
@@ -5,11 +6,110 @@
   padding: 16px 20px 24px;
 }
 
-.ch-profile__details {
+/* ── Avatar section ─────────────────────────────────────────────────────────── */
+.ch-profile__avatar-section {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 0 4px;
+}
+
+.ch-profile__avatar-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: var(--color-teal-700);
+  flex-shrink: 0;
+  /* subtle ring so it reads as interactive */
+  box-shadow: 0 0 0 3px var(--color-paper), 0 0 0 5px var(--color-sage);
+}
+
+.ch-profile__avatar-wrap:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.ch-profile__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ch-profile__avatar-initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+  user-select: none;
+}
+
+.ch-profile__avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.38);
+  font-size: 22px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.ch-profile__avatar-wrap:hover .ch-profile__avatar-overlay,
+.ch-profile__avatar-wrap:focus .ch-profile__avatar-overlay {
+  opacity: 1;
+}
+
+.ch-profile__avatar-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.ch-profile__avatar-error {
+  font-size: 12px;
+  text-align: center;
+}
+
+.ch-profile__avatar-hint {
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-sage);
+  text-align: center;
+}
+
+/* ── Field-level hint ───────────────────────────────────────────────────────── */
+.ch-profile__field-hint {
+  font-size: 11px;
+  color: var(--color-sage);
+  line-height: 1.4;
+}
+
+/* ── Profile form ───────────────────────────────────────────────────────────── */
+.ch-profile__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   padding: 6px 22px 20px;
+}
+
+.ch-profile__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .ch-profile__label {
@@ -20,6 +120,44 @@
   letter-spacing: 0.02em;
 }
 
+.ch-profile__input {
+  font-size: 14px;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.ch-profile__input:focus {
+  border-color: var(--color-teal-700);
+}
+
+.ch-profile__textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.ch-profile__save-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+/* ── Account details card ───────────────────────────────────────────────────── */
+.ch-profile__details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 6px 22px 20px;
+}
+
 .ch-profile__value {
   margin: 4px 0 0;
   font-size: 15px;
@@ -27,6 +165,7 @@
   color: var(--color-ink);
 }
 
+/* ── Role upgrade card ──────────────────────────────────────────────────────── */
 .ch-profile__roles {
   padding: 6px 22px 20px;
   display: flex;
@@ -47,6 +186,7 @@
   gap: 10px;
 }
 
+/* ── Feedback messages ──────────────────────────────────────────────────────── */
 .ch-profile__success {
   margin: 0;
   font-size: 12.5px;
@@ -63,4 +203,41 @@
   background: var(--color-danger-dim);
   padding: 10px 12px;
   border-radius: var(--radius-md);
+}
+
+/* ── Activity card ───────────────────────────────────────────────────────────── */
+.ch-profile__activity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 22px 20px;
+}
+
+.ch-profile__activity-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-sage);
+  text-align: center;
+  padding: 10px 0;
+}
+
+.ch-profile__activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+}
+
+.ch-profile__activity-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

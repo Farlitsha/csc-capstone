@@ -1,7 +1,7 @@
-from pydantic import BaseModel, ConfigDict
-from datetime import datetime
+from pydantic import BaseModel, ConfigDict, field_validator
+from datetime import datetime, timezone
 from typing import Optional, List
-from app.models import UserRole, StudyState, ApplicationStatus, ServiceType, ServiceStatus
+from app.models import UserRole, VerificationStatus, StudyState, ApplicationStatus, ServiceType, ServiceStatus, WorkshopStatus
 
 class PostBase(BaseModel):
     title: str
@@ -15,6 +15,15 @@ class UserBase(BaseModel):
     username: str
     email: str
     password: str
+    role: Optional[UserRole] = UserRole.COMMUNITY_MEMBER
+    display_name: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        return v
 
 class StudyListingBase(BaseModel):
     title: str
@@ -81,9 +90,48 @@ class UserOut(BaseModel):
     username: str
     email: str
     role: UserRole
+    verification_status: Optional[VerificationStatus] = VerificationStatus.NONE
     time: datetime
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PrivateProfileOut(BaseModel):
+    """Full profile returned to the authenticated owner of the account."""
+    id: int
+    username: str
+    email: str
+    role: UserRole
+    verification_status: Optional[VerificationStatus] = VerificationStatus.NONE
+    time: datetime
+    display_name: Optional[str] = None
+    bio: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PublicProfileOut(BaseModel):
+    """Publicly visible profile returned when any user views another user's profile."""
+    id: int
+    username: str
+    display_name: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProfileUpdate(BaseModel):
+    """Body for PATCH /users/me/profile — all fields are optional."""
+    display_name: Optional[str] = None
+    bio: Optional[str] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
 
 
 class RoleUpdate(BaseModel):
@@ -124,3 +172,138 @@ class ServiceApplicationOut(BaseModel):
     applied_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ReportCreate(BaseModel):
+    reason: str
+
+
+class ReportOut(BaseModel):
+    id: int
+    service_id: int
+    service_title: str
+    service_description: str
+    reporter_id: int
+    reporter_username: str
+    reason: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AnnouncementCreate(BaseModel):
+    audience: str = "All members"
+    content: str
+
+
+class AnnouncementOut(BaseModel):
+    id: int
+    author_id: int
+    author_username: str
+    audience: str
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AdminStatsOut(BaseModel):
+    total_users: int
+    researchers: int
+    admins: int
+    community_members: int
+    flagged_listings: int
+    total_services: int
+    total_studies: int
+    total_workshops: Optional[int] = 0
+    total_workshop_registrations: Optional[int] = 0
+
+
+# ── Workshop Schemas ─────────────────────────────────────────────────────────
+
+class WorkshopBase(BaseModel):
+    title: str
+    description: str
+    location: str
+    date_time: datetime
+    max_participants: int
+
+
+class WorkshopCreate(WorkshopBase):
+    @field_validator("max_participants")
+    @classmethod
+    def validate_max_participants(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError("Maximum participant count must be greater than zero")
+        return v
+
+    @field_validator("date_time")
+    @classmethod
+    def validate_future_date(cls, v: datetime) -> datetime:
+        now = datetime.now(timezone.utc)
+        target = v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+        if target <= now:
+            raise ValueError("Workshop date and time must be in the future")
+        return v
+
+
+class WorkshopUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    date_time: Optional[datetime] = None
+    max_participants: Optional[int] = None
+
+    @field_validator("max_participants")
+    @classmethod
+    def validate_max_participants(cls, v: Optional[int]) -> Optional[int]:
+        if v is not None and v <= 0:
+            raise ValueError("Maximum participant count must be greater than zero")
+        return v
+
+    @field_validator("date_time")
+    @classmethod
+    def validate_future_date(cls, v: Optional[datetime]) -> Optional[datetime]:
+        if v is not None:
+            now = datetime.now(timezone.utc)
+            target = v if v.tzinfo else v.replace(tzinfo=timezone.utc)
+            if target <= now:
+                raise ValueError("Workshop date and time must be in the future")
+        return v
+
+
+class WorkshopOut(WorkshopBase):
+    id: int
+    organizer_id: int
+    status: WorkshopStatus
+    created_at: datetime
+    organizer_username: Optional[str] = None
+    organizer_display_name: Optional[str] = None
+    registered_count: Optional[int] = 0
+    is_registered: Optional[bool] = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class WorkshopRegistrationOut(BaseModel):
+    id: int
+    workshop_id: int
+    user_id: int
+    registered_at: datetime
+    participant_username: Optional[str] = None
+    participant_display_name: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MyWorkshopRegistrationOut(BaseModel):
+    id: int
+    workshop_id: int
+    registered_at: datetime
+    workshop_title: str
+    workshop_description: str
+    workshop_location: str
+    workshop_date_time: datetime
+    workshop_status: WorkshopStatus
+
+    model_config = ConfigDict(from_attributes=True)

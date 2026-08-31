@@ -4,12 +4,30 @@ import MobileLayout from "../layouts/MobileLayout";
 import StatusChip from "../components/StatusChip";
 import Chip from "../components/Chip";
 import Button from "../components/Button";
-import { api, ApiError } from "../lib/api";
+import Icon from "../components/Icon";
+import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./StudiesDirectoryPage.css";
 
 const STATE_TONE = { live: "positive", draft: "neutral", closed: "warning" };
 const APPLICATION_TONE = { applied: "neutral", accepted: "positive", declined: "danger" };
+
+function avatarSrc(url) {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  return `${API_BASE_URL}${url}`;
+}
+
+function getInitials(displayName, username) {
+  const name = displayName || username || "";
+  return (
+    name
+      .split(" ")
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? "")
+      .join("") || "?"
+  );
+}
 
 export default function StudiesDirectoryPage() {
   const navigate = useNavigate();
@@ -57,7 +75,8 @@ export default function StudiesDirectoryPage() {
     setApplyingId(studyId);
     try {
       await api.applyToStudy(studyId);
-      setAppliedIds((ids) => [...ids, studyId]);
+      setAppliedIds((prev) => [...prev, studyId]);
+      if (tab === "mine") loadMyApplications();
     } catch (err) {
       alert(err instanceof ApiError ? err.detail : "Could not apply to this study.");
     } finally {
@@ -72,6 +91,16 @@ export default function StudiesDirectoryPage() {
       <div className="ch-studies-tabs">
         <Chip label={t("studies.openTab")} active={tab === "open"} onClick={() => setTab("open")} />
         <Chip label={t("studies.myAppsTab")} active={tab === "mine"} onClick={() => setTab("mine")} />
+        <Chip
+          label={
+            <span>
+              <Icon name="calendar" size={13} style={{ marginRight: 4 }} />
+              Workshops
+            </span>
+          }
+          active={false}
+          onClick={() => navigate("/workshops")}
+        />
       </div>
 
       {tab === "open" && (
@@ -88,6 +117,22 @@ export default function StudiesDirectoryPage() {
               <div className="ch-study-card" key={s.id}>
                 <StatusChip label={s.state} tone={STATE_TONE[s.state] || "neutral"} />
                 <h3>{s.title}</h3>
+                <div className="ch-poster-row">
+                  {avatarSrc(s.researcher_avatar_url) ? (
+                    <img
+                      className="ch-poster-avatar"
+                      src={avatarSrc(s.researcher_avatar_url)}
+                      alt={s.researcher_display_name || s.researcher_username}
+                    />
+                  ) : (
+                    <span className="ch-poster-avatar ch-poster-avatar--initials">
+                      {getInitials(s.researcher_display_name, s.researcher_username)}
+                    </span>
+                  )}
+                  <span className="ch-poster-name">
+                    {s.researcher_display_name || s.researcher_username}
+                  </span>
+                </div>
                 <p>{s.description}</p>
                 <div className="ch-study-card__meta">
                   {s.honorarium && <span>{s.honorarium}</span>}
