@@ -18,7 +18,10 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 SERVICES_DIR = Path("uploads/services")
 SERVICES_DIR.mkdir(parents=True, exist_ok=True)
 
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception:
+    pass
 
 # Serve uploaded files (e.g. avatars) at /uploads/...
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
