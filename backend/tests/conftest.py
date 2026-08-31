@@ -2,55 +2,48 @@ import os
 import sys
 import pytest
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Ensure backend root is in sys.path
+# Ensure backend root is in sys.path and load environment variables from backend/.env
 backend_path = str(Path(__file__).resolve().parent.parent)
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
 
-# Set test environment variables before importing app modules
-os.environ["DATABASE_HOSTNAME"] = "localhost"
-os.environ["DATABASE_PORT"] = "3306"
-os.environ["DATABASE_NAME"] = "test_db"
-os.environ["DATABASE_USERNAME"] = "root"
-os.environ["DATABASE_PASSWORD"] = "testpass"
-os.environ["SECRET_KEY"] = "supersecretkeyfortestingpurposesonly12345"
-os.environ["ALGORITHM"] = "HS256"
-os.environ["ACCESS_TOKEN_EXPIRE_MINUTES"] = "60"
-os.environ["CORS_ORIGINS"] = "http://localhost:5173"
+env_path = Path(backend_path) / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
 
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
-from app.database import Base, get_db
+from app.config import settings
+from app.database import Base, get_db, engine as mysql_engine
 from app.main import app
 from app import models, utils, oauth2
 
-# Create SQLite in-memory database engine for fast isolated testing
-TEST_DATABASE_URL = "sqlite:///:memory:"
-test_engine = create_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+# Use MySQL database engine configured in database.py
+test_engine = mysql_engine
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
-    """Create all tables once before test session starts and drop them after."""
+    """Ensure all tables are created in MySQL before test execution."""
     Base.metadata.create_all(bind=test_engine)
     yield
-    Base.metadata.drop_all(bind=test_engine)
 
 
 @pytest.fixture(scope="function")
 def db_session():
-    """Provide a clean transactional database session per test."""
-    Base.metadata.drop_all(bind=test_engine)
-    Base.metadata.create_all(bind=test_engine)
+    """Provide a clean MySQL database session per test with tables truncated."""
+    with test_engine.connect() as conn:
+        conn.execute(text("SET FOREIGN_KEY_CHECKS = 0;"))
+        for table in reversed(Base.metadata.sorted_tables):
+            conn.execute(text(f"TRUNCATE TABLE `{table.name}`;"))
+        conn.execute(text("SET FOREIGN_KEY_CHECKS = 1;"))
+        conn.commit()
+
     session = TestingSessionLocal()
     try:
         yield session

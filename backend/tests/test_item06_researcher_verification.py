@@ -76,7 +76,7 @@ def test_admin_reject_researcher(client, unverified_researcher, admin_auth_heade
     assert db_user.verification_status == models.VerificationStatus.REJECTED
 
 
-def test_non_admin_cannot_approve_researcher(client, unverified_researcher, community_user_auth_headers):
+def test_non_admin_cannot_approve_researcher(client, unverified_researcher, admin_user, community_user_auth_headers):
     """DoD: Community member cannot approve researcher accounts (403 Forbidden)."""
     response = client.patch(
         f"/users/admin/researchers/{unverified_researcher.id}/approve",

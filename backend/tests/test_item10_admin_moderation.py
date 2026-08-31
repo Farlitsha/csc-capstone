@@ -97,7 +97,7 @@ def test_admin_post_announcement_and_public_view(client, admin_user, admin_auth_
     assert items[0]["content"] == payload["content"]
 
 
-def test_community_member_cannot_post_announcement(client, community_user_auth_headers):
+def test_community_member_cannot_post_announcement(client, admin_user, community_user_auth_headers):
     """DoD: Non-admin member cannot post announcement (403 Forbidden)."""
     payload = {"audience": "All members", "content": "Fake announcement"}
     response = client.post("/announcements/", json=payload, headers=community_user_auth_headers)

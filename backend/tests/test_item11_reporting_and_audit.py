@@ -95,7 +95,7 @@ def test_admin_resolve_report_and_check_audit_log(client, admin_user, admin_auth
     assert any("report_resolved" in l["action"] for l in logs)
 
 
-def test_non_admin_cannot_access_audit_logs(client, community_user_auth_headers):
+def test_non_admin_cannot_access_audit_logs(client, admin_user, community_user_auth_headers):
     """DoD: Community members cannot access system audit logs (403 Forbidden)."""
     response = client.get("/audit-logs/", headers=community_user_auth_headers)
     assert response.status_code == 403
