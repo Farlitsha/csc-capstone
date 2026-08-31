@@ -5,6 +5,7 @@ from app.models import (
     UserRole, VerificationStatus, StudyState, ApplicationStatus, ServiceType, ServiceStatus,
     WorkshopStatus, QuestionType, ReportTargetType, ReportStatus,
 )
+from app.utils import sanitize_text
 
 class PostBase(BaseModel):
     title: str
@@ -196,6 +197,13 @@ class ProfileUpdate(BaseModel):
     phone: Optional[str] = None
     contact_phone: Optional[str] = None
     contact_email: Optional[str] = None
+
+    @field_validator("bio", "display_name")
+    @classmethod
+    def sanitize_html(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            return sanitize_text(v)
+        return v
 
 
 class RoleUpdate(BaseModel):

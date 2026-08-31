@@ -379,8 +379,8 @@ class CommunityCensus(Base):
     education_level = Column(String(100), nullable=False)
     job_skills = Column(JSON, nullable=True)          # list[str]
     job_support_needs = Column(JSON, nullable=True)   # list[str]
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
-    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"), onupdate=text("now()"))
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
     user = relationship("User", back_populates="census_response")
 
