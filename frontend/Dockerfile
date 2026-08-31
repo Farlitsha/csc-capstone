@@ -11,7 +11,10 @@ COPY . .
 # so this must be passed as a build arg (see docker-compose.yml), not a
 # runtime env var on the nginx container.
 ARG VITE_API_BASE_URL=http://localhost:8000
+ARG VITE_API_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 
 RUN npm run build
 

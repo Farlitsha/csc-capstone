@@ -174,8 +174,9 @@ export default function AdminDashboardPage() {
     <DesktopLayout eyebrow="ADMIN CONSOLE">
       <div className="ch-desktop__heading">
         <h1>Platform overview</h1>
-        <p>Ocean View iNethi Community Hub</p>
+        <p>Ocean View Community Hub</p>
       </div>
+
 
       <div className="ch-stats-row">
         <StatCard label="TOTAL USERS" value={String(stats.total_users || users.length)} />
