@@ -4,18 +4,19 @@ from fastapi import FastAPI, Depends, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from app import models, schemas
+from app import models, schemas, utils, audit
 from app.database import get_db, Base, engine
 from app.config import settings
-from app.limesurvey import LimeSurveyClient, LimeSurveyError, build_participation_url
 from app.oauth2 import get_current_user
-from .routers import user, services, announcements, workshops
+from .routers import user, services, announcements, workshops, community, reports, audit_logs
 
 app = FastAPI()
 
-# Ensure the avatar upload directory exists
+# Ensure upload directories exist
 UPLOADS_DIR = Path("uploads/avatars")
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+SERVICES_DIR = Path("uploads/services")
+SERVICES_DIR.mkdir(parents=True, exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 
@@ -36,7 +37,9 @@ app.include_router(user.router)
 app.include_router(services.router)
 app.include_router(announcements.router)
 app.include_router(workshops.router)
-
+app.include_router(community.router)
+app.include_router(reports.router)
+app.include_router(audit_logs.router)
 
 @app.get("/")
 async def check():
@@ -73,10 +76,30 @@ async def create_study(
             detail="Researcher account is pending admin verification",
         )
 
-    db_study = models.StudyListing(**study.dict(), researcher_id=current_user.id, state=models.StudyState.LIVE)
+    payload = study.dict()
+    questions = payload.pop("questions", [])
+
+    db_study = models.StudyListing(**payload, researcher_id=current_user.id, state=models.StudyState.LIVE)
     db.add(db_study)
     db.commit()
     db.refresh(db_study)
+
+    # Build the survey inline if the researcher added questions in the builder.
+    if questions:
+        db_survey = models.Survey(study_id=db_study.id)
+        db.add(db_survey)
+        db.flush()
+        for i, q in enumerate(questions):
+            db.add(models.SurveyQuestion(
+                survey_id=db_survey.id,
+                order=i,
+                type=q["type"],
+                prompt=q["prompt"],
+                required=q.get("required", True),
+                options=q.get("options"),
+            ))
+        db.commit()
+
     return db_study
 
 
@@ -125,98 +148,153 @@ async def close_study(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """Researcher or Admin closes a study listing."""
+    """Researcher or Admin closes a study listing (backlog item 15: survey teardown)."""
     study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
     if not study:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
     if study.researcher_id != current_user.id and current_user.role != models.UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the study's researcher or an admin can close it")
     study.state = models.StudyState.CLOSED
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="study_closed",
+        target_type="study",
+        target_id=study.id,
+        details={"title": study.title, "closed_by_admin": current_user.role == models.UserRole.ADMIN},
+    )
     db.commit()
     db.refresh(study)
     return study
 
 
 
-def _get_limesurvey_client() -> LimeSurveyClient:
-    if not (settings.limesurvey_rpc_url and settings.limesurvey_username and settings.limesurvey_password):
+def _get_owned_study(study_id: int, db: Session, current_user: models.User) -> models.StudyListing:
+    """Fetches a study and checks the caller is its researcher (or an admin)."""
+    study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
+    if not study:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
+    if study.researcher_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the study's researcher or an admin can do this")
+    return study
+
+
+@app.put("/studies/{study_id}/survey", response_model=schemas.SurveyOut)
+async def upsert_study_survey(
+    study_id: int,
+    survey_in: schemas.SurveyIn,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Researcher creates or fully replaces their study's survey questions, built with
+    CommHub's own in-house survey builder (no more linking out to LimeSurvey)."""
+    _get_owned_study(study_id, db, current_user)
+
+    db_survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    if db_survey:
+        db.query(models.SurveyQuestion).filter(models.SurveyQuestion.survey_id == db_survey.id).delete()
+    else:
+        db_survey = models.Survey(study_id=study_id)
+        db.add(db_survey)
+        db.flush()
+
+    for i, q in enumerate(survey_in.questions):
+        db.add(models.SurveyQuestion(
+            survey_id=db_survey.id,
+            order=i,
+            type=q.type,
+            prompt=q.prompt,
+            required=q.required,
+            options=q.options,
+        ))
+    db.commit()
+    db.refresh(db_survey)
+    return db_survey
+
+
+@app.get("/studies/{study_id}/survey", response_model=schemas.SurveyOut)
+async def get_study_survey(study_id: int, db: Session = Depends(get_db)):
+    """Public: the survey's questions - used by a participant to take it, or a researcher to preview it."""
+    survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This study has no survey yet")
+    return survey
+
+
+@app.post("/studies/{study_id}/survey/responses", response_model=schemas.SurveyResponseOut, status_code=status.HTTP_201_CREATED)
+async def submit_survey_response(
+    study_id: int,
+    response_in: schemas.SurveyResponseIn,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Community member submits their answers. Requires having been accepted into the study,
+    and only one response per participant."""
+    study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
+    if not study:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
+    survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This study has no survey yet")
+
+    application = db.query(models.Application).filter(
+        models.Application.study_id == study_id,
+        models.Application.user_id == current_user.id,
+    ).first()
+    if not application or application.status != models.ApplicationStatus.ACCEPTED:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="LimeSurvey is not configured (set limesurvey_rpc_url / limesurvey_username / limesurvey_password)",
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You need to be accepted into this study before taking its survey",
         )
-    return LimeSurveyClient(settings.limesurvey_rpc_url, settings.limesurvey_username, settings.limesurvey_password)
+
+    already = db.query(models.SurveyResponse).filter(
+        models.SurveyResponse.survey_id == survey.id,
+        models.SurveyResponse.user_id == current_user.id,
+    ).first()
+    if already:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You have already submitted this survey")
+
+    question_ids = {q.id for q in survey.questions}
+    for a in response_in.answers:
+        if a.question_id not in question_ids:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Question {a.question_id} does not belong to this survey")
+
+    answer_by_question = {a.question_id: a.value for a in response_in.answers}
+    for q in survey.questions:
+        if q.required:
+            value = answer_by_question.get(q.id)
+            if value is None or value == "" or value == []:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Question '{q.prompt}' is required")
+
+    db_response = models.SurveyResponse(survey_id=survey.id, user_id=current_user.id)
+    db.add(db_response)
+    db.flush()
+    for a in response_in.answers:
+        db.add(models.SurveyAnswer(response_id=db_response.id, question_id=a.question_id, value=a.value))
+    db.commit()
+    db.refresh(db_response)
+    return db_response
 
 
-@app.get("/studies/{study_id}/survey", response_model=schemas.SurveyStatusOut)
-async def get_study_survey(study_id: int, lang: str = "en", db: Session = Depends(get_db)):
-    """
-    Participant-facing: returns the LimeSurvey link for a study, plus whether
-    the survey is currently active in LimeSurvey. `lang` (en/af/xh/zu) is
-    passed through so LimeSurvey opens in the participant's chosen language,
-    if that language has been added to the survey in LimeSurvey.
-    """
-    study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
-    if not study:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
-    if not study.limesurvey_survey_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This study has no LimeSurvey survey linked to it")
-    if not settings.limesurvey_public_url:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="limesurvey_public_url is not configured")
+@app.get("/studies/{study_id}/survey/responses", response_model=schemas.SurveyResponsesOut)
+async def get_study_survey_responses(
+    study_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Researcher-facing: every response submitted to this study's survey, for review/analysis."""
+    study = _get_owned_study(study_id, db, current_user)
+    survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This study has no survey yet")
 
-    survey_id = study.limesurvey_survey_id
-    title = None
-    active = True
-    try:
-        with _get_limesurvey_client() as client:
-            props = client.get_survey_properties(survey_id)
-            title = props.get("surveyls_title")
-            active = props.get("active") == "Y"
-    except LimeSurveyError as e:
-        # Don't hard-fail the participant just because we couldn't reach LimeSurvey's
-        # admin RPC - still hand back a usable link, minus the live metadata.
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Could not reach LimeSurvey: {e}")
-
-    return schemas.SurveyStatusOut(
-        survey_id=survey_id,
-        title=title,
-        active=active,
-        participation_url=build_participation_url(settings.limesurvey_public_url, survey_id, lang=lang),
+    responses = (
+        db.query(models.SurveyResponse)
+        .filter(models.SurveyResponse.survey_id == survey.id)
+        .order_by(models.SurveyResponse.submitted_at.desc())
+        .all()
     )
-
-
-@app.get("/studies/{study_id}/survey/responses", response_model=schemas.SurveyStatusOut)
-async def get_study_survey_responses(study_id: int, db: Session = Depends(get_db)):
-    """Researcher-facing: same as above plus completed/incomplete response counts from LimeSurvey."""
-    study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
-    if not study:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
-    if not study.limesurvey_survey_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This study has no LimeSurvey survey linked to it")
-    if not settings.limesurvey_public_url:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="limesurvey_public_url is not configured")
-
-    survey_id = study.limesurvey_survey_id
-    try:
-        with _get_limesurvey_client() as client:
-            props = client.get_survey_properties(survey_id)
-            summary = client.get_summary(survey_id)
-    except LimeSurveyError as e:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Could not reach LimeSurvey: {e}")
-
-    def _to_int(v):
-        try:
-            return int(v)
-        except (TypeError, ValueError):
-            return None
-
-    return schemas.SurveyStatusOut(
-        survey_id=survey_id,
-        title=props.get("surveyls_title"),
-        active=props.get("active") == "Y",
-        participation_url=build_participation_url(settings.limesurvey_public_url, survey_id),
-        completed_responses=_to_int(summary.get("completed_responses")),
-        incomplete_responses=_to_int(summary.get("incomplete_responses")),
-    )
+    return schemas.SurveyResponsesOut(response_count=len(responses), responses=responses)
 
 
 @app.post("/studies/{study_id}/apply", response_model=schemas.ApplicationOut, status_code=status.HTTP_201_CREATED)
@@ -331,7 +409,16 @@ async def update_application_status(
     study = db.query(models.StudyListing).filter(models.StudyListing.id == application.study_id).first()
     if study.researcher_id != current_user.id and current_user.role != models.UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the study's researcher or an admin can update applicant status")
+    old_status = application.status.value
     application.status = update.status
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="application_status_changed",
+        target_type="application",
+        target_id=application.id,
+        details={"study_id": application.study_id, "applicant_user_id": application.user_id, "old_status": old_status, "new_status": update.status.value},
+    )
     db.commit()
     db.refresh(application)
     return application

@@ -14,12 +14,14 @@ export default function SignupPage() {
   const { login } = useAuth();
   const { t } = useLanguage();
   const [form, setForm] = useState({
-    username: "",
     display_name: "",
+    username: "",
     email: "",
+    phone: "",
     password: "",
     role: "community_member",
   });
+  const [popiaConsent, setPopiaConsent] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -30,14 +32,40 @@ export default function SignupPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+
+    if (!form.display_name.trim()) {
+      setError("Please enter your Full Name.");
       return;
     }
+
+    if (!/^\d{5}$/.test(form.password)) {
+      setError("PIN must be exactly 5 numeric digits (e.g. 12345).");
+      return;
+    }
+
+    if (!popiaConsent) {
+      setError("Please agree to the POPIA data privacy consent to create an account.");
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await api.createAccount(form);
-      const result = await login(form.username, form.password);
+      // Auto-derive username if not supplied
+      const derivedUsername =
+        form.username.trim() ||
+        form.display_name.trim().toLowerCase().replace(/[^a-z0-9]/g, "") ||
+        form.email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+
+      const payload = {
+        ...form,
+        username: derivedUsername,
+        display_name: form.display_name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+      };
+
+      await api.createAccount(payload);
+      const result = await login(payload.username, form.password);
       if (result.ok) navigate("/", { replace: true });
       else setError(result.error);
     } catch (err) {
@@ -55,10 +83,28 @@ export default function SignupPage() {
       <div className="ch-login__card">
         <h1 className="ch-login__heading">{t("signup.heading")}</h1>
         <form className="ch-login__form" onSubmit={handleSubmit}>
-          <Field label={t("signup.username")} id="username" value={form.username} onChange={update("username")} required />
-          <Field label="Display name (optional)" id="display_name" value={form.display_name} onChange={update("display_name")} />
+          <Field
+            label={t("signup.fullName") || "Full Name"}
+            id="display_name"
+            placeholder="e.g. Nomvula Khumalo"
+            value={form.display_name}
+            onChange={update("display_name")}
+            required
+          />
           <Field label={t("signup.email")} id="email" type="email" value={form.email} onChange={update("email")} required />
-          <Field label={t("signup.password")} id="password" type="password" value={form.password} onChange={update("password")} required />
+          <Field label={t("signup.phone")} id="phone" type="tel" placeholder="e.g. +27 82 123 4567" value={form.phone} onChange={update("phone")} />
+          <Field
+            label={t("signup.password") || "5-Digit PIN"}
+            id="password"
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]{5}"
+            maxLength={5}
+            placeholder="e.g. 12345"
+            value={form.password}
+            onChange={update("password")}
+            required
+          />
           
           <div className="ch-field" style={{ marginBottom: "12px" }}>
             <label className="ch-field__label" htmlFor="role">I am joining as a:</label>
@@ -87,6 +133,30 @@ export default function SignupPage() {
               <span>Researcher accounts are reviewed by an administrator before you can publish studies and schedule workshops.</span>
             </p>
           )}
+
+          {/* ── POPIA Data Privacy Notice ── */}
+          <div className="ch-popia-box">
+            <div className="ch-popia-box__header">
+              <Icon name="info" size={15} />
+              <span>{t("signup.popiaTitle") || "POPIA Data Privacy Notice"}</span>
+            </div>
+            <p className="ch-popia-box__text">
+              {t("signup.popiaText") ||
+                "In accordance with South Africa's Protection of Personal Information Act (POPIA), CommHub collects and processes your details solely to connect you with local community services, workshops, and verified research. Your data is strictly kept secure and will never be shared or sold to third parties."}
+            </p>
+            <label className="ch-popia-box__label">
+              <input
+                type="checkbox"
+                checked={popiaConsent}
+                onChange={(e) => setPopiaConsent(e.target.checked)}
+                required
+              />
+              <span>
+                {t("signup.popiaConsent") ||
+                  "I consent to the collection and processing of my personal information as described above."}
+              </span>
+            </label>
+          </div>
 
           {error && <p className="ch-login__error">{error}</p>}
           <Button type="submit" fullWidth disabled={submitting}>

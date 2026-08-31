@@ -61,3 +61,47 @@
   color: var(--color-teal-700);
   font-weight: 700;
 }
+
+/* ── POPIA Privacy Box ── */
+.ch-popia-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ch-popia-box__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ch-popia-box__text {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #475569;
+}
+
+.ch-popia-box__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1e293b;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.ch-popia-box__label input[type="checkbox"] {
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: var(--color-teal-700, #0f766e);
+}

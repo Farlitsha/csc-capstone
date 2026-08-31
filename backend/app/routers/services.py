@@ -1,10 +1,48 @@
+import uuid
+from pathlib import Path
 from typing import List, Optional
-from fastapi import Depends, status, HTTPException, APIRouter
-from sqlalchemy.orm import Session
-from .. import models, schemas, oauth2
+from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
+from sqlalchemy.orm import Session, joinedload
+from .. import models, schemas, oauth2, audit
 from ..database import get_db
 
 router = APIRouter(prefix="/services", tags=["services"])
+
+SERVICES_UPLOAD_DIR = Path("uploads/services")
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_SERVICE_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+@router.post("/upload-photo", status_code=status.HTTP_200_OK)
+async def upload_service_photo(
+    file: UploadFile = File(...),
+    _current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Upload a photo for a service listing. Accepts JPEG, PNG, or WebP up to 5 MB."""
+    SERVICES_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    if file.content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Unsupported file type '{file.content_type}'. Please upload a JPEG, PNG, or WebP image.",
+        )
+
+    contents = await file.read()
+    if len(contents) > MAX_SERVICE_IMAGE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Image must be 5 MB or smaller.",
+        )
+
+    ext = file.content_type.split("/")[-1]
+    if ext == "jpeg":
+        ext = "jpg"
+    filename = f"service_{uuid.uuid4().hex[:12]}.{ext}"
+    dest = SERVICES_UPLOAD_DIR / filename
+
+    with open(dest, "wb") as f:
+        f.write(contents)
+
+    return {"image_url": f"/uploads/services/{filename}"}
 
 
 @router.get("/", response_model=List[schemas.ServiceOut])
@@ -13,26 +51,20 @@ async def list_services(
     query: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    """Browse open service listings, optionally filtered by category and/or a title search."""
-    q = (
-        db.query(models.Service, models.User.username, models.User.display_name, models.User.avatar_url)
-        .join(models.User, models.Service.poster_id == models.User.id)
-        .filter(models.Service.status == models.ServiceStatus.OPEN)
+    """Browse open service listings, optionally filtered by category and/or a title search.
+
+    Poster contact details are included on each listing so interested members
+    can reach out directly to work out the details, rather than applying
+    through the platform.
+    """
+    q = db.query(models.Service).options(joinedload(models.Service.poster)).filter(
+        models.Service.status == models.ServiceStatus.OPEN
     )
     if category and category.lower() != "all":
         q = q.filter(models.Service.category == category)
     if query:
         q = q.filter(models.Service.title.ilike(f"%{query}%"))
-    rows = q.order_by(models.Service.created_at.desc()).all()
-    return [
-        schemas.ServiceOut(
-            **{c.key: getattr(service, c.key) for c in models.Service.__table__.columns},
-            poster_username=username,
-            poster_display_name=display_name,
-            poster_avatar_url=avatar_url,
-        )
-        for service, username, display_name, avatar_url in rows
-    ]
+    return q.order_by(models.Service.created_at.desc()).all()
 
 
 @router.post("/", response_model=schemas.ServiceOut, status_code=status.HTTP_201_CREATED)
@@ -49,66 +81,14 @@ async def create_service(
     return db_service
 
 
-@router.get("/admin/reports", response_model=List[schemas.ReportOut])
-async def list_reports(
-    db: Session = Depends(get_db),
-    _admin: models.User = Depends(oauth2.require_admin),
-):
-    """Admin views all reported / flagged service listings."""
-    rows = (
-        db.query(models.Report, models.Service.title, models.Service.description, models.User.username)
-        .join(models.Service, models.Report.service_id == models.Service.id)
-        .join(models.User, models.Report.reporter_id == models.User.id)
-        .order_by(models.Report.created_at.desc())
-        .all()
-    )
-    return [
-        schemas.ReportOut(
-            id=report.id,
-            service_id=report.service_id,
-            service_title=title,
-            service_description=description,
-            reporter_id=report.reporter_id,
-            reporter_username=username,
-            reason=report.reason,
-            created_at=report.created_at,
-        )
-        for report, title, description, username in rows
-    ]
-
-
-@router.delete("/admin/reports/{report_id}", status_code=status.HTTP_200_OK)
-async def dismiss_report(
-    report_id: int,
-    db: Session = Depends(get_db),
-    _admin: models.User = Depends(oauth2.require_admin),
-):
-    """Admin dismisses a report from the moderation queue."""
-    report = db.query(models.Report).filter(models.Report.id == report_id).first()
-    if not report:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
-    db.delete(report)
-    db.commit()
-    return {"message": "Report dismissed successfully"}
-
-
 @router.get("/{service_id}", response_model=schemas.ServiceOut)
 async def get_service(service_id: int, db: Session = Depends(get_db)):
-    row = (
-        db.query(models.Service, models.User.username, models.User.display_name, models.User.avatar_url)
-        .join(models.User, models.Service.poster_id == models.User.id)
-        .filter(models.Service.id == service_id)
-        .first()
-    )
-    if not row:
+    service = db.query(models.Service).options(joinedload(models.Service.poster)).filter(
+        models.Service.id == service_id
+    ).first()
+    if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found")
-    service, username, display_name, avatar_url = row
-    return schemas.ServiceOut(
-        **{c.key: getattr(service, c.key) for c in models.Service.__table__.columns},
-        poster_username=username,
-        poster_display_name=display_name,
-        poster_avatar_url=avatar_url,
-    )
+    return service
 
 
 
@@ -125,6 +105,14 @@ async def close_service(
     if service.poster_id != current_user.id and current_user.role != models.UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the poster or an admin can close this listing")
     service.status = models.ServiceStatus.CLOSED
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="service_closed",
+        target_type="service",
+        target_id=service.id,
+        details={"title": service.title, "closed_by_admin": current_user.role == models.UserRole.ADMIN},
+    )
     db.commit()
     db.refresh(service)
     return service
@@ -179,49 +167,6 @@ async def get_service_applicants(
     return db.query(models.ServiceApplication).filter(models.ServiceApplication.service_id == service_id).all()
 
 
-@router.post("/{service_id}/report", response_model=schemas.ReportOut, status_code=status.HTTP_201_CREATED)
-async def report_service(
-    service_id: int,
-    report_in: schemas.ReportCreate,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(oauth2.get_current_user),
-):
-    """Community member reports a service listing with a reason."""
-    service = db.query(models.Service).filter(models.Service.id == service_id).first()
-    if not service:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found")
-    
-    if not report_in.reason or not report_in.reason.strip():
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="A reason is required to report a listing")
-
-    existing_report = db.query(models.Report).filter(
-        models.Report.service_id == service_id,
-        models.Report.reporter_id == current_user.id,
-    ).first()
-    if existing_report:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You have already reported this listing")
-
-    report = models.Report(
-        service_id=service_id,
-        reporter_id=current_user.id,
-        reason=report_in.reason.strip(),
-    )
-    db.add(report)
-    db.commit()
-    db.refresh(report)
-
-    return schemas.ReportOut(
-        id=report.id,
-        service_id=service.id,
-        service_title=service.title,
-        service_description=service.description,
-        reporter_id=current_user.id,
-        reporter_username=current_user.username,
-        reason=report.reason,
-        created_at=report.created_at,
-    )
-
-
 @router.delete("/{service_id}", status_code=status.HTTP_200_OK)
 async def delete_service(
     service_id: int,
@@ -234,6 +179,14 @@ async def delete_service(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found")
     if service.poster_id != current_user.id and current_user.role != models.UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the poster or an admin can delete this listing")
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="service_deleted",
+        target_type="service",
+        target_id=service.id,
+        details={"title": service.title, "deleted_by_admin": current_user.role == models.UserRole.ADMIN},
+    )
     db.delete(service)
     db.commit()
     return {"message": "Service listing deleted successfully"}

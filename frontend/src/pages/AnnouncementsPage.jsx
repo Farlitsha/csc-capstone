@@ -4,7 +4,7 @@ import MobileLayout from "../layouts/MobileLayout";
 import StatusChip from "../components/StatusChip";
 import { api } from "../lib/api";
 
-export default function MessagesPage() {
+export default function AnnouncementsPage() {
   const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +18,7 @@ export default function MessagesPage() {
   }, []);
 
   return (
-    <MobileLayout title="Messages & Announcements" onBack={() => navigate(-1)}>
+    <MobileLayout title="Announcements" onBack={() => navigate(-1)}>
       <div className="ch-messages-container">
         <div className="ch-messages-head">
           <h2>Community Announcements</h2>

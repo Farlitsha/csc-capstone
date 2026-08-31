@@ -60,6 +60,9 @@ export const api = {
   getStudyApplicants: (id) => request(`/studies/${id}/applicants`),
   updateApplicationStatus: (id, status) => request(`/applications/${id}`, { method: "PATCH", body: { status } }),
   getStudySurveyResponses: (id) => request(`/studies/${id}/survey/responses`),
+  getStudySurvey: (id) => request(`/studies/${id}/survey`),
+  upsertStudySurvey: (id, payload) => request(`/studies/${id}/survey`, { method: "PUT", body: payload }),
+  submitSurveyResponse: (id, payload) => request(`/studies/${id}/survey/responses`, { method: "POST", body: payload }),
 
   listServices: ({ category, query } = {}) => {
     const params = new URLSearchParams();
@@ -86,11 +89,29 @@ export const api = {
   // ── Profile management ──────────────────────────────────────────────────────
   getProfile: (userId) => request(`/users/${userId}`),
   updateProfile: (payload) => request("/users/me/profile", { method: "PATCH", body: payload }),
+  getAdminBootstrapStatus: () => request("/users/admin-bootstrap-status", { auth: false }),
   uploadAvatar: async (file) => {
     const token = localStorage.getItem("commhub_token");
     const form = new FormData();
     form.append("file", file);
     const res = await fetch(`${API_BASE_URL}/users/me/avatar`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    const isJson = res.headers.get("content-type")?.includes("application/json");
+    const data = isJson ? await res.json().catch(() => null) : null;
+    if (!res.ok) {
+      const detail = data?.detail || res.statusText;
+      throw new ApiError(typeof detail === "string" ? detail : "Upload failed", res.status, detail);
+    }
+    return data;
+  },
+  uploadServicePhoto: async (file) => {
+    const token = localStorage.getItem("commhub_token");
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch(`${API_BASE_URL}/services/upload-photo`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: form,

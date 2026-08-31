@@ -52,7 +52,7 @@ export default function CommunityHomePage() {
                 <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
                 Announcement
               </span>
-              <Link to="/messages" className="ch-announcement-banner__link">
+              <Link to="/announcements" className="ch-announcement-banner__link">
                 View all
               </Link>
             </div>

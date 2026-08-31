@@ -241,6 +241,9 @@ export default function ResearcherDashboardPage() {
               <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/applicants`)}>
                 Applicants
               </Button>
+              <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/responses`)}>
+                Survey Responses
+              </Button>
               <StatusChip label={s.state} tone={STATE_TONE[s.state] || "neutral"} />
             </div>
           </div>

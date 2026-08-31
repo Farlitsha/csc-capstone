@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "../layouts/MobileLayout";
 import Field from "../components/Field";
 import Chip from "../components/Chip";
 import Button from "../components/Button";
+import Icon from "../components/Icon";
 import { api, ApiError } from "../lib/api";
+import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./PostServicePage.css";
 
@@ -13,6 +15,8 @@ const CATEGORIES = ["Home repair", "Tutoring", "Food", "Other"];
 
 export default function PostServicePage() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
   const TYPES = [
     { value: "offer", label: t("postService.offering") },
@@ -20,7 +24,14 @@ export default function PostServicePage() {
   ];
   const [category, setCategory] = useState("Home repair");
   const [type, setType] = useState("offer");
-  const [form, setForm] = useState({ title: "", description: "", price: "" });
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    price: "",
+    phone: user?.phone || user?.contact_phone || "",
+  });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -28,17 +39,42 @@ export default function PostServicePage() {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
   }
 
+  function handlePhotoSelect(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function handleRemovePhoto() {
+    setPhotoFile(null);
+    setPhotoPreview("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSubmitting(true);
     try {
+      if (form.phone && form.phone.trim() !== (user?.phone || user?.contact_phone || "")) {
+        await api.updateProfile({ phone: form.phone.trim(), contact_phone: form.phone.trim() });
+        await refreshUser();
+      }
+
+      let imageUrl = undefined;
+      if (photoFile) {
+        const uploadRes = await api.uploadServicePhoto(photoFile);
+        imageUrl = uploadRes?.image_url;
+      }
+
       await api.createService({
         type,
         category,
         title: form.title,
         description: form.description,
         price: form.price || undefined,
+        image_url: imageUrl,
       });
       navigate("/services");
     } catch (err) {
@@ -95,9 +131,59 @@ export default function PostServicePage() {
           onChange={update("price")}
         />
 
+        <Field
+          label={t("signup.phone") || "Phone / WhatsApp number"}
+          id="phone"
+          type="tel"
+          placeholder="e.g. +27 82 123 4567"
+          value={form.phone}
+          onChange={update("phone")}
+        />
+
         <div className="ch-field-block">
           <span className="ch-field-block__label">{t("postService.photoOptional")}</span>
-          <div className="ch-photo-upload">{t("postService.addPhoto")}</div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            style={{ display: "none" }}
+            onChange={handlePhotoSelect}
+          />
+          {photoPreview ? (
+            <div className="ch-photo-preview-box">
+              <img src={photoPreview} alt="Service preview" className="ch-photo-preview-img" />
+              <div className="ch-photo-preview-actions">
+                <button
+                  type="button"
+                  className="ch-photo-action-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {t("postService.changePhoto") || "Change photo"}
+                </button>
+                <button
+                  type="button"
+                  className="ch-photo-action-btn ch-photo-action-btn--remove"
+                  onClick={handleRemovePhoto}
+                >
+                  {t("postService.removePhoto") || "Remove photo"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className="ch-photo-upload"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {t("postService.addPhoto")}
+            </div>
+          )}
+        </div>
+
+        <div className="ch-post-contact-info">
+          <Icon name="info" size={16} />
+          <span>
+            {t("postService.contactNotice") || "Community members will contact you directly via WhatsApp or Email."}
+          </span>
         </div>
 
         {error && <p className="ch-post-error">{error}</p>}

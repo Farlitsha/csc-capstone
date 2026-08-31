@@ -10,10 +10,12 @@ import ServicesDirectoryPage from "./pages/ServicesDirectoryPage";
 import StudiesDirectoryPage from "./pages/StudiesDirectoryPage";
 import WorkshopsDirectoryPage from "./pages/WorkshopsDirectoryPage";
 import PostServicePage from "./pages/PostServicePage";
-import MessagesPage from "./pages/MessagesPage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ResearcherDashboardPage from "./pages/ResearcherDashboardPage";
 import BuildSurveyPage from "./pages/BuildSurveyPage";
+import TakeSurveyPage from "./pages/TakeSurveyPage";
+import SurveyResponsesPage from "./pages/SurveyResponsesPage";
 import StudyApplicantsPage from "./pages/StudyApplicantsPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 
@@ -31,7 +33,7 @@ export default function App() {
           <Route path="/services/new" element={<ProtectedRoute><PostServicePage /></ProtectedRoute>} />
           <Route path="/studies" element={<ProtectedRoute><StudiesDirectoryPage /></ProtectedRoute>} />
           <Route path="/workshops" element={<ProtectedRoute><WorkshopsDirectoryPage /></ProtectedRoute>} />
-          <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+          <Route path="/announcements" element={<ProtectedRoute><AnnouncementsPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
           <Route
@@ -51,10 +53,22 @@ export default function App() {
             }
           />
           <Route
+            path="/studies/:studyId/survey"
+            element={<ProtectedRoute><TakeSurveyPage /></ProtectedRoute>}
+          />
+          <Route
             path="/researcher/studies/:studyId/applicants"
             element={
               <ProtectedRoute roles={["researcher", "admin"]}>
                 <StudyApplicantsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/researcher/studies/:studyId/responses"
+            element={
+              <ProtectedRoute roles={["researcher", "admin"]}>
+                <SurveyResponsesPage />
               </ProtectedRoute>
             }
           />

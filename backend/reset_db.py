@@ -7,7 +7,11 @@ from sqlalchemy import text
 from app.database import engine, Base
 import app.models  # noqa: F401 - import needed so all model classes register on Base.metadata
 
-TABLES = ["reports", "announcements", "service_applications", "services", "applications", "studies", "users"]
+TABLES = [
+    "survey_answers", "survey_responses", "survey_questions", "surveys",
+    "reports", "audit_logs",
+    "services", "applications", "studies", "users",
+]
 
 with engine.begin() as conn:
     conn.execute(text("SET FOREIGN_KEY_CHECKS=0"))

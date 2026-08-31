@@ -44,20 +44,23 @@ export default function LoginPage() {
 
         <form className="ch-login__form" onSubmit={handleSubmit}>
           <Field
-            label={t("login.username")}
+            label={t("login.fullName") || "Full Name"}
             id="username"
             type="text"
-            placeholder="e.g. nomvula"
-            autoComplete="username"
+            placeholder="e.g. Nomvula Khumalo"
+            autoComplete="name"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
           <Field
-            label={t("login.password")}
+            label={t("login.password") || "5-Digit PIN"}
             id="password"
             type="password"
-            placeholder="••••••••"
+            inputMode="numeric"
+            pattern="[0-9]{5}"
+            maxLength={5}
+            placeholder="•••••"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

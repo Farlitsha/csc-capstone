@@ -85,6 +85,128 @@
   color: var(--color-sage);
 }
 
+.ch-questions-empty {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-sage);
+  background: var(--color-sand);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.ch-question-card--editable {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ch-question-card__head-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ch-icon-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid var(--color-line);
+  background: var(--color-white);
+  color: var(--color-sage);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-icon-btn:hover:not(:disabled) {
+  border-color: var(--color-teal-700);
+  color: var(--color-teal-700);
+}
+
+.ch-icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ch-icon-btn--danger:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.ch-question-card__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.ch-question-card__row > .ch-field {
+  flex: 1;
+}
+
+.ch-question-card__required {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--color-ink);
+  white-space: nowrap;
+  padding-bottom: 12px;
+}
+
+.ch-question-card__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-sage);
+}
+
+.ch-options-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ch-options-editor__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-sage);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ch-options-editor__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ch-options-editor__input {
+  flex: 1;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--color-teal-700);
+  outline: none;
+}
+
+.ch-options-editor__input:focus {
+  border-color: var(--color-teal-700);
+}
+
+.ch-options-editor__add {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  color: var(--color-teal-700);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
 .ch-question-card {
   border: 1px solid var(--color-line);
   border-radius: var(--radius-md);

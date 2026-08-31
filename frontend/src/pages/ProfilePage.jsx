@@ -47,12 +47,25 @@ export default function ProfilePage() {
   const [form, setForm] = useState({
     display_name: user?.display_name ?? "",
     bio: user?.bio ?? "",
-    contact_phone: user?.contact_phone ?? "",
-    contact_email: user?.contact_email ?? "",
+    phone: user?.phone ?? user?.contact_phone ?? "",
+    contact_phone: user?.contact_phone ?? user?.phone ?? "",
+    contact_email: user?.contact_email ?? user?.email ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    if (user && !showEdit) {
+      setForm({
+        display_name: user.display_name ?? "",
+        bio: user.bio ?? "",
+        phone: user.phone ?? user.contact_phone ?? "",
+        contact_phone: user.contact_phone ?? user.phone ?? "",
+        contact_email: user.contact_email ?? user.email ?? "",
+      });
+    }
+  }, [user, showEdit]);
 
   // ── Activity state ──────────────────────────────────────────────────────────
   const [activity, setActivity] = useState([]);
@@ -62,12 +75,20 @@ export default function ProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [roleMessage, setRoleMessage] = useState("");
   const [roleError, setRoleError] = useState("");
+  const [canBootstrapAdmin, setCanBootstrapAdmin] = useState(false);
 
   const ROLE_LABEL = {
     community_member: t("profile.roleCommunityMember"),
     researcher: t("profile.roleResearcher"),
     admin: t("profile.roleAdmin"),
   };
+
+  useEffect(() => {
+    api
+      .getAdminBootstrapStatus()
+      .then((res) => setCanBootstrapAdmin(Boolean(res?.can_bootstrap_admin)))
+      .catch(() => setCanBootstrapAdmin(false));
+  }, [user?.role]);
 
   // ── Load activity on mount ──────────────────────────────────────────────────
   useEffect(() => {
@@ -122,7 +143,15 @@ export default function ProfilePage() {
       // Only send fields that are non-empty strings, to avoid overwriting with blanks
       const payload = {};
       for (const [key, val] of Object.entries(form)) {
-        if (val.trim() !== "") payload[key] = val.trim();
+        if (typeof val === "string" && val.trim() !== "") {
+          payload[key] = val.trim();
+        }
+      }
+      if (form.phone && !payload.contact_phone) {
+        payload.contact_phone = form.phone.trim();
+      }
+      if (form.contact_phone && !payload.phone) {
+        payload.phone = form.contact_phone.trim();
       }
       await api.updateProfile(payload);
       await refreshUser();
@@ -136,15 +165,21 @@ export default function ProfilePage() {
   }
 
   async function requestRole(role) {
+    if (!user) return;
     setUpdating(true);
     setRoleMessage("");
     setRoleError("");
     try {
       await api.updateUserRole(user.id, role);
+      setCanBootstrapAdmin(false);
       await refreshUser();
-      setRoleMessage(`You're now a ${(ROLE_LABEL[role] || role).toLowerCase()}.`);
+      setRoleMessage(`You are now an administrator.`);
     } catch (err) {
-      setRoleError(err instanceof ApiError ? err.detail : "Could not update your role.");
+      setRoleError(err instanceof ApiError ? err.detail : "Could not claim admin role. An administrator may already exist.");
+      api
+        .getAdminBootstrapStatus()
+        .then((res) => setCanBootstrapAdmin(Boolean(res?.can_bootstrap_admin)))
+        .catch(() => {});
     } finally {
       setUpdating(false);
     }
@@ -248,14 +283,17 @@ export default function ProfilePage() {
               </label>
 
               <label className="ch-profile__field">
-                <span className="ch-profile__label">Contact Phone</span>
+                <span className="ch-profile__label">Phone / WhatsApp Number</span>
                 <input
                   className="ch-profile__input"
-                  name="contact_phone"
+                  name="phone"
                   type="tel"
-                  placeholder="+27 …"
-                  value={form.contact_phone}
-                  onChange={handleFormChange}
+                  placeholder="e.g. +27 82 123 4567"
+                  value={form.phone || form.contact_phone}
+                  onChange={(e) => {
+                    handleFormChange(e);
+                    setForm((prev) => ({ ...prev, phone: e.target.value, contact_phone: e.target.value }));
+                  }}
                   maxLength={50}
                 />
               </label>
@@ -293,6 +331,10 @@ export default function ProfilePage() {
             <div>
               <span className="ch-profile__label">Login Email</span>
               <p className="ch-profile__value">{user?.email || "—"}</p>
+            </div>
+            <div>
+              <span className="ch-profile__label">{t("profile.phone")}</span>
+              <p className="ch-profile__value">{user?.phone || user?.contact_phone || "—"}</p>
             </div>
             <div>
               <span className="ch-profile__label">{t("profile.role")}</span>
@@ -349,23 +391,17 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* ── Role upgrade card (not shown to admins) ── */}
-        {user?.role !== "admin" && (
-          <Card title={t("profile.accessCardTitle")}>
+        {/* ── Admin Bootstrap Card (Only visible before first platform admin is created) ── */}
+        {canBootstrapAdmin && user?.role !== "admin" && (
+          <Card title={t("profile.adminBootstrapTitle") || "Claim Administrator Role"}>
             <div className="ch-profile__roles">
-              <p className="ch-profile__hint">{t("profile.hint")}</p>
+              <p className="ch-profile__hint">
+                {t("profile.adminBootstrapHint") ||
+                  "No platform administrator exists yet. Claim admin privileges for this account to manage users and listings. Once an administrator is confirmed, this option will permanently disappear."}
+              </p>
               <div className="ch-profile__role-buttons">
-                <Button
-                  variant="secondary"
-                  disabled={updating || user?.role === "researcher"}
-                  onClick={() => requestRole("researcher")}
-                >
-                  {user?.role === "researcher"
-                    ? t("profile.alreadyResearcher")
-                    : t("profile.becomeResearcher")}
-                </Button>
                 <Button variant="accent" disabled={updating} onClick={() => requestRole("admin")}>
-                  {t("profile.becomeAdmin")}
+                  {t("profile.becomeAdmin") || "Become Administrator"}
                 </Button>
               </div>
               {roleMessage && <p className="ch-profile__success">{roleMessage}</p>}

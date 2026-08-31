@@ -169,6 +169,11 @@ export default function StudiesDirectoryPage() {
                 {a.study_honorarium && <span>{a.study_honorarium}</span>}
                 <span>{t("studies.appliedOn")} {new Date(a.applied_at).toLocaleDateString()}</span>
               </div>
+              {a.status === "accepted" && (
+                <Button variant="accent" fullWidth onClick={() => navigate(`/studies/${a.study_id}/survey`)}>
+                  Take Survey
+                </Button>
+              )}
             </div>
           ))}
         </div>

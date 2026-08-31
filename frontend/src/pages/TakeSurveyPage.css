@@ -1,0 +1,134 @@
+.ch-take-survey {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px 32px;
+}
+
+.ch-take-survey__status {
+  text-align: center;
+  color: var(--color-sage);
+  font-size: 13px;
+  padding: 30px 0;
+}
+
+.ch-take-survey__status--error {
+  color: var(--color-danger);
+}
+
+.ch-take-survey__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ch-take-survey__error {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-danger);
+}
+
+.ch-take-survey__done {
+  text-align: center;
+  padding: 40px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.ch-take-survey__done-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.ch-take-survey__done-meta {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--color-sage);
+}
+
+.ch-tq-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ch-tq-prompt {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.ch-tq-required {
+  color: var(--color-danger);
+  margin-left: 4px;
+}
+
+.ch-tq-input {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  color: var(--color-teal-700);
+  outline: none;
+  font-family: inherit;
+}
+
+.ch-tq-input:focus {
+  border-color: var(--color-teal-700);
+}
+
+.ch-tq-input--area {
+  resize: vertical;
+}
+
+.ch-tq-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ch-tq-options--row {
+  flex-direction: row;
+  gap: 20px;
+}
+
+.ch-tq-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--color-ink);
+}
+
+.ch-tq-rating {
+  display: flex;
+  gap: 8px;
+}
+
+.ch-tq-rating__btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--color-line);
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ch-tq-rating__btn--active {
+  background: var(--color-teal-700);
+  border-color: var(--color-teal-700);
+  color: var(--color-white);
+}

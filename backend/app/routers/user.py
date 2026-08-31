@@ -51,12 +51,16 @@ async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=schemas.Token)
 async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """Username + password login. Returns a JWT carrying the user's id and role."""
-    user = db.query(models.User).filter(models.User.username == credentials.username).first()
+    """Login with Full Name, username, or email + password. Returns a JWT."""
+    user = db.query(models.User).filter(
+        (models.User.username == credentials.username) |
+        (models.User.display_name == credentials.username) |
+        (models.User.email == credentials.username)
+    ).first()
     if not user or not utils.verify_password(credentials.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
+            detail="Invalid Full Name/username or PIN",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role.value})
@@ -81,6 +85,10 @@ async def update_profile(
     update_data = payload.model_dump(exclude_none=True)
     for field, value in update_data.items():
         setattr(current_user, field, value)
+    if "phone" in update_data and "contact_phone" not in update_data:
+        current_user.contact_phone = update_data["phone"]
+    elif "contact_phone" in update_data and "phone" not in update_data:
+        current_user.phone = update_data["contact_phone"]
     db.commit()
     db.refresh(current_user)
     return current_user
@@ -134,6 +142,13 @@ async def upload_avatar(
 # ── Admin / management endpoints ───────────────────────────────────────────────
 # NOTE: these fixed-path routes MUST be registered before /{user_id} so FastAPI
 # does not accidentally try to parse "admin" or "accounts" as an integer user_id.
+
+@router.get("/admin-bootstrap-status", status_code=status.HTTP_200_OK)
+async def get_admin_bootstrap_status(db: Session = Depends(get_db)):
+    """Check whether an admin already exists on the platform."""
+    admin_exists = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).first() is not None
+    return {"admin_exists": admin_exists, "can_bootstrap_admin": not admin_exists}
+
 
 @router.get("/admin/stats", status_code=status.HTTP_200_OK, response_model=schemas.AdminStatsOut)
 async def get_admin_stats(
