@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import MobileLayout from "../layouts/MobileLayout";
-import StatCard from "../components/StatCard";
 import StatusChip from "../components/StatusChip";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
@@ -14,28 +13,37 @@ export default function CommunityHomePage() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [services, setServices] = useState([]);
-  const [servicesCount, setServicesCount] = useState(0);
-  const [studiesCount, setStudiesCount] = useState(null);
   const [workshops, setWorkshops] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
+  const [censusStats, setCensusStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       api.listServices().catch(() => []),
-      api.listStudies().catch(() => []),
       api.listWorkshops().catch(() => []),
       api.listAnnouncements().catch(() => []),
+      api.getCensusStats().catch(() => null),
     ])
-      .then(([svc, studies, wList, ann]) => {
-        setServices(svc.slice(0, 2));
-        setServicesCount(svc.length);
-        setStudiesCount(studies.length);
+      .then(([svc, wList, ann, cStats]) => {
+        const isOwn = (s) => s.poster_id === user?.id || (user?.username && s.poster_username === user?.username);
+        const otherServices = svc.filter((s) => !isOwn(s));
+        setServices(otherServices.slice(0, 3));
         setWorkshops(wList.slice(0, 3));
         setAnnouncements(ann);
+        if (cStats) setCensusStats(cStats);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [user]);
+
+
+
+  const relevantAnnouncements = announcements.filter((a) => {
+    if (!a.audience || a.audience === "All members") return true;
+    if (user?.role === "researcher" && a.audience === "Researchers") return true;
+    if (user?.role === "admin") return true;
+    return false;
+  });
 
   return (
     <MobileLayout>
@@ -44,7 +52,7 @@ export default function CommunityHomePage() {
         <p>{t("home.subtitle")}</p>
       </section>
 
-      {announcements.length > 0 && (
+      {relevantAnnouncements.length > 0 && (
         <section className="ch-announcement-section">
           <div className="ch-announcement-banner">
             <div className="ch-announcement-banner__head">
@@ -53,25 +61,53 @@ export default function CommunityHomePage() {
                 Announcement
               </span>
               <Link to="/announcements" className="ch-announcement-banner__link">
-                View all
+                View all ({relevantAnnouncements.length})
               </Link>
             </div>
-            <p>{announcements[0].content}</p>
+            <p>{relevantAnnouncements[0].content}</p>
             <span className="ch-announcement-banner__meta">
-              Posted by @{announcements[0].author_username} • {new Date(announcements[0].created_at).toLocaleDateString()}
+              Broadcast by @{relevantAnnouncements[0].author_username} • {new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
             </span>
           </div>
         </section>
       )}
 
+      {/* Community Insights & Census Card */}
+      <section className="ch-insights-card-section">
+        <div className="ch-insights-card">
+          <div className="ch-insights-card__header">
+            <span className="ch-insights-card__badge">
+              <Icon name="document" size={13} style={{ marginRight: 5 }} />
+              Community Census & Stats
+            </span>
+            <Link to="/community-stats" className="ch-insights-card__link">
+              View charts →
+            </Link>
+          </div>
+          <h3>Local Job Market & Poverty Insights</h3>
+          <p>
+            {censusStats && censusStats.total_respondents > 0
+              ? `${censusStats.total_respondents} residents surveyed (${censusStats.unemployment_rate}% looking for work). Explore community pie charts & graphs on employment, skills, and income.`
+              : "Share demographic input to help Ocean View identify employment trends, job skills, and poverty rates."}
+          </p>
+          <div className="ch-insights-card__actions">
+            <Link to="/community-census">
+              <Button variant="accent" style={{ fontSize: "12.5px", padding: "7px 12px" }}>
+                <Icon name="clipboard" size={14} style={{ marginRight: 5 }} />
+                Take Census Survey
+              </Button>
+            </Link>
+            <Link to="/community-stats">
+              <Button variant="secondary" style={{ fontSize: "12.5px", padding: "7px 12px" }}>
+                <Icon name="chart" size={14} style={{ marginRight: 5 }} />
+                View Graphs & Charts
+              </Button>
+            </Link>
+          </div>
 
-
-      <section className="ch-stats-row-mobile">
-        <StatCard label={t("home.openServices")} value={loading ? "…" : String(servicesCount)} />
-        <Link to="/studies" className="ch-stat-link">
-          <StatCard label={t("home.activeStudies")} value={loading ? "…" : String(studiesCount ?? 0)} />
-        </Link>
+        </div>
       </section>
+
 
       <section className="ch-section">
         <div className="ch-section__head">
@@ -90,18 +126,26 @@ export default function CommunityHomePage() {
 
         <div className="ch-service-list">
           {services.map((s) => (
-            <div className="ch-service-card" key={s.id}>
-              <StatusChip
-                label={s.type === "request" ? t("services.requested") : t("services.offered")}
-                tone={s.type === "request" ? "warning" : "positive"}
-              />
-              <h3>{s.title}</h3>
-              <p>{s.description}</p>
-              <span className="ch-service-card__price">{s.price || t("services.priceOnRequest")}</span>
-            </div>
+            <Link to="/services" key={s.id} style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="ch-service-card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                  <StatusChip
+                    label={s.type === "request" ? t("services.requested") : t("services.offered")}
+                    tone={s.type === "request" ? "warning" : "positive"}
+                  />
+                  <span style={{ fontSize: "12px", color: "var(--color-sage)" }}>
+                    By @{s.poster_username}
+                  </span>
+                </div>
+                <h3>{s.title}</h3>
+                <p>{s.description}</p>
+                <span className="ch-service-card__price">{s.price || t("services.priceOnRequest")}</span>
+              </div>
+            </Link>
           ))}
         </div>
       </section>
+
 
       <section className="ch-section">
         <div className="ch-section__head">

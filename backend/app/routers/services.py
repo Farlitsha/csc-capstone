@@ -92,6 +92,44 @@ async def get_service(service_id: int, db: Session = Depends(get_db)):
 
 
 
+@router.put("/{service_id}", response_model=schemas.ServiceOut)
+@router.patch("/{service_id}", response_model=schemas.ServiceOut)
+async def update_service(
+    service_id: int,
+    service_in: schemas.ServiceCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Poster or Admin edits an existing service listing."""
+    service = db.query(models.Service).options(joinedload(models.Service.poster)).filter(
+        models.Service.id == service_id
+    ).first()
+    if not service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found")
+    if service.poster_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the poster or an admin can edit this listing")
+
+    service.title = service_in.title
+    service.category = service_in.category
+    service.type = service_in.type
+    service.description = service_in.description
+    service.price = service_in.price
+    if service_in.image_url is not None:
+        service.image_url = service_in.image_url
+
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="service_updated",
+        target_type="service",
+        target_id=service.id,
+        details={"title": service.title, "updated_by_admin": current_user.role == models.UserRole.ADMIN},
+    )
+    db.commit()
+    db.refresh(service)
+    return service
+
+
 @router.patch("/{service_id}/close", response_model=schemas.ServiceOut)
 async def close_service(
     service_id: int,

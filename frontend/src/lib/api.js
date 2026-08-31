@@ -54,6 +54,8 @@ export const api = {
   listStudies: () => request("/studies/"),
   getStudy: (id) => request(`/studies/${id}`),
   createStudy: (payload) => request("/studies/", { method: "POST", body: payload }),
+  updateStudy: (id, payload) => request(`/studies/${id}`, { method: "PUT", body: payload }),
+  deleteStudy: (id) => request(`/studies/${id}`, { method: "DELETE" }),
   closeStudy: (id) => request(`/studies/${id}/close`, { method: "PATCH" }),
   applyToStudy: (id) => request(`/studies/${id}/apply`, { method: "POST" }),
   getMyApplications: () => request("/applications/me"),
@@ -72,9 +74,11 @@ export const api = {
     return request(`/services/${qs ? `?${qs}` : ""}`, { auth: false });
   },
   createService: (payload) => request("/services/", { method: "POST", body: payload }),
+  updateService: (id, payload) => request(`/services/${id}`, { method: "PUT", body: payload }),
   applyToService: (id, message) => request(`/services/${id}/apply`, { method: "POST", body: { message } }),
   closeService: (id) => request(`/services/${id}/close`, { method: "PATCH" }),
   deleteService: (id) => request(`/services/${id}`, { method: "DELETE" }),
+
   reportService: (serviceId, reason) => request(`/services/${serviceId}/report`, { method: "POST", body: { reason } }),
   listReports: () => request("/services/admin/reports"),
   dismissReport: (reportId) => request(`/services/admin/reports/${reportId}`, { method: "DELETE" }),
@@ -137,9 +141,17 @@ export const api = {
   cancelWorkshop: (id) => request(`/workshops/${id}/cancel`, { method: "PATCH" }),
   registerForWorkshop: (id) => request(`/workshops/${id}/register`, { method: "POST" }),
   cancelWorkshopRegistration: (id) => request(`/workshops/${id}/register`, { method: "DELETE" }),
+  deleteWorkshop: (id) => request(`/workshops/${id}`, { method: "DELETE" }),
   getWorkshopRegistrations: (id) => request(`/workshops/${id}/registrations`),
   getMyWorkshopRegistrations: () => request("/workshops/me/registrations"),
+
+
+  // Community census & statistics
+  getMyCensus: () => request("/community/census/my"),
+  submitCensus: (body) => request("/community/census", { method: "POST", body }),
+  getCensusStats: () => request("/community/census/stats"),
 };
+
 
 
 export { ApiError, API_BASE_URL };

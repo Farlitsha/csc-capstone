@@ -116,6 +116,70 @@ export default function ResearcherDashboardPage() {
     }
   }
 
+  async function handleDeleteWorkshop(workshopId) {
+    if (!window.confirm("Are you sure you want to permanently delete this workshop?")) return;
+    try {
+      await api.deleteWorkshop(workshopId);
+      setWorkshops((prev) => prev.filter((w) => w.id !== workshopId));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.detail : "Could not delete workshop.");
+    }
+  }
+
+  // Edit Study State & Handlers
+  const [editingStudy, setEditingStudy] = useState(null);
+  const [editStudyForm, setEditStudyForm] = useState({ title: "", description: "", honorarium: "", participant_limit: "" });
+  const [editStudySaving, setEditStudySaving] = useState(false);
+  const [editStudyError, setEditStudyError] = useState("");
+
+  function startEditStudy(study) {
+    setEditingStudy(study);
+    setEditStudyForm({
+      title: study.title || "",
+      description: study.description || "",
+      honorarium: study.honorarium || "",
+      participant_limit: study.participant_limit !== null && study.participant_limit !== undefined ? String(study.participant_limit) : "",
+    });
+    setEditStudyError("");
+  }
+
+  async function handleSaveEditStudy(e) {
+    e.preventDefault();
+    if (!editStudyForm.title.trim() || !editStudyForm.description.trim()) {
+      setEditStudyError("Title and description are required.");
+      return;
+    }
+    setEditStudySaving(true);
+    setEditStudyError("");
+    try {
+      const updated = await api.updateStudy(editingStudy.id, {
+        title: editStudyForm.title.trim(),
+        description: editStudyForm.description.trim(),
+        honorarium: editStudyForm.honorarium.trim() || undefined,
+        participant_limit: editStudyForm.participant_limit ? parseInt(editStudyForm.participant_limit, 10) : undefined,
+      });
+      setStudies((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
+      setEditingStudy(null);
+    } catch (err) {
+      setEditStudyError(err instanceof ApiError ? err.detail : "Could not update study.");
+    } finally {
+      setEditStudySaving(false);
+    }
+  }
+
+  async function handleDeleteStudy(study) {
+    if (!window.confirm(`Are you sure you want to permanently delete the study "${study.title}"? All applicant data and survey responses will be removed.`)) {
+      return;
+    }
+    try {
+      await api.deleteStudy(study.id);
+      setStudies((prev) => prev.filter((s) => s.id !== study.id));
+    } catch (err) {
+      alert(err instanceof ApiError ? err.detail : "Could not delete study.");
+    }
+  }
+
+
   return (
     <DesktopLayout
       eyebrow="RESEARCHER WORKSPACE"
@@ -215,6 +279,9 @@ export default function ResearcherDashboardPage() {
                     Cancel
                   </Button>
                 )}
+                <Button variant="secondary" className="ch-btn-danger" onClick={() => handleDeleteWorkshop(w.id)}>
+                  Delete
+                </Button>
                 <StatusChip label={w.status} tone={STATE_TONE[w.status] || "neutral"} />
               </div>
             </div>
@@ -237,18 +304,26 @@ export default function ResearcherDashboardPage() {
                 {s.honorarium ? ` · ${s.honorarium}` : ""}
               </p>
             </div>
-            <div className="ch-study-row-actions">
+            <div className="ch-study-row-actions" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/applicants`)}>
                 Applicants
               </Button>
               <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/responses`)}>
                 Survey Responses
               </Button>
+              <Button variant="secondary" onClick={() => startEditStudy(s)}>
+                <Icon name="edit" size={13} style={{ marginRight: 4 }} />
+                Edit
+              </Button>
+              <Button variant="secondary" className="ch-btn-danger" onClick={() => handleDeleteStudy(s)}>
+                Delete
+              </Button>
               <StatusChip label={s.state} tone={STATE_TONE[s.state] || "neutral"} />
             </div>
           </div>
         ))}
       </Card>
+
 
       {/* Schedule Workshop Modal */}
       {showScheduleModal && (
@@ -390,7 +465,79 @@ export default function ResearcherDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Edit Study Modal */}
+      {editingStudy && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+          padding: "20px",
+        }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: "12px",
+            width: "100%",
+            maxWidth: "520px",
+            padding: "24px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
+          }}>
+            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>Edit Study Listing</h2>
+            <form onSubmit={handleSaveEditStudy}>
+              {editStudyError && <p style={{ color: "#dc2626", marginBottom: "12px" }}>{editStudyError}</p>}
+              <Field
+                label="Study Title"
+                id="edit_study_title"
+                value={editStudyForm.title}
+                onChange={(e) => setEditStudyForm((f) => ({ ...f, title: e.target.value }))}
+                required
+              />
+              <Field
+                label="Study Description"
+                id="edit_study_desc"
+                as="textarea"
+                value={editStudyForm.description}
+                onChange={(e) => setEditStudyForm((f) => ({ ...f, description: e.target.value }))}
+                required
+              />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <Field
+                  label="Honorarium (e.g. R50)"
+                  id="edit_study_hon"
+                  value={editStudyForm.honorarium}
+                  onChange={(e) => setEditStudyForm((f) => ({ ...f, honorarium: e.target.value }))}
+                />
+                <Field
+                  label="Participant Limit"
+                  id="edit_study_limit"
+                  type="number"
+                  min="1"
+                  value={editStudyForm.participant_limit}
+                  onChange={(e) => setEditStudyForm((f) => ({ ...f, participant_limit: e.target.value }))}
+                />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+                <Button variant="secondary" onClick={() => setEditingStudy(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="accent" disabled={editStudySaving}>
+                  {editStudySaving ? "Saving…" : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DesktopLayout>
   );
 }
+
 

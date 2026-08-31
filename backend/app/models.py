@@ -58,6 +58,7 @@ class User(Base):
     workshops = relationship("Workshop", back_populates="organizer", cascade="all, delete")
     workshop_registrations = relationship("WorkshopRegistration", back_populates="participant", cascade="all, delete")
     survey_responses = relationship("SurveyResponse", back_populates="respondent", cascade="all, delete")
+    census_response = relationship("CommunityCensus", back_populates="user", uselist=False, cascade="all, delete")
 
 
 class Post(Base):
@@ -364,3 +365,22 @@ class WorkshopRegistration(Base):
 
     workshop = relationship("Workshop", back_populates="registrations")
     participant = relationship("User", back_populates="workshop_registrations")
+
+
+class CommunityCensus(Base):
+    """Community member demographic and economic census data (employment, income/poverty bracket,
+    education level, skills, and work support needs) used to generate aggregate community charts."""
+    __tablename__ = "community_census"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True)
+    employment_status = Column(String(100), nullable=False)
+    income_bracket = Column(String(100), nullable=False)
+    education_level = Column(String(100), nullable=False)
+    job_skills = Column(JSON, nullable=True)          # list[str]
+    job_support_needs = Column(JSON, nullable=True)   # list[str]
+    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"), onupdate=text("now()"))
+
+    user = relationship("User", back_populates="census_response")
+

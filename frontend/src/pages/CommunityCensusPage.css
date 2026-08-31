@@ -1,0 +1,112 @@
+.ch-census-page {
+  padding: 16px 20px 40px;
+}
+
+.ch-census-header {
+  margin-bottom: 20px;
+}
+
+.ch-census-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0 0 6px;
+}
+
+.ch-census-header p {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-sage);
+  margin: 0;
+}
+
+.ch-census-loading {
+  font-size: 13px;
+  color: var(--color-sage);
+  padding: 20px 0;
+}
+
+.ch-census-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ch-census-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+.ch-census-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 6px;
+}
+
+.ch-census-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--color-sand);
+  color: var(--color-teal-700);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 50%;
+}
+
+.ch-req {
+  color: var(--color-signal);
+}
+
+.ch-census-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--color-sage);
+  margin-bottom: 12px;
+}
+
+.ch-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ch-census-error {
+  background: #fee2e2;
+  border: 1px solid #f87171;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+
+.ch-census-success {
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ch-census-actions {
+  margin-top: 10px;
+}
+
+.ch-census-actions button {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+}
+

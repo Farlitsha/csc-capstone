@@ -295,6 +295,24 @@ async def cancel_workshop(
     )
 
 
+@router.delete("/{workshop_id}", status_code=status.HTTP_200_OK)
+async def delete_workshop(
+    workshop_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Organizer or Admin deletes a workshop."""
+    workshop = db.query(models.Workshop).filter(models.Workshop.id == workshop_id).first()
+    if not workshop:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Workshop {workshop_id} not found")
+    if workshop.organizer_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the organizer or an admin can delete this workshop")
+    db.delete(workshop)
+    db.commit()
+    return {"message": "Workshop deleted successfully"}
+
+
+
 @router.post("/{workshop_id}/register", response_model=schemas.WorkshopRegistrationOut, status_code=status.HTTP_201_CREATED)
 async def register_for_workshop(
     workshop_id: int,

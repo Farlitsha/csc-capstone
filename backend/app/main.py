@@ -171,6 +171,89 @@ async def close_study(
     return study
 
 
+@app.put("/studies/{study_id}", response_model=schemas.StudyListingOut)
+@app.patch("/studies/{study_id}", response_model=schemas.StudyListingOut)
+async def update_study(
+    study_id: int,
+    study_in: schemas.StudyListingCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Researcher or Admin updates a study listing."""
+    study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
+    if not study:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
+    if study.researcher_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the study's researcher or an admin can edit it")
+
+    payload = study_in.dict()
+    questions = payload.pop("questions", None)
+
+    study.title = payload.get("title", study.title)
+    study.description = payload.get("description", study.description)
+    study.honorarium = payload.get("honorarium", study.honorarium)
+    study.participant_limit = payload.get("participant_limit", study.participant_limit)
+    study.closing_date = payload.get("closing_date", study.closing_date)
+
+    if questions is not None:
+        db_survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+        if not db_survey:
+            db_survey = models.Survey(study_id=study.id)
+            db.add(db_survey)
+            db.flush()
+        else:
+            db.query(models.SurveyQuestion).filter(models.SurveyQuestion.survey_id == db_survey.id).delete()
+
+        for i, q in enumerate(questions):
+            db.add(models.SurveyQuestion(
+                survey_id=db_survey.id,
+                order=i,
+                type=q["type"],
+                prompt=q["prompt"],
+                required=q.get("required", True),
+                options=q.get("options"),
+            ))
+
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="study_updated",
+        target_type="study",
+        target_id=study.id,
+        details={"title": study.title, "updated_by_admin": current_user.role == models.UserRole.ADMIN},
+    )
+    db.commit()
+    db.refresh(study)
+    return study
+
+
+@app.delete("/studies/{study_id}", status_code=status.HTTP_200_OK)
+async def delete_study(
+    study_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Researcher or Admin permanently deletes a study listing."""
+    study = db.query(models.StudyListing).filter(models.StudyListing.id == study_id).first()
+    if not study:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
+    if study.researcher_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only the study's researcher or an admin can delete it")
+
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="study_deleted",
+        target_type="study",
+        target_id=study.id,
+        details={"title": study.title, "deleted_by_admin": current_user.role == models.UserRole.ADMIN},
+    )
+    db.delete(study)
+    db.commit()
+    return {"message": "Study deleted successfully"}
+
+
+
 
 def _get_owned_study(study_id: int, db: Session, current_user: models.User) -> models.StudyListing:
     """Fetches a study and checks the caller is its researcher (or an admin)."""

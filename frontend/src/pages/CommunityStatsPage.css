@@ -1,0 +1,140 @@
+.ch-stats-page {
+  padding: 16px 20px 40px;
+}
+
+.ch-stats-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ch-stats-header-text h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0 0 4px;
+}
+
+.ch-stats-header-text p {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-sage);
+  margin: 0;
+}
+
+.ch-stats-cta-link button {
+  width: 100%;
+}
+
+.ch-stats-loading {
+  padding: 30px 0;
+  text-align: center;
+  color: var(--color-sage);
+  font-size: 13.5px;
+}
+
+.ch-stats-empty-box {
+  background: var(--color-white);
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 32px 20px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.ch-stats-empty-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.ch-stats-empty-box h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: var(--color-ink);
+}
+
+.ch-stats-empty-box p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--color-sage);
+}
+
+.ch-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.ch-kpi-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ch-kpi-card--warning {
+  border-left: 3px solid #f59e0b;
+}
+
+.ch-kpi-card--danger {
+  border-left: 3px solid #ef4444;
+}
+
+.ch-kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-sage);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ch-kpi-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-ink);
+  line-height: 1.1;
+}
+
+.ch-kpi-sub {
+  font-size: 11px;
+  color: var(--color-sage);
+}
+
+.ch-stats-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ch-stats-footer-card {
+  background: var(--color-sand);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.ch-stats-footer-card h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  color: var(--color-ink);
+}
+
+.ch-stats-footer-card p {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--color-sage);
+  line-height: 1.4;
+}
+
+.ch-stats-footer-card button {
+  width: 100%;
+}
+

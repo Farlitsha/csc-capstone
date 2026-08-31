@@ -12,6 +12,8 @@ import WorkshopsDirectoryPage from "./pages/WorkshopsDirectoryPage";
 import PostServicePage from "./pages/PostServicePage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import ProfilePage from "./pages/ProfilePage";
+import CommunityStatsPage from "./pages/CommunityStatsPage";
+import CommunityCensusPage from "./pages/CommunityCensusPage";
 import ResearcherDashboardPage from "./pages/ResearcherDashboardPage";
 import BuildSurveyPage from "./pages/BuildSurveyPage";
 import TakeSurveyPage from "./pages/TakeSurveyPage";
@@ -34,7 +36,10 @@ export default function App() {
           <Route path="/studies" element={<ProtectedRoute><StudiesDirectoryPage /></ProtectedRoute>} />
           <Route path="/workshops" element={<ProtectedRoute><WorkshopsDirectoryPage /></ProtectedRoute>} />
           <Route path="/announcements" element={<ProtectedRoute><AnnouncementsPage /></ProtectedRoute>} />
+          <Route path="/community-stats" element={<ProtectedRoute><CommunityStatsPage /></ProtectedRoute>} />
+          <Route path="/community-census" element={<ProtectedRoute><CommunityCensusPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
 
           <Route
             path="/researcher"
