@@ -1,10 +1,10 @@
 # Appendix T: Unit Test Report
 
 **Project Name:** CommHub (CSC3003S Capstone)  
-**Execution Date:** 2026-08-31 17:28:28  
+**Execution Date:** 2026-09-08 02:15:06  
 **Testing Framework:** pytest / unittest / FastAPI TestClient  
 **Target Environment:** SQLite in-memory isolated sandbox (Zero external DB dependencies)  
-**Overall Status:** FAILURES DETECTED
+**Overall Status:** ALL TESTS PASSING (100%)
 
 ---
 
@@ -34,9 +34,9 @@
 
 ```text
 ============================= test session starts =============================
-platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\ravhu\AppData\Local\Programs\Python\Python312\python.exe
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\farli\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\python.exe
 cachedir: .pytest_cache
-rootdir: C:\Users\ravhu\OneDrive - University of Cape Town\3rd YEAR\CSC3003S\Capstone\csc-capstone\backend
+rootdir: C:\Users\farli\OneDrive\Catch_MOVIES\final year project\csc-capstone\backend
 configfile: pytest.ini
 plugins: anyio-4.14.1, cov-7.1.0
 collecting ... collected 94 items
@@ -85,7 +85,7 @@ tests/test_item06_researcher_verification.py::test_researcher_registration_defau
 tests/test_item06_researcher_verification.py::test_admin_list_pending_researchers PASSED [ 44%]
 tests/test_item06_researcher_verification.py::test_admin_approve_researcher PASSED [ 45%]
 tests/test_item06_researcher_verification.py::test_admin_reject_researcher PASSED [ 46%]
-tests/test_item06_researcher_verification.py::test_non_admin_cannot_approve_researcher FAILED [ 47%]
+tests/test_item06_researcher_verification.py::test_non_admin_cannot_approve_researcher PASSED [ 47%]
 tests/test_item06_researcher_verification.py::test_unverified_researcher_blocked_from_creating_study PASSED [ 48%]
 tests/test_item06_researcher_verification.py::test_unverified_researcher_blocked_from_creating_workshop PASSED [ 50%]
 tests/test_item06_researcher_verification.py::test_verified_researcher_can_create_study PASSED [ 51%]
@@ -118,7 +118,7 @@ tests/test_item10_admin_moderation.py::test_non_admin_cannot_promote_roles PASSE
 tests/test_item10_admin_moderation.py::test_admin_stats_endpoint PASSED  [ 79%]
 tests/test_item10_admin_moderation.py::test_admin_get_all_accounts PASSED [ 80%]
 tests/test_item10_admin_moderation.py::test_admin_post_announcement_and_public_view PASSED [ 81%]
-tests/test_item10_admin_moderation.py::test_community_member_cannot_post_announcement FAILED [ 82%]
+tests/test_item10_admin_moderation.py::test_community_member_cannot_post_announcement PASSED [ 82%]
 tests/test_item11_reporting_and_audit.py::test_create_report_against_service PASSED [ 84%]
 tests/test_item11_reporting_and_audit.py::test_admin_list_and_filter_reports PASSED [ 85%]
 tests/test_item11_reporting_and_audit.py::test_admin_resolve_report_and_check_audit_log PASSED [ 86%]
@@ -136,54 +136,18 @@ tests/test_item15_database_integrity.py::test_user_deletion_cascades_services_an
 tests/test_item15_database_integrity.py::test_study_deletion_cascades_survey_and_questions PASSED [ 98%]
 tests/test_item15_database_integrity.py::test_workshop_deletion_cascades_registrations PASSED [100%]
 
-================================== FAILURES ===================================
-__________________ test_non_admin_cannot_approve_researcher ___________________
-
-client = <starlette.testclient.TestClient object at 0x00000238D0F4BF80>
-unverified_researcher = <app.models.User object at 0x00000238D0F4ACF0>
-community_user_auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJyb2xlIjoiY29tbXVuaXR5X21lbWJlciIsImV4cCI6MTc4ODE5MzYzN30.e-A5QCF_avXrDl652p02X9PnAboyrNbb72aqrWgxrIY'}
-
-    def test_non_admin_cannot_approve_researcher(client, unverified_researcher, community_user_auth_headers):
-        """DoD: Community member cannot approve researcher accounts (403 Forbidden)."""
-        response = client.patch(
-            f"/users/admin/researchers/{unverified_researcher.id}/approve",
-            headers=community_user_auth_headers,
-        )
->       assert response.status_code == 403
-E       assert 200 == 403
-E        +  where 200 = <Response [200 OK]>.status_code
-
-tests\test_item06_researcher_verification.py:85: AssertionError
-_______________ test_community_member_cannot_post_announcement ________________
-
-client = <starlette.testclient.TestClient object at 0x00000238D0DC18B0>
-community_user_auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiY29tbXVuaXR5X21lbWJlciIsImV4cCI6MTc4ODE5MzY5MH0.6nbZypAWBZdpQolO4E6nimSCN29maThmU0Cs49juIPs'}
-
-    def test_community_member_cannot_post_announcement(client, community_user_auth_headers):
-        """DoD: Non-admin member cannot post announcement (403 Forbidden)."""
-        payload = {"audience": "All members", "content": "Fake announcement"}
-        response = client.post("/announcements/", json=payload, headers=community_user_auth_headers)
->       assert response.status_code == 403
-E       assert 201 == 403
-E        +  where 201 = <Response [201 Created]>.status_code
-
-tests\test_item10_admin_moderation.py:104: AssertionError
 ============================== warnings summary ===============================
-..\..\..\..\..\..\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\testclient.py:1
-  C:\Users\ravhu\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+..\..\..\..\..\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\fastapi\testclient.py:1
+  C:\Users\farli\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
     from starlette.testclient import TestClient as TestClient  # noqa
 
-app\config.py:3
-  C:\Users\ravhu\OneDrive - University of Cape Town\3rd YEAR\CSC3003S\Capstone\csc-capstone\backend\app\config.py:3: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
-    class Settings(BaseSettings):
-
 app\database.py:10
-  C:\Users\ravhu\OneDrive - University of Cape Town\3rd YEAR\CSC3003S\Capstone\csc-capstone\backend\app\database.py:10: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+  C:\Users\farli\OneDrive\Catch_MOVIES\final year project\csc-capstone\backend\app\database.py:10: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
     Base = declarative_base()
 
 tests/test_item01_login_and_profiles.py::test_register_community_member_success
 tests/test_item06_researcher_verification.py::test_researcher_registration_defaults_to_pending
-  C:\Users\ravhu\OneDrive - University of Cape Town\3rd YEAR\CSC3003S\Capstone\csc-capstone\backend\app\routers\user.py:40: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+  C:\Users\farli\OneDrive\Catch_MOVIES\final year project\csc-capstone\backend\app\routers\user.py:40: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
     user_dict = user.dict()
 
 tests/test_item01_login_and_profiles.py: 7 warnings
@@ -196,27 +160,27 @@ tests/test_item08_survey_support.py: 7 warnings
 tests/test_item09_scheduling_workshops.py: 9 warnings
 tests/test_item10_admin_moderation.py: 6 warnings
 tests/test_item11_reporting_and_audit.py: 4 warnings
-  C:\Users\ravhu\OneDrive - University of Cape Town\3rd YEAR\CSC3003S\Capstone\csc-capstone\backend\app\oauth2.py:22: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  C:\Users\farli\OneDrive\Catch_MOVIES\final year project\csc-capstone\backend\app\oauth2.py:22: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
     expire = datetime.utcnow()+ timedelta(minutes= ACCESS_TOKEN_EXPIRE_MINUTES)
 
 tests/test_item02_profile_management.py::test_upload_avatar_unsupported_type_rejected
-  C:\Users\ravhu\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:344: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+  C:\Users\farli\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\fastapi\routing.py:344: StarletteDeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
     return await dependant.call(**values)
 
 tests/test_item02_profile_management.py::test_upload_avatar_oversized_rejected
 tests/test_item03_adverts.py::test_upload_service_photo_oversized_rejected
-  C:\Users\ravhu\AppData\Local\Programs\Python\Python312\Lib\site-packages\fastapi\routing.py:344: StarletteDeprecationWarning: 'HTTP_413_REQUEST_ENTITY_TOO_LARGE' is deprecated. Use 'HTTP_413_CONTENT_TOO_LARGE' instead.
+  C:\Users\farli\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\fastapi\routing.py:344: StarletteDeprecationWarning: 'HTTP_413_REQUEST_ENTITY_TOO_LARGE' is deprecated. Use 'HTTP_413_CONTENT_TOO_LARGE' instead.
     return await dependant.call(**values)
 
 tests/test_item03_adverts.py::test_create_service_advert_offer
 tests/test_item03_adverts.py::test_create_service_advert_request
 tests/test_item03_adverts.py::test_get_single_service_by_id
 tests/test_item03_adverts.py::test_close_service_advert_by_owner
-  C:\Users\ravhu\OneDrive - University of Cape Town\3rd YEAR\CSC3003S\Capstone\csc-capstone\backend\app\routers\services.py:77: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+  C:\Users\farli\OneDrive\Catch_MOVIES\final year project\csc-capstone\backend\app\routers\services.py:77: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
     db_service = models.Service(**service.dict(), poster_id=current_user.id, status=models.ServiceStatus.OPEN)
 
 tests/test_item06_researcher_verification.py::test_verified_researcher_can_create_study
-  C:\Users\ravhu\OneDrive - University of Cape Town\3rd YEAR\CSC3003S\Capstone\csc-capstone\backend\app\main.py:82: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
+  C:\Users\farli\OneDrive\Catch_MOVIES\final year project\csc-capstone\backend\app\routers\studies.py:40: PydanticDeprecatedSince20: The `dict` method is deprecated; use `model_dump` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.13/migration/
     payload = study.dict()
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
@@ -227,28 +191,36 @@ Name                           Stmts   Miss  Cover   Missing
 ------------------------------------------------------------
 app\__init__.py                    0      0   100%
 app\audit.py                       7      0   100%
-app\config.py                     14      0   100%
+app\config.py                     16      0   100%
 app\database.py                   13      4    69%   13-17
 app\i18n.py                       47      6    87%   51, 53, 71, 75, 85-86
-app\main.py                      195     38    81%   23-24, 55-59, 71, 92-104, 112-118, 131-140, 157, 159, 179, 181, 200-202, 223, 238, 241, 263, 292, 313, 349, 351, 411, 414
-app\models.py                    234      2    99%   162, 168
-app\oauth2.py                     39      4    90%   33, 35-36, 54
+app\main.py                       30      2    93%   29-30
+app\models.py                    247      2    99%   163, 169
+app\oauth2.py                     39      4    90%   33, 35-36, 53
 app\routers\announcements.py      19      1    95%   43
 app\routers\audit_logs.py         12      0   100%
-app\routers\community.py          19      0   100%
+app\routers\community.py          73     47    36%   51-52, 62-83, 89-209
+app\routers\posts.py              13      5    62%   14-18
 app\routers\reports.py            39      3    92%   12, 61, 63
-app\routers\services.py           96      8    92%   24, 38, 90, 104, 131, 164, 179, 181
+app\routers\services.py          115     24    79%   24, 38, 90, 104-130, 142, 169, 202, 217, 219
+app\routers\studies.py           202     65    68%   15, 17, 29, 50-62, 70-76, 89-98, 115, 117, 141-185, 195-211, 228-230, 251, 265, 268, 290, 319, 339, 375, 377, 437, 440
 app\routers\user.py              158     11    93%   89, 91, 220, 222, 239, 241, 256, 270, 320, 324-325
-app\routers\workshops.py         106     37    65%   23, 72-89, 117-132, 155-176, 203-235, 263, 269, 310, 316, 324, 383, 404, 410
-app\schemas.py                   303      9    97%   400-402, 407-412
-app\utils.py                       6      0   100%
+app\routers\workshops.py         116     45    61%   23, 72-89, 117-132, 155-176, 203-235, 263, 269, 305-312, 328, 334, 342, 401, 422, 428
+app\schemas\__init__.py           11      0   100%
+app\schemas\announcements.py      13      0   100%
+app\schemas\audit_logs.py         26      0   100%
+app\schemas\community.py          40      0   100%
+app\schemas\posts.py               7      0   100%
+app\schemas\reports.py            25      0   100%
+app\schemas\services.py           33      0   100%
+app\schemas\studies.py            70      0   100%
+app\schemas\user.py               76      1    99%   94
+app\schemas\workshops.py          74      9    88%   43-45, 50-55
+app\utils.py                      13      1    92%   15
 ------------------------------------------------------------
-TOTAL                           1307    123    91%
+TOTAL                           1534    230    85%
 Coverage JSON written to file coverage.json
-=========================== short test summary info ===========================
-FAILED tests/test_item06_researcher_verification.py::test_non_admin_cannot_approve_researcher
-FAILED tests/test_item10_admin_moderation.py::test_community_member_cannot_post_announcement
-============ 2 failed, 92 passed, 80 warnings in 138.41s (0:02:18) ============
+================= 94 passed, 79 warnings in 83.63s (0:01:23) ==================
 
 ```
 

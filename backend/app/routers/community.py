@@ -138,7 +138,7 @@ async def get_census_stats(db: Session = Depends(get_db)):
         )
 
 
-    # 1. Employment Distribution
+    #1. Employment Distribution
     emp_counts = Counter(r.employment_status for r in records if r.employment_status)
     emp_dist = [
         schemas.ChartDataPoint(label=label, count=count, percentage=round((count / total) * 100, 1))
