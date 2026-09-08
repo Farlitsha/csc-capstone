@@ -30,13 +30,16 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
 
-          <Route path="/" element={<ProtectedRoute><HomeRouter /></ProtectedRoute>} />
-          <Route path="/services" element={<ProtectedRoute><ServicesDirectoryPage /></ProtectedRoute>} />
+          {/* Public / Guest-browsable routes */}
+          <Route path="/" element={<HomeRouter />} />
+          <Route path="/services" element={<ServicesDirectoryPage />} />
+          <Route path="/studies" element={<StudiesDirectoryPage />} />
+          <Route path="/workshops" element={<WorkshopsDirectoryPage />} />
+          <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/community-stats" element={<CommunityStatsPage />} />
+
+          {/* Account-required routes (apply/request/census/profile) */}
           <Route path="/services/new" element={<ProtectedRoute><PostServicePage /></ProtectedRoute>} />
-          <Route path="/studies" element={<ProtectedRoute><StudiesDirectoryPage /></ProtectedRoute>} />
-          <Route path="/workshops" element={<ProtectedRoute><WorkshopsDirectoryPage /></ProtectedRoute>} />
-          <Route path="/announcements" element={<ProtectedRoute><AnnouncementsPage /></ProtectedRoute>} />
-          <Route path="/community-stats" element={<ProtectedRoute><CommunityStatsPage /></ProtectedRoute>} />
           <Route path="/community-census" element={<ProtectedRoute><CommunityCensusPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 

@@ -78,6 +78,14 @@ export default function LoginPage() {
           <span>{t("login.signupPrompt")}</span>
           <a href="/signup">{t("login.signupLink")}</a>
         </div>
+
+        <div className="ch-login__divider">
+          <span>or</span>
+        </div>
+
+        <a href="/" className="ch-login__guest">
+          Browse without an account →
+        </a>
       </div>
     </div>
   );

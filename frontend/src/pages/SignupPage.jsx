@@ -142,7 +142,7 @@ export default function SignupPage() {
             </div>
             <p className="ch-popia-box__text">
               {t("signup.popiaText") ||
-                "In accordance with South Africa's Protection of Personal Information Act (POPIA), CommHub collects and processes your details solely to connect you with local community services, workshops, and verified research. Your data is strictly kept secure and will never be shared or sold to third parties."}
+                "In accordance with South Africa's Protection of Personal Information Act (POPIA), CommHub collects and processes your details solely to connect you with local community services, workshops, and verified research. Your personal data is strictly kept secure and will never be shared or sold to third parties. Participation in community census surveys and research studies is entirely voluntary — you are never forced to take census or surveys, and they are purely optional. You can update or delete your information at any time."}
             </p>
             <label className="ch-popia-box__label">
               <input
@@ -153,7 +153,7 @@ export default function SignupPage() {
               />
               <span>
                 {t("signup.popiaConsent") ||
-                  "I consent to the collection and processing of my personal information as described above."}
+                  "I agree to the processing of my personal information in accordance with POPIA. I understand that participating in any census or survey is purely optional and voluntary."}
               </span>
             </label>
           </div>

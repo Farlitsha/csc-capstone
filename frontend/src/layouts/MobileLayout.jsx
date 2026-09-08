@@ -1,9 +1,11 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useAuth } from "../auth/AuthContext";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import "./MobileLayout.css";
 
 export default function MobileLayout({ title, children, hideNav = false, onBack }) {
+  const { user } = useAuth();
   const { t } = useLanguage();
 
   const NAV_ITEMS = [
@@ -11,7 +13,9 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
     { to: "/services", label: t("nav.services") },
     { to: "/studies", label: t("nav.studies") },
     { to: "/workshops", label: t("nav.workshops") || "Workshops" },
-    { to: "/profile", label: t("nav.profile") },
+    user
+      ? { to: "/profile", label: t("nav.profile") }
+      : { to: "/login", label: t("login.button") || "Log In" },
   ];
 
   return (
@@ -26,6 +30,11 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         )}
         {onBack && <span className="ch-mobile__title">{title}</span>}
         <div className="ch-mobile__topbar-spacer" />
+        {!user && (
+          <Link to="/login" className="ch-mobile__guest-login">
+            {t("login.button") || "Log In"}
+          </Link>
+        )}
         <LanguageSwitcher />
       </header>
 

@@ -62,6 +62,47 @@
   font-weight: 700;
 }
 
+.ch-login__divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 12px;
+  color: var(--color-sage, #94a3b8);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ch-login__divider::before,
+.ch-login__divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--color-border, #e2e8f0);
+}
+
+.ch-login__divider span {
+  padding: 0 10px;
+}
+
+.ch-login__guest {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink, #1e293b);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--color-border, #e2e8f0);
+  transition: all 0.15s ease;
+}
+
+.ch-login__guest:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
 /* ── POPIA Privacy Box ── */
 .ch-popia-box {
   background: #f8fafc;

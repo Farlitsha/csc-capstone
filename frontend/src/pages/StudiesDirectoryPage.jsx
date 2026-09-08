@@ -7,6 +7,8 @@ import Button from "../components/Button";
 import Icon from "../components/Icon";
 import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useAuth } from "../auth/AuthContext";
+import GuestAuthModal from "../components/GuestAuthModal";
 import "./StudiesDirectoryPage.css";
 
 const STATE_TONE = { live: "positive", draft: "neutral", closed: "warning" };
@@ -32,6 +34,7 @@ function getInitials(displayName, username) {
 
 export default function StudiesDirectoryPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [tab, setTab] = useState("open");
 
@@ -44,6 +47,9 @@ export default function StudiesDirectoryPage() {
   const [myApplications, setMyApplications] = useState([]);
   const [myAppsLoading, setMyAppsLoading] = useState(true);
   const [myAppsError, setMyAppsError] = useState("");
+
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
+  const [guestModalAction, setGuestModalAction] = useState("");
 
   const APPLICATION_LABEL = {
     applied: t("studies.statusApplied"),
@@ -60,6 +66,10 @@ export default function StudiesDirectoryPage() {
   }, []);
 
   function loadMyApplications() {
+    if (!user) {
+      setMyAppsLoading(false);
+      return;
+    }
     setMyAppsLoading(true);
     api
       .getMyApplications()
@@ -70,9 +80,14 @@ export default function StudiesDirectoryPage() {
 
   useEffect(() => {
     if (tab === "mine") loadMyApplications();
-  }, [tab]);
+  }, [tab, user]);
 
   async function handleApply(studyId) {
+    if (!user) {
+      setGuestModalAction("apply to participate in research studies");
+      setGuestModalOpen(true);
+      return;
+    }
     setApplyingId(studyId);
     try {
       await api.applyToStudy(studyId);
@@ -156,29 +171,53 @@ export default function StudiesDirectoryPage() {
 
       {tab === "mine" && (
         <div className="ch-studies-list">
-          {myAppsLoading && <p className="ch-studies-empty">{t("common.loading")}</p>}
-          {myAppsError && <p className="ch-studies-empty ch-studies-empty--error">{myAppsError}</p>}
-          {!myAppsLoading && !myAppsError && myApplications.length === 0 && (
-            <p className="ch-studies-empty">{t("studies.noApplications")}</p>
-          )}
-
-          {myApplications.map((a) => (
-            <div className="ch-study-card" key={a.id}>
-              <StatusChip label={APPLICATION_LABEL[a.status] || a.status} tone={APPLICATION_TONE[a.status] || "neutral"} />
-              <h3>{a.study_title}</h3>
-              <div className="ch-study-card__meta">
-                {a.study_honorarium && <span>{a.study_honorarium}</span>}
-                <span>{t("studies.appliedOn")} {new Date(a.applied_at).toLocaleDateString()}</span>
-              </div>
-              {a.status === "accepted" && (
-                <Button variant="accent" fullWidth onClick={() => navigate(`/studies/${a.study_id}/survey`)}>
-                  Take Survey
+          {!user ? (
+            <div style={{ textAlign: "center", padding: "32px 16px" }}>
+              <p style={{ color: "var(--color-sage)", fontSize: "14px", marginBottom: "14px" }}>
+                You are browsing as a guest. Create an account or log in to track your study applications.
+              </p>
+              <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                <Button variant="accent" onClick={() => navigate("/signup")}>
+                  Create Free Account
                 </Button>
-              )}
+                <Button variant="secondary" onClick={() => navigate("/login")}>
+                  Log In
+                </Button>
+              </div>
             </div>
-          ))}
+          ) : (
+            <>
+              {myAppsLoading && <p className="ch-studies-empty">{t("common.loading")}</p>}
+              {myAppsError && <p className="ch-studies-empty ch-studies-empty--error">{myAppsError}</p>}
+              {!myAppsLoading && !myAppsError && myApplications.length === 0 && (
+                <p className="ch-studies-empty">{t("studies.noApplications")}</p>
+              )}
+
+              {myApplications.map((a) => (
+                <div className="ch-study-card" key={a.id}>
+                  <StatusChip label={APPLICATION_LABEL[a.status] || a.status} tone={APPLICATION_TONE[a.status] || "neutral"} />
+                  <h3>{a.study_title}</h3>
+                  <div className="ch-study-card__meta">
+                    {a.study_honorarium && <span>{a.study_honorarium}</span>}
+                    <span>{t("studies.appliedOn")} {new Date(a.applied_at).toLocaleDateString()}</span>
+                  </div>
+                  {a.status === "accepted" && (
+                    <Button variant="accent" fullWidth onClick={() => navigate(`/studies/${a.study_id}/survey`)}>
+                      Take Survey
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
         </div>
       )}
+
+      <GuestAuthModal
+        isOpen={guestModalOpen}
+        onClose={() => setGuestModalOpen(false)}
+        actionName={guestModalAction}
+      />
     </MobileLayout>
   );
 }

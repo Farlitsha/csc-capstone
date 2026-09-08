@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MobileLayout from "../layouts/MobileLayout";
 import Button from "../components/Button";
+import Icon from "../components/Icon";
 import { api, ApiError } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./TakeSurveyPage.css";
@@ -105,6 +106,13 @@ export default function TakeSurveyPage() {
 
         {!loading && !loadError && !submitted && survey && (
           <form className="ch-take-survey__form" onSubmit={handleSubmit}>
+            <div className="ch-take-survey__voluntary-notice">
+              <Icon name="info" size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>
+                <strong>Voluntary Participation:</strong> Taking this research survey is purely optional. You are never forced to participate, and you may skip questions or exit at any time.
+              </span>
+            </div>
+
             {survey.questions.map((q, idx) => (
               <div className="ch-tq-card" key={q.id}>
                 <p className="ch-tq-prompt">

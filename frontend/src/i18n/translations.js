@@ -30,8 +30,8 @@ export const translations = {
       haveAccount: "Already have an account?",
       loginLink: "Log in",
       popiaTitle: "POPIA Data Privacy Notice",
-      popiaText: "In accordance with South Africa's Protection of Personal Information Act (POPIA), CommHub collects and processes your details solely to connect you with community services, workshops, and verified research. Your personal data is never sold or shared with third parties, and you can update or delete your information at any time.",
-      popiaConsent: "I agree to the processing of my personal information in accordance with POPIA for community hub services.",
+      popiaText: "In accordance with South Africa's Protection of Personal Information Act (POPIA), CommHub collects and processes your details solely to connect you with community services, workshops, and verified research. Your personal data is never sold or shared with third parties. Participation in community census surveys and research studies is entirely voluntary — you are never forced to take census or surveys, and they are purely optional. You can update or delete your information at any time.",
+      popiaConsent: "I agree to the processing of my personal information under POPIA. I understand that participating in any census or survey is purely optional and voluntary.",
     },
     home: {
       greeting: "Molo",
@@ -133,8 +133,8 @@ export const translations = {
       haveAccount: "Het jy reeds 'n rekening?",
       loginLink: "Teken in",
       popiaTitle: "POPIA Privaatheidskennisgewing",
-      popiaText: "In ooreenstemming met die Wet op die Beskerming van Persoonlike Inligting (POPIA), samel CommHub u besonderhede slegs in om u te verbind met gemeenskapsdienste, werkswinkels en navorsing. U inligting word nooit aan derde partye verkoop nie.",
-      popiaConsent: "Ek stem in tot die verwerking van my persoonlike inligting kragtens POPIA.",
+      popiaText: "In ooreenstemming met die Wet op die Beskerming van Persoonlike Inligting (POPIA), samel CommHub u besonderhede slegs in om u te verbind met gemeenskapsdienste, werkswinkels en navorsing. U inligting word nooit aan derde partye verkoop nie. Deelname aan gemeenskapsensusse en navorsingsopnames is heeltemal vrywillig — u word nooit gedwing om 'n sensus of opname te voltooi nie, en dit is heeltemal opsioneel. U kan u inligting te eniger tyd bywerk of verwyder.",
+      popiaConsent: "Ek stem in tot die verwerking van my persoonlike inligting kragtens POPIA. Ek verstaan dat deelname aan enige sensus of opname heeltemal opsioneel en vrywillig is.",
     },
     home: {
       greeting: "Hallo",
@@ -163,6 +163,8 @@ export const translations = {
       lowDataOff: "Lae Data: Foto's Sigbaar",
       loadPhoto: "Laai foto",
       photoHidden: "Foto versteek (Lae data)",
+    },
+    postService: {
       title: "Plaas 'n Diens",
       offering: "Ek bied dit aan",
       requesting: "Ek soek dit",
@@ -236,8 +238,8 @@ export const translations = {
       haveAccount: "Sele unayo iakhawunti?",
       loginLink: "Ngena",
       popiaTitle: "Isaziso seMfihlo ye-POPIA",
-      popiaText: "Ngokomthetho we-POPIA eMzantsi Afrika, iCommHub iqokelela iinkcukacha zakho kuphela ukukunxulumanisa neenkonzo zoluntu, iindibano zocweyo, kunye nophando oluvunyiweyo. Iinkcukacha zakho azisoze zithengiswe.",
-      popiaConsent: "Ndiyavuma ukuba iinkcukacha zam ziqhutywe ngokomthetho we-POPIA.",
+      popiaText: "Ngokomthetho we-POPIA eMzantsi Afrika, iCommHub iqokelela iinkcukacha zakho kuphela ukukunxulumanisa neenkonzo zoluntu, iindibano zocweyo, kunye nophando oluvunyiweyo. Iinkcukacha zakho azisoze zithengiswe. Ukuthatha inxaxheba kuphando lwe-census kunye novavanyo loluntu kukuthanda kwakho ngokupheleleyo — awusoze unyanzelwe ukuba uthathe inxaxheba kwi-census okanye kuphando, kwaye zikhethekile ngokupheleleyo. Ungazihlaziya okanye uzicime iinkcukacha zakho nangaliphi na ixesha.",
+      popiaConsent: "Ndiyavuma ukuba iinkcukacha zam ziqhutywe ngokomthetho we-POPIA. Ndiyaqonda ukuba ukuthatha inxaxheba kwi-census okanye kuphando kukhetho lwam ngokupheleleyo.",
     },
     home: {
       greeting: "Molo",
@@ -338,8 +340,8 @@ export const translations = {
       haveAccount: "Usunayo i-akhawunti?",
       loginLink: "Ngena",
       popiaTitle: "Isaziso Sobumfihlo se-POPIA",
-      popiaText: "Ngokomthetho we-POPIA waseNingizimu Afrika, i-CommHub iqoqa imininingwane yakho kuphela ukukuxhumanisa nezinsizakalo zomphakathi, ama-workshop, nocwaningo oluqinisekisiwe. Imininingwane yakho ayithengiswa.",
-      popiaConsent: "Ngiyavuma ukuthi imininingwane yami isetshenziswe ngaphansi kwe-POPIA.",
+      popiaText: "Ngokomthetho we-POPIA waseNingizimu Afrika, i-CommHub iqoqa imininingwane yakho kuphela ukukuxhumanisa nezinsizakalo zomphakathi, ama-workshop, nocwaningo oluqinisekisiwe. Imininingwane yakho ayithengiswa. Ukubamba iqhaza ocwaningweni lwe-census kanye nokuhlola komphakathi kungokuzithandela ngokuphelele — awuphoqwa ukuba uthathe i-census noma ucwaningo, futhi kuyisinqumo sakho ngokuphelele. Ungabuyekeza noma ususe imininingwane yakho noma kunini.",
+      popiaConsent: "Ngiyavuma ukuthi imininingwane yami isetshenziswe ngaphansi kwe-POPIA. Ngiyaqonda ukuthi ukubamba iqhaza ku-census noma ocwaningweni kungokuzithandela ngokuphelele.",
     },
     home: {
       greeting: "Sawubona",

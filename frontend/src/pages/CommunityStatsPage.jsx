@@ -5,26 +5,31 @@ import PieChart from "../components/PieChart";
 import BarChart from "../components/BarChart";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
+import { useAuth } from "../auth/AuthContext";
+import GuestAuthModal from "../components/GuestAuthModal";
 import { api } from "../lib/api";
 import "./CommunityStatsPage.css";
 
 export default function CommunityStatsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [hasUserResponse, setHasUserResponse] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
+  const [guestModalAction, setGuestModalAction] = useState("");
 
   useEffect(() => {
     Promise.all([
       api.getCensusStats().catch(() => null),
-      api.getMyCensus().catch(() => null),
+      user ? api.getMyCensus().catch(() => null) : Promise.resolve(null),
     ])
       .then(([statsData, myCensus]) => {
         if (statsData) setStats(statsData);
         if (myCensus) setHasUserResponse(true);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [user]);
 
   return (
     <MobileLayout title="Community Insights" onBack={() => navigate(-1)}>
@@ -36,21 +41,34 @@ export default function CommunityStatsPage() {
               Aggregated demographic data, employment statistics, poverty rates, and community skill profiles.
             </p>
           </div>
-          <Link to="/community-census" className="ch-stats-cta-link">
-            <Button variant="accent">
-              {hasUserResponse ? (
-                <>
-                  <Icon name="edit" size={14} style={{ marginRight: 6 }} />
-                  Update My Answers
-                </>
-              ) : (
-                <>
-                  <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-                  Take Census Survey
-                </>
-              )}
+          {user ? (
+            <Link to="/community-census" className="ch-stats-cta-link">
+              <Button variant="accent">
+                {hasUserResponse ? (
+                  <>
+                    <Icon name="edit" size={14} style={{ marginRight: 6 }} />
+                    Update My Answers
+                  </>
+                ) : (
+                  <>
+                    <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
+                    Take Census Survey
+                  </>
+                )}
+              </Button>
+            </Link>
+          ) : (
+            <Button
+              variant="accent"
+              onClick={() => {
+                setGuestModalAction("participate in the community census survey");
+                setGuestModalOpen(true);
+              }}
+            >
+              <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
+              Take Census Survey
             </Button>
-          </Link>
+          )}
         </div>
 
         {loading ? (
@@ -64,12 +82,25 @@ export default function CommunityStatsPage() {
             </div>
             <h3>No Census Data Yet</h3>
             <p>Be the first member to share your information and help shape community insights.</p>
-            <Link to="/community-census">
-              <Button variant="accent">
+            {user ? (
+              <Link to="/community-census">
+                <Button variant="accent">
+                  <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
+                  Answer Census Survey
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="accent"
+                onClick={() => {
+                  setGuestModalAction("answer the census survey");
+                  setGuestModalOpen(true);
+                }}
+              >
                 <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
                 Answer Census Survey
               </Button>
-            </Link>
+            )}
           </div>
         ) : (
           <div className="ch-stats-content">
@@ -159,15 +190,33 @@ export default function CommunityStatsPage() {
             <div className="ch-stats-footer-card">
               <h3>Help make this data more accurate</h3>
               <p>Your responses help local leaders, researchers, and NGOs allocate resources where they are needed most.</p>
-              <Link to="/community-census">
-                <Button variant="secondary">
-                  {hasUserResponse ? "Review My Responses" : "Add My Input to the Census"}
+              {user ? (
+                <Link to="/community-census">
+                  <Button variant="secondary">
+                    {hasUserResponse ? "Review My Responses" : "Add My Input to the Census"}
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setGuestModalAction("participate in the community census survey");
+                    setGuestModalOpen(true);
+                  }}
+                >
+                  Add My Input to the Census
                 </Button>
-              </Link>
+              )}
             </div>
           </div>
         )}
       </div>
+
+      <GuestAuthModal
+        isOpen={guestModalOpen}
+        onClose={() => setGuestModalOpen(false)}
+        actionName={guestModalAction}
+      />
     </MobileLayout>
   );
 }
