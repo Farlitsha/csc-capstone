@@ -2,20 +2,25 @@
    Everything in the app should reference these variables rather than hardcoding
    colors/spacing, so a future Figma update can be re-synced in one place. */
 :root {
-  /* Color */
+  /* Color - Accessible WCAG 2.1 AA Compliant */
   --color-paper: #fbf8f1;      /* app background */
   --color-white: #ffffff;
-  --color-ink: #1b2e2c;        /* primary text */
-  --color-teal-700: #1b4b4f;   /* brand / primary actions */
+  --color-ink: #1b2e2c;        /* primary text (14:1 contrast) */
+  --color-teal-700: #1b4b4f;   /* brand / primary actions (8.5:1 contrast) */
   --color-teal-700-hover: #163d40;
-  --color-sage: #7fa69a;       /* secondary text, labels */
+  --color-sage: #334155;       /* secondary text, labels, metadata (8.4:1 on paper, 8.9:1 on white) */
   --color-sage-dim: #dce8e2;   /* positive chip bg */
   --color-sand: #f4eedf;       /* neutral chip / input accents */
-  --color-signal: #e8871a;     /* accent (CTAs, highlights) */
+  --color-signal: #b45309;     /* accent / warning text (4.8:1 contrast) */
   --color-signal-dim: #fbe4c6; /* warning chip bg */
-  --color-line: #dcd5c2;       /* borders */
-  --color-danger: #c0392b;
+  --color-line: #8c826e;       /* borders & dividers (3.2:1 non-text contrast) */
+  --color-border-input: #64748b; /* input & chip interactive borders (4.6:1 contrast) */
+  --color-danger: #b91c1c;     /* error & danger text (5.2:1 contrast) */
   --color-danger-dim: #f6dbd7;
+  --color-positive-text: #0d3d34; /* high-contrast positive badge text (10:1 on sage-dim) */
+  --color-warning-text: #663c00;  /* high-contrast warning badge text (8.5:1 on signal-dim) */
+  --color-danger-text: #84180f;   /* high-contrast danger badge text (8.9:1 on danger-dim) */
+  --color-neutral-text: #2c2820;  /* high-contrast neutral badge text (11.5:1 on sand) */
 
   /* Typography */
   --font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

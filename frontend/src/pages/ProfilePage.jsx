@@ -209,10 +209,25 @@ export default function ProfilePage() {
               <img
                 className="ch-profile__avatar-img"
                 src={src}
-                alt={`${user?.display_name || user?.username} profile picture`}
+                alt={`${user?.display_name || user?.username || "User"} profile picture`}
               />
             ) : (
-              <span className="ch-profile__avatar-initials">{getInitials(user)}</span>
+              <span className="ch-profile__avatar-placeholder">
+                <svg
+                  className="ch-profile__avatar-default-icon"
+                  width="44"
+                  height="44"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
             )}
             <span className="ch-profile__avatar-overlay">
               {picUploading ? (
@@ -321,7 +336,7 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* ── Read-only account details ── */}
+        {/*Read-only account details */}
         <Card title={t("profile.account")}>
           <div className="ch-profile__details">
             <div>
@@ -346,7 +361,7 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* ── Activity card (community members & researchers only) ── */}
+        {/* Activity card (community members & researchers only) */}
         {(isMember || isResearcher) && (
           <Card title={isResearcher ? "My Posted Studies" : "My Study Applications"}>
             <div className="ch-profile__activity">

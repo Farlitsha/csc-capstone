@@ -7,30 +7,31 @@
 
 .ch-field__label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-sage);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 .ch-field__input {
   width: 100%;
   background: var(--color-white);
-  border: 1px solid var(--color-line);
+  border: 1px solid var(--color-border-input);
   border-radius: 9px;
   padding: 12px 14px;
   font-size: 13px;
-  color: var(--color-teal-700);
+  color: var(--color-ink);
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ch-field__input:focus {
   border-color: var(--color-teal-700);
+  box-shadow: 0 0 0 2px rgba(27, 75, 79, 0.25);
 }
 
 .ch-field__input::placeholder {
-  color: var(--color-sage);
+  color: #64748b;
 }
 
 textarea.ch-field__input {

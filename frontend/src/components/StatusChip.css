@@ -1,27 +1,42 @@
 .ch-status-chip {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   border-radius: var(--radius-pill);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-teal-700);
+  line-height: 1.2;
   white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.ch-status-chip__icon {
+  font-size: 10px;
+  line-height: 1;
 }
 
 .ch-status-chip--positive {
   background: var(--color-sage-dim);
+  color: var(--color-positive-text);
+  border-color: #a8cfc2;
 }
 
 .ch-status-chip--warning {
   background: var(--color-signal-dim);
+  color: var(--color-warning-text);
+  border-color: #f6cca0;
 }
 
 .ch-status-chip--neutral {
   background: var(--color-sand);
+  color: var(--color-neutral-text);
+  border-color: #ded5c2;
 }
 
 .ch-status-chip--danger {
   background: var(--color-danger-dim);
-  color: var(--color-danger);
+  color: var(--color-danger-text);
+  border-color: #f1b8b0;
 }
+

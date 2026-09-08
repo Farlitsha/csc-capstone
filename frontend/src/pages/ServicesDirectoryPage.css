@@ -32,17 +32,17 @@
   font-weight: 600;
   padding: 5px 10px;
   border-radius: 6px;
-  border: 1px solid var(--color-line, #e2e8f0);
+  border: 1px solid var(--color-border-input);
   background: var(--color-surface, #ffffff);
-  color: var(--color-sage, #64748b);
+  color: var(--color-sage);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .ch-low-data-btn--active {
   background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
+  color: #065f46;
+  border-color: #6ee7b7;
 }
 
 .ch-services-post-cta {
@@ -83,7 +83,7 @@
 
 .ch-service-full-card__media--low-data {
   background: #f8fafc;
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border-input);
   padding: 12px 14px;
   display: flex;
   align-items: center;
@@ -93,7 +93,7 @@
 
 .ch-low-data-notice {
   font-size: 12px;
-  color: #64748b;
+  color: var(--color-sage);
 }
 
 .ch-load-photo-btn {

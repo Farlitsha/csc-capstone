@@ -57,6 +57,8 @@ async def list_services(
     can reach out directly to work out the details, rather than applying
     through the platform.
     """
+
+    #q is query object, not a list of results yet. We can add filters to it before executing it.
     q = db.query(models.Service).options(joinedload(models.Service.poster)).filter(
         models.Service.status == models.ServiceStatus.OPEN
     )

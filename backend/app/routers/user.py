@@ -9,13 +9,13 @@ from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-# ── Avatar upload config ───────────────────────────────────────────────────────
+# avatar upload directory and allowed file types/sizes
 AVATAR_DIR = Path("uploads/avatars")
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_AVATAR_BYTES = 2 * 1024 * 1024  # 2 MB
 
 
-# ── Registration & Login ───────────────────────────────────────────────────────
+# User account management endpoints (registration, login, profile updates)
 
 @router.post("/account/create", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
 async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
@@ -66,9 +66,7 @@ async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session 
     access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role.value})
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-# ── Own profile endpoints ──────────────────────────────────────────────────────
-
+## Authenticated user endpoints (view/update own profile, upload avatar)
 @router.get("/me", response_model=schemas.PrivateProfileOut)
 async def get_current_user_info(current_user: models.User = Depends(oauth2.get_current_user)):
     """Return the authenticated user's full private profile."""

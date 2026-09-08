@@ -5,6 +5,10 @@
   padding: 16px;
   box-shadow: var(--shadow-card);
   margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .ch-chart-title {
@@ -24,20 +28,24 @@
   font-size: 13px;
   background: var(--color-sand);
   border-radius: var(--radius-md);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .ch-pie-wrapper {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 16px;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-@media (min-width: 640px) {
+@media (max-width: 440px) {
   .ch-pie-wrapper {
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
+    gap: 12px;
   }
 }
 
@@ -47,11 +55,15 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  max-width: 45%;
 }
 
 .ch-pie-svg {
   transform: rotate(-90deg);
   overflow: visible;
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 .ch-pie-slice {
@@ -100,6 +112,8 @@
   gap: 8px;
   width: 100%;
   max-width: 320px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .ch-legend-item {
@@ -110,6 +124,9 @@
   border-radius: var(--radius-sm);
   transition: background 0.15s ease;
   cursor: pointer;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .ch-legend-item:hover,
@@ -127,17 +144,19 @@
 
 .ch-legend-label {
   color: var(--color-ink);
-  flex: 1;
+  flex: 1 1 auto;
   margin-right: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .ch-legend-value {
   color: var(--color-sage);
   font-size: 12px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .ch-legend-value strong {

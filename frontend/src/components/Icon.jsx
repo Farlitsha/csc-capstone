@@ -29,6 +29,14 @@ export default function Icon({ name, size = 16, className = "", style = {} }) {
           <circle cx="12" cy="10" r="3" />
         </svg>
       );
+    case "user":
+    case "avatar":
+      return (
+        <svg {...props}>
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      );
     case "users":
       return (
         <svg {...props}>

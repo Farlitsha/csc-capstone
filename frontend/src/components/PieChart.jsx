@@ -14,7 +14,7 @@ const DEFAULT_COLORS = [
   "#84cc16", // lime-500
 ];
 
-export default function PieChart({ data = [], title, size = 180, donut = true, colors = DEFAULT_COLORS }) {
+export default function PieChart({ data = [], title, size = 150, donut = true, colors = DEFAULT_COLORS }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
   if (!data || data.length === 0) {
