@@ -72,7 +72,7 @@ export default function WorkshopsDirectoryPage() {
   return (
     <MobileLayout title="Workshops" onBack={() => navigate(-1)}>
       <div className="ch-workshops-page">
-        <div className="ch-workshops-tabs">
+        <div className="ch-workshops-tabs" role="group" aria-label="Workshops navigation views">
           <Chip label="Upcoming Workshops" active={tab === "all"} onClick={() => setTab("all")} />
           <Chip
             label={`My Bookings (${myRegistrations.length})`}
@@ -91,13 +91,20 @@ export default function WorkshopsDirectoryPage() {
           />
         </div>
 
+        {/* Screen-reader live region announcing active count */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          {tab === "all"
+            ? (!loading && !error && `${workshops.length} upcoming ${workshops.length === 1 ? "workshop" : "workshops"} scheduled`)
+            : (!loading && !error && `${myRegistrations.length} active ${myRegistrations.length === 1 ? "booking" : "bookings"}`)}
+        </div>
+
         {feedback && (
-          <div style={{ background: "#d1fae5", border: "1px solid #10b981", color: "#065f46", padding: "10px 14px", borderRadius: "8px", fontSize: "14px" }}>
+          <div role="status" aria-live="polite" style={{ background: "#d1fae5", border: "1px solid #10b981", color: "#065f46", padding: "10px 14px", borderRadius: "8px", fontSize: "14px" }}>
             {feedback}
           </div>
         )}
         {error && (
-          <div style={{ background: "#fee2e2", border: "1px solid #ef4444", color: "#991b1b", padding: "10px 14px", borderRadius: "8px", fontSize: "14px" }}>
+          <div role="alert" aria-live="assertive" style={{ background: "#fee2e2", border: "1px solid #ef4444", color: "#991b1b", padding: "10px 14px", borderRadius: "8px", fontSize: "14px" }}>
             {error}
           </div>
         )}

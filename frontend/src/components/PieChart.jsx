@@ -63,11 +63,33 @@ export default function PieChart({ data = [], title, size = 150, donut = true, c
   const activeItem = hoveredIdx !== null ? slices[hoveredIdx] : null;
 
   return (
-    <div className="ch-chart-container">
+    <div className="ch-chart-container" role="region" aria-label={title || "Pie chart"}>
       {title && <h3 className="ch-chart-title">{title}</h3>}
-      <div className="ch-pie-wrapper">
+      
+      {/* Screen-reader accessible data table fallback */}
+      <table className="sr-only">
+        <caption>{title ? `${title} data breakdown` : "Pie chart data breakdown"}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Category</th>
+            <th scope="col">Count</th>
+            <th scope="col">Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {slices.map((slice) => (
+            <tr key={slice.label}>
+              <th scope="row">{slice.label}</th>
+              <td>{slice.count}</td>
+              <td>{slice.percentage}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="ch-pie-wrapper" aria-hidden="true">
         <div className="ch-pie-svg-box" style={{ width: size, height: size }}>
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="ch-pie-svg">
+          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="ch-pie-svg" focusable="false">
             <g transform={`rotate(-90 ${radius} ${radius})`}>
               {slices.map((slice) => (
                 <circle

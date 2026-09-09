@@ -22,9 +22,31 @@ export default function BarChart({ data = [], title, colors = DEFAULT_COLORS, sh
   const maxCount = Math.max(...data.map((d) => d.count || 0), 1);
 
   return (
-    <div className="ch-chart-container">
+    <div className="ch-chart-container" role="region" aria-label={title || "Bar chart"}>
       {title && <h3 className="ch-chart-title">{title}</h3>}
-      <div className="ch-bar-list">
+
+      {/* Screen-reader accessible data table fallback */}
+      <table className="sr-only">
+        <caption>{title ? `${title} data distribution` : "Bar chart data distribution"}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Category</th>
+            <th scope="col">Count</th>
+            {showPercentage && <th scope="col">Percentage</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.label}>
+              <th scope="row">{item.label}</th>
+              <td>{item.count}</td>
+              {showPercentage && <td>{item.percentage !== undefined ? `${item.percentage}%` : "—"}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="ch-bar-list" aria-hidden="true">
         {data.map((item, idx) => {
           const color = colors[idx % colors.length];
           const barWidth = Math.max(((item.count || 0) / maxCount) * 100, 4);

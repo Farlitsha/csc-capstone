@@ -6,28 +6,66 @@
 }
 
 .ch-field__label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--color-sage);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.ch-field__required {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+.ch-field__hint {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: -2px;
 }
 
 .ch-field__input {
   width: 100%;
+  min-height: 44px;
   background: var(--color-white);
   border: 1px solid var(--color-border-input);
   border-radius: 9px;
-  padding: 12px 14px;
-  font-size: 13px;
+  padding: 10px 14px;
+  font-size: 16px; /* 16px avoids auto-zoom on iOS Safari */
   color: var(--color-ink);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .ch-field__input {
+    font-size: 14px;
+  }
 }
 
 .ch-field__input:focus {
   border-color: var(--color-teal-700);
   box-shadow: 0 0 0 2px rgba(27, 75, 79, 0.25);
+}
+
+.ch-field--error .ch-field__input {
+  border-color: #dc2626;
+}
+
+.ch-field--error .ch-field__input:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+}
+
+.ch-field__error-msg {
+  font-size: 12px;
+  color: #b91c1c;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .ch-field__input::placeholder {
@@ -36,5 +74,6 @@
 
 textarea.ch-field__input {
   resize: vertical;
-  min-height: 70px;
+  min-height: 80px;
 }
+

@@ -253,13 +253,14 @@ export default function ServicesDirectoryPage() {
         <input
           type="search"
           placeholder={t("services.search")}
+          aria-label={t("services.search") || "Search services"}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
 
       <div className="ch-services-toolbar">
-        <div className="ch-services-filters">
+        <div className="ch-services-filters" role="group" aria-label="Filter by category">
           {CATEGORIES.map((c) => (
             <Chip key={c} label={c} active={category === c} onClick={() => setCategory(c)} />
           ))}
@@ -268,6 +269,7 @@ export default function ServicesDirectoryPage() {
           type="button"
           className={`ch-low-data-btn ${lowDataMode ? "ch-low-data-btn--active" : ""}`}
           onClick={toggleLowData}
+          aria-pressed={lowDataMode}
           title="Toggle low data optimization"
         >
           <Icon name={lowDataMode ? "lightning" : "image"} size={13} style={{ marginRight: 6 }} />
@@ -279,6 +281,11 @@ export default function ServicesDirectoryPage() {
         <Button variant="accent" fullWidth onClick={() => navigate("/services/new")}>
           {t("services.postButton")}
         </Button>
+      </div>
+
+      {/* Screen-reader live region announcing filter updates */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {!loading && !error && `${displayedServices.length} service${displayedServices.length === 1 ? "" : "s"} found for category ${category}${query ? ` matching "${query}"` : ""}`}
       </div>
 
       <div className="ch-services-list">

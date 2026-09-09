@@ -16,6 +16,11 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
 
   return (
     <div className="ch-desktop">
+      {/* ── Accessible Skip Navigation Link ── */}
+      <a href="#main-content" className="ch-skip-link">
+        Skip to main content
+      </a>
+
       <header className="ch-desktop__topbar">
         <div className="ch-desktop__brand">
           <span className="ch-desktop__wordmark">CommHub</span>
@@ -30,12 +35,14 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
           <Button variant="secondary" onClick={logout}>
             {t("common.logout")}
           </Button>
-          <div className="ch-desktop__avatar" title={user?.username}>
+          <div className="ch-desktop__avatar" title={user?.username} aria-label={`${user?.username || "User"} profile avatar`}>
             {initials}
           </div>
         </div>
       </header>
-      <div className="ch-desktop__body">{children}</div>
+      <main id="main-content" tabIndex="-1" className="ch-desktop__body">
+        {children}
+      </main>
     </div>
   );
 }

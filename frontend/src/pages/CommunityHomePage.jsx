@@ -80,9 +80,6 @@ export default function CommunityHomePage() {
               <Icon name="document" size={13} style={{ marginRight: 5 }} />
               Community Census & Stats
             </span>
-            <Link to="/community-stats" className="ch-insights-card__link">
-              View charts →
-            </Link>
           </div>
           <h3>Local Job Market & Poverty Insights</h3>
           <p>

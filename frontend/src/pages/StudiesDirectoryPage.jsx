@@ -89,7 +89,7 @@ export default function StudiesDirectoryPage() {
 
   return (
     <MobileLayout title={t("studies.title")} onBack={() => navigate(-1)}>
-      <div className="ch-studies-tabs">
+      <div className="ch-studies-tabs" role="group" aria-label="Studies navigation views">
         <Chip label={t("studies.openTab")} active={tab === "open"} onClick={() => setTab("open")} />
         <Chip label={t("studies.myAppsTab")} active={tab === "mine"} onClick={() => setTab("mine")} />
         <Chip
@@ -102,6 +102,13 @@ export default function StudiesDirectoryPage() {
           active={false}
           onClick={() => navigate("/workshops")}
         />
+      </div>
+
+      {/* Screen-reader live region announcing tab and study count updates */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {tab === "open"
+          ? (!studiesLoading && !studiesError && `${liveStudies.length} open research ${liveStudies.length === 1 ? "study" : "studies"} available`)
+          : (!myAppsLoading && !myAppsError && `${myApplications.length} active ${myApplications.length === 1 ? "application" : "applications"}`)}
       </div>
 
       {tab === "open" && (

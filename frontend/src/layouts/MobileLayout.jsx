@@ -16,9 +16,14 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
 
   return (
     <div className="ch-mobile">
+      {/* ── Accessible Skip Navigation Link ── */}
+      <a href="#main-content" className="ch-skip-link">
+        Skip to main content
+      </a>
+
       <header className="ch-mobile__topbar">
         {onBack ? (
-          <button className="ch-mobile__back" onClick={onBack} aria-label="Back">
+          <button className="ch-mobile__back" onClick={onBack} aria-label="Go back">
             ←
           </button>
         ) : (
@@ -29,18 +34,21 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         <LanguageSwitcher />
       </header>
 
-      <main className="ch-mobile__body">{children}</main>
+      <main id="main-content" tabIndex="-1" className="ch-mobile__body">
+        {children}
+      </main>
 
       {!hideNav && (
-        <nav className="ch-mobile__nav">
+        <nav className="ch-mobile__nav" aria-label="Main Navigation">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
+              aria-current={({ isActive }) => (isActive ? "page" : undefined)}
               className={({ isActive }) => `ch-mobile__navitem${isActive ? " ch-mobile__navitem--active" : ""}`}
             >
-              <span className="ch-mobile__navdot" />
-              {item.label}
+              <span className="ch-mobile__navdot" aria-hidden="true" />
+              <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>

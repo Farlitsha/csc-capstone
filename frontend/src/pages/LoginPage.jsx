@@ -67,7 +67,11 @@ export default function LoginPage() {
             required
           />
 
-          {error && <p className="ch-login__error">{error}</p>}
+          {error && (
+            <p className="ch-login__error" role="alert" aria-live="assertive">
+              {error}
+            </p>
+          )}
 
           <Button type="submit" fullWidth disabled={submitting}>
             {submitting ? t("login.signingIn") : t("login.button")}

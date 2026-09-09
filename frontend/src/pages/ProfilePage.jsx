@@ -263,7 +263,7 @@ export default function ProfilePage() {
             {showEdit ? "Cancel" : "Edit Profile"}
           </Button>
           {saveMessage && !showEdit && (
-            <p className="ch-profile__success">{saveMessage}</p>
+            <p className="ch-profile__success" role="status" aria-live="polite">{saveMessage}</p>
           )}
         </div>
 
@@ -327,7 +327,7 @@ export default function ProfilePage() {
               </label>
 
               <div className="ch-profile__save-row">
-                {saveError && <p className="ch-profile__error">{saveError}</p>}
+                {saveError && <p className="ch-profile__error" role="alert" aria-live="assertive">{saveError}</p>}
                 <Button type="submit" disabled={saving}>
                   {saving ? "Saving…" : "Save Profile"}
                 </Button>
@@ -419,8 +419,8 @@ export default function ProfilePage() {
                   {t("profile.becomeAdmin") || "Become Administrator"}
                 </Button>
               </div>
-              {roleMessage && <p className="ch-profile__success">{roleMessage}</p>}
-              {roleError && <p className="ch-profile__error">{roleError}</p>}
+              {roleMessage && <p className="ch-profile__success" role="status" aria-live="polite">{roleMessage}</p>}
+              {roleError && <p className="ch-profile__error" role="alert" aria-live="assertive">{roleError}</p>}
             </div>
           </Card>
         )}

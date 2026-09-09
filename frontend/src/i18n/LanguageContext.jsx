@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { LANGUAGES, resolve } from "./translations";
 
 const LANG_KEY = "commhub_lang";
@@ -9,6 +9,10 @@ export function LanguageProvider({ children }) {
     const stored = localStorage.getItem(LANG_KEY);
     return LANGUAGES.includes(stored) ? stored : "en";
   });
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const setLang = useCallback((next) => {
     if (!LANGUAGES.includes(next)) return;

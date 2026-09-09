@@ -158,7 +158,11 @@ export default function SignupPage() {
             </label>
           </div>
 
-          {error && <p className="ch-login__error">{error}</p>}
+          {error && (
+            <p className="ch-login__error" role="alert" aria-live="assertive">
+              {error}
+            </p>
+          )}
           <Button type="submit" fullWidth disabled={submitting}>
             {submitting ? t("signup.creating") : t("signup.button")}
           </Button>
