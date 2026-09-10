@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext";
+import { useAuth } from "../auth/AuthContext";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import Icon from "../components/Icon";
 import "./MobileLayout.css";
@@ -31,6 +32,7 @@ if (typeof window !== "undefined") {
 }
 
 export default function MobileLayout({ title, children, hideNav = false, onBack }) {
+  const { user } = useAuth();
   const { t } = useLanguage();
   const [showOfflineModal, setShowOfflineModal] = useState(
     () => isOfflineModalActive && !hasDismissedOfflineSession
@@ -57,7 +59,9 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
     { to: "/services", label: t("nav.services"), icon: "briefcase" },
     { to: "/studies", label: t("nav.studies"), icon: "clipboard" },
     { to: "/workshops", label: t("nav.workshops") || "Workshops", icon: "calendar" },
-    { to: "/profile", label: t("nav.profile"), icon: "user" },
+    user
+      ? { to: "/profile", label: t("nav.profile"), icon: "user" }
+      : { to: "/login", label: t("login.button") || "Log In", icon: "user" },
   ];
 
   return (
@@ -77,6 +81,11 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         )}
         {onBack && <span className="ch-mobile__title">{title}</span>}
         <div className="ch-mobile__topbar-spacer" />
+        {!user && (
+          <Link to="/login" className="ch-mobile__guest-login">
+            {t("login.button") || "Log In"}
+          </Link>
+        )}
         <LanguageSwitcher />
       </header>
 

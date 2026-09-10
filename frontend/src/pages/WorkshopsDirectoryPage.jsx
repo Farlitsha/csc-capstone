@@ -6,11 +6,14 @@ import Chip from "../components/Chip";
 import StatusChip from "../components/StatusChip";
 import Icon from "../components/Icon";
 import Spinner from "../components/Spinner";
+import { useAuth } from "../auth/AuthContext";
+import GuestAuthModal from "../components/GuestAuthModal";
 import { api, ApiError } from "../lib/api";
 import "./WorkshopsDirectoryPage.css";
 
 export default function WorkshopsDirectoryPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [tab, setTab] = useState("all");
   const [workshops, setWorkshops] = useState([]);
   const [myRegistrations, setMyRegistrations] = useState([]);
@@ -18,13 +21,16 @@ export default function WorkshopsDirectoryPage() {
   const [actionId, setActionId] = useState(null);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
+  const [guestModalAction, setGuestModalAction] = useState("");
 
   function loadData() {
     setLoading(true);
-    Promise.all([
+    const promises = [
       api.listWorkshops().catch(() => []),
-      api.getMyWorkshopRegistrations().catch(() => []),
-    ])
+      user ? api.getMyWorkshopRegistrations().catch(() => []) : Promise.resolve([]),
+    ];
+    Promise.all(promises)
       .then(([wList, myRegs]) => {
         setWorkshops(wList);
         setMyRegistrations(myRegs);
@@ -33,11 +39,18 @@ export default function WorkshopsDirectoryPage() {
       .finally(() => setLoading(false));
   }
 
-  useEffect(loadData, []);
+  useEffect(() => {
+    loadData();
+  }, [user]);
 
   const registeredWorkshopIds = new Set(myRegistrations.map((r) => r.workshop_id));
 
   async function handleRegister(workshopId) {
+    if (!user) {
+      setGuestModalAction("register for workshops");
+      setGuestModalOpen(true);
+      return;
+    }
     setActionId(workshopId);
     setError("");
     setFeedback("");
@@ -182,52 +195,76 @@ export default function WorkshopsDirectoryPage() {
         {/* Tab 2: My Registrations */}
         {tab === "mine" && !loading && (
           <>
-            {myRegistrations.length === 0 && (
-              <p className="ch-dash-empty">You have not registered for any workshops yet.</p>
-            )}
-            {myRegistrations.map((reg) => {
-              const regDate = new Date(reg.workshop_date_time);
-              return (
-                <div className="ch-workshops-card" key={reg.id}>
-                  <div className="ch-workshops-card__head">
-                    <div>
-                      <h3 className="ch-workshops-card__title">{reg.workshop_title}</h3>
-                      <span className="ch-workshops-card__organizer">
-                        Booked on {new Date(reg.registered_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <StatusChip label={reg.workshop_status} tone={reg.workshop_status === "scheduled" ? "positive" : "warning"} />
-                  </div>
-
-                  <p className="ch-workshops-card__desc">{reg.workshop_description}</p>
-
-                  <div className="ch-workshops-card__details">
-                    <div className="ch-workshops-card__detail-item">
-                      <Icon name="calendar" size={14} />
-                      <span>{regDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at {regDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                    </div>
-                    <div className="ch-workshops-card__detail-item">
-                      <Icon name="location" size={14} />
-                      <span>{reg.workshop_location}</span>
-                    </div>
-                  </div>
-
-                  <div className="ch-workshops-card__actions" style={{ justifyContent: "flex-end" }}>
-                    <Button
-                      variant="secondary"
-                      className="ch-btn-danger"
-                      disabled={actionId === reg.workshop_id}
-                      onClick={() => handleCancelRegistration(reg.workshop_id)}
-                    >
-                      {actionId === reg.workshop_id ? "Cancelling…" : "Cancel booking"}
-                    </Button>
-                  </div>
+            {!user ? (
+              <div style={{ textAlign: "center", padding: "32px 16px" }}>
+                <p style={{ color: "var(--color-sage)", fontSize: "14px", marginBottom: "14px" }}>
+                  You are browsing as a guest. Create an account or log in to view and manage your workshop bookings.
+                </p>
+                <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                  <Button variant="accent" onClick={() => navigate("/signup")}>
+                    Create Free Account
+                  </Button>
+                  <Button variant="secondary" onClick={() => navigate("/login")}>
+                    Log In
+                  </Button>
                 </div>
-              );
-            })}
+              </div>
+            ) : (
+              <>
+                {myRegistrations.length === 0 && (
+                  <p className="ch-dash-empty">You have not registered for any workshops yet.</p>
+                )}
+                {myRegistrations.map((reg) => {
+                  const regDate = new Date(reg.workshop_date_time);
+                  return (
+                    <div className="ch-workshops-card" key={reg.id}>
+                      <div className="ch-workshops-card__head">
+                        <div>
+                          <h3 className="ch-workshops-card__title">{reg.workshop_title}</h3>
+                          <span className="ch-workshops-card__organizer">
+                            Booked on {new Date(reg.registered_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <StatusChip label={reg.workshop_status} tone={reg.workshop_status === "scheduled" ? "positive" : "warning"} />
+                      </div>
+
+                      <p className="ch-workshops-card__desc">{reg.workshop_description}</p>
+
+                      <div className="ch-workshops-card__details">
+                        <div className="ch-workshops-card__detail-item">
+                          <Icon name="calendar" size={14} />
+                          <span>{regDate.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })} at {regDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                        </div>
+                        <div className="ch-workshops-card__detail-item">
+                          <Icon name="location" size={14} />
+                          <span>{reg.workshop_location}</span>
+                        </div>
+                      </div>
+
+                      <div className="ch-workshops-card__actions" style={{ justifyContent: "flex-end" }}>
+                        <Button
+                          variant="secondary"
+                          className="ch-btn-danger"
+                          disabled={actionId === reg.workshop_id}
+                          onClick={() => handleCancelRegistration(reg.workshop_id)}
+                        >
+                          {actionId === reg.workshop_id ? "Cancelling…" : "Cancel booking"}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </>
         )}
       </div>
+
+      <GuestAuthModal
+        isOpen={guestModalOpen}
+        onClose={() => setGuestModalOpen(false)}
+        actionName={guestModalAction}
+      />
     </MobileLayout>
   );
 }

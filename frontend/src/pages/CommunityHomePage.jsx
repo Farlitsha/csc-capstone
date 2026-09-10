@@ -6,6 +6,7 @@ import MobileLayout from "../layouts/MobileLayout";
 import StatusChip from "../components/StatusChip";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
+import GuestAuthModal from "../components/GuestAuthModal";
 import { api } from "../lib/api";
 import "./CommunityHomePage.css";
 
@@ -17,6 +18,8 @@ export default function CommunityHomePage() {
   const [announcements, setAnnouncements] = useState([]);
   const [censusStats, setCensusStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
+  const [guestModalAction, setGuestModalAction] = useState("");
 
   useEffect(() => {
     Promise.all([
@@ -48,9 +51,45 @@ export default function CommunityHomePage() {
   return (
     <MobileLayout>
       <section className="ch-greeting">
-        <h1>{t("home.greeting")}, {user?.username || "there"}</h1>
+        <h1>{t("home.greeting")}, {user?.username || "Guest"}</h1>
         <p>{t("home.subtitle")}</p>
       </section>
+
+      {!user && (
+        <section className="ch-guest-banner-section" style={{ margin: "0 0 16px 0" }}>
+          <div style={{
+            background: "linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)",
+            border: "1px solid #bae6fd",
+            borderRadius: "12px",
+            padding: "14px 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Icon name="eye" size={16} style={{ color: "#0284c7" }} />
+              <span style={{ fontWeight: 600, fontSize: "14px", color: "#0369a1" }}>
+                Browsing as Guest
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: "13px", lineHeight: "1.45", color: "#334155" }}>
+              You are exploring CommHub without an account. You can browse services, studies, and workshops freely. To post listings, apply to studies, or join workshops, create a free account.
+            </p>
+            <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
+              <Link to="/signup" style={{ textDecoration: "none" }}>
+                <Button variant="accent" style={{ fontSize: "12px", padding: "6px 14px" }}>
+                  Create Free Account
+                </Button>
+              </Link>
+              <Link to="/login" style={{ textDecoration: "none" }}>
+                <Button variant="secondary" style={{ fontSize: "12px", padding: "6px 14px" }}>
+                  Log In
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {relevantAnnouncements.length > 0 && (
         <section className="ch-announcement-section">
@@ -88,12 +127,26 @@ export default function CommunityHomePage() {
               : "Share demographic input to help Ocean View identify employment trends, job skills, and poverty rates."}
           </p>
           <div className="ch-insights-card__actions">
-            <Link to="/community-census">
-              <Button variant="accent" style={{ fontSize: "12.5px", padding: "7px 12px" }}>
+            {user ? (
+              <Link to="/community-census">
+                <Button variant="accent" style={{ fontSize: "12.5px", padding: "7px 12px" }}>
+                  <Icon name="clipboard" size={14} style={{ marginRight: 5 }} />
+                  Take Census Survey
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="accent"
+                style={{ fontSize: "12.5px", padding: "7px 12px" }}
+                onClick={() => {
+                  setGuestModalAction("take the census survey");
+                  setGuestModalOpen(true);
+                }}
+              >
                 <Icon name="clipboard" size={14} style={{ marginRight: 5 }} />
                 Take Census Survey
               </Button>
-            </Link>
+            )}
             <Link to="/community-stats">
               <Button variant="secondary" style={{ fontSize: "12.5px", padding: "7px 12px" }}>
                 <Icon name="chart" size={14} style={{ marginRight: 5 }} />
@@ -115,9 +168,21 @@ export default function CommunityHomePage() {
         {!loading && services.length === 0 && (
           <div className="ch-empty-cta">
             <p>{t("home.noServices")}</p>
-            <Link to="/services/new">
-              <Button variant="accent">{t("home.postFirst")}</Button>
-            </Link>
+            {user ? (
+              <Link to="/services/new">
+                <Button variant="accent">{t("home.postFirst")}</Button>
+              </Link>
+            ) : (
+              <Button
+                variant="accent"
+                onClick={() => {
+                  setGuestModalAction("post a service or request");
+                  setGuestModalOpen(true);
+                }}
+              >
+                {t("home.postFirst")}
+              </Button>
+            )}
           </div>
         )}
 
@@ -174,6 +239,12 @@ export default function CommunityHomePage() {
           })}
         </div>
       </section>
+
+      <GuestAuthModal
+        isOpen={guestModalOpen}
+        onClose={() => setGuestModalOpen(false)}
+        actionName={guestModalAction}
+      />
     </MobileLayout>
   );
 }

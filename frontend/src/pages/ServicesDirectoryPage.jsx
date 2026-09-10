@@ -10,6 +10,7 @@ import Spinner from "../components/Spinner";
 import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
+import GuestAuthModal from "../components/GuestAuthModal";
 import "./ServicesDirectoryPage.css";
 
 const CATEGORIES = ["All", "Home repair", "Tutoring", "Food", "Other"];
@@ -74,6 +75,8 @@ export default function ServicesDirectoryPage() {
   const [error, setError] = useState("");
   const [lowDataMode, setLowDataMode] = useState(() => localStorage.getItem("commhub_low_data") === "true");
   const [revealedPhotos, setRevealedPhotos] = useState([]);
+  const [guestModalOpen, setGuestModalOpen] = useState(false);
+  const [guestModalAction, setGuestModalAction] = useState("");
 
   // Editing state
   const [editingService, setEditingService] = useState(null);
@@ -279,7 +282,18 @@ export default function ServicesDirectoryPage() {
       </div>
 
       <div className="ch-services-post-cta">
-        <Button variant="accent" fullWidth onClick={() => navigate("/services/new")}>
+        <Button
+          variant="accent"
+          fullWidth
+          onClick={() => {
+            if (!user) {
+              setGuestModalAction("post a service or request");
+              setGuestModalOpen(true);
+            } else {
+              navigate("/services/new");
+            }
+          }}
+        >
           {t("services.postButton")}
         </Button>
       </div>
@@ -296,9 +310,21 @@ export default function ServicesDirectoryPage() {
           <div className="ch-services-empty-state">
             <p>
               {activeTab === "mine"
-                ? "You haven't posted any services yet. Click above to post your first service!"
+                ? !user
+                  ? "You are browsing as a guest. Create an account or log in to post, edit, and manage your personal listings."
+                  : "You haven't posted any services yet. Click above to post your first service!"
                 : "No services posted by other community members found in this category."}
             </p>
+            {activeTab === "mine" && !user && (
+              <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginTop: "12px" }}>
+                <Button variant="accent" onClick={() => navigate("/signup")}>
+                  Create Free Account
+                </Button>
+                <Button variant="secondary" onClick={() => navigate("/login")}>
+                  Log In
+                </Button>
+              </div>
+            )}
             {activeTab === "explore" && myServices.length > 0 && (
               <button
                 type="button"
@@ -380,7 +406,14 @@ export default function ServicesDirectoryPage() {
                     type="button"
                     className="ch-service-report-btn"
                     title="Report listing"
-                    onClick={() => openReportModal(s)}
+                    onClick={() => {
+                      if (!user) {
+                        setGuestModalAction("report a service listing");
+                        setGuestModalOpen(true);
+                      } else {
+                        openReportModal(s);
+                      }
+                    }}
                   >
                     <Icon name="flag" size={12} style={{ marginRight: 4 }} />
                     Report
@@ -413,16 +446,31 @@ export default function ServicesDirectoryPage() {
                 {!isMine && (
                   <div className="ch-service-actions">
                     {s.poster_phone ? (
-                      <a
-                        href={formatWhatsAppUrl(s.poster_phone, s)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ch-contact-btn ch-contact-btn--whatsapp"
-                        title={`WhatsApp: ${s.poster_phone}`}
-                      >
-                        <Icon name="whatsapp" size={15} />
-                        <span>{t("services.whatsapp")}</span>
-                      </a>
+                      user ? (
+                        <a
+                          href={formatWhatsAppUrl(s.poster_phone, s)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ch-contact-btn ch-contact-btn--whatsapp"
+                          title={`WhatsApp: ${s.poster_phone}`}
+                        >
+                          <Icon name="whatsapp" size={15} />
+                          <span>{t("services.whatsapp")}</span>
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          className="ch-contact-btn ch-contact-btn--whatsapp"
+                          title="Create an account to contact this provider"
+                          onClick={() => {
+                            setGuestModalAction("contact service providers or request services");
+                            setGuestModalOpen(true);
+                          }}
+                        >
+                          <Icon name="whatsapp" size={15} />
+                          <span>{t("services.whatsapp")}</span>
+                        </button>
+                      )
                     ) : (
                       <button
                         type="button"
@@ -436,14 +484,29 @@ export default function ServicesDirectoryPage() {
                     )}
 
                     {s.poster_email ? (
-                      <a
-                        href={formatEmailUrl(s.poster_email, s)}
-                        className="ch-contact-btn ch-contact-btn--email"
-                        title={`Email: ${s.poster_email}`}
-                      >
-                        <Icon name="mail" size={15} />
-                        <span>{t("services.email")}</span>
-                      </a>
+                      user ? (
+                        <a
+                          href={formatEmailUrl(s.poster_email, s)}
+                          className="ch-contact-btn ch-contact-btn--email"
+                          title={`Email: ${s.poster_email}`}
+                        >
+                          <Icon name="mail" size={15} />
+                          <span>{t("services.email")}</span>
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          className="ch-contact-btn ch-contact-btn--email"
+                          title="Create an account to contact this provider"
+                          onClick={() => {
+                            setGuestModalAction("contact service providers via email");
+                            setGuestModalOpen(true);
+                          }}
+                        >
+                          <Icon name="mail" size={15} />
+                          <span>{t("services.email")}</span>
+                        </button>
+                      )
                     ) : null}
                   </div>
                 )}
@@ -670,6 +733,12 @@ export default function ServicesDirectoryPage() {
           </div>
         </div>
       )}
+
+      <GuestAuthModal
+        isOpen={guestModalOpen}
+        onClose={() => setGuestModalOpen(false)}
+        actionName={guestModalAction}
+      />
     </MobileLayout>
   );
 }

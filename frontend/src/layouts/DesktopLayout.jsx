@@ -29,15 +29,28 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
         <div className="ch-desktop__right">
           {rightSlot}
           <LanguageSwitcher />
-          <Link to="/profile" className="ch-desktop__profile-link">
-            {t("common.myProfile")}
-          </Link>
-          <Button variant="secondary" onClick={logout}>
-            {t("common.logout")}
-          </Button>
-          <div className="ch-desktop__avatar" title={user?.username} aria-label={`${user?.username || "User"} profile avatar`}>
-            {initials}
-          </div>
+          {user ? (
+            <>
+              <Link to="/profile" className="ch-desktop__profile-link">
+                {t("common.myProfile")}
+              </Link>
+              <Button variant="secondary" onClick={logout}>
+                {t("common.logout")}
+              </Button>
+              <div className="ch-desktop__avatar" title={user?.username} aria-label={`${user?.username || "User"} profile avatar`}>
+                {initials}
+              </div>
+            </>
+          ) : (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Link to="/login">
+                <Button variant="secondary">{t("login.button") || "Log in"}</Button>
+              </Link>
+              <Link to="/signup">
+                <Button variant="accent">{t("login.signupLink") || "Create account"}</Button>
+              </Link>
+            </div>
+          )}
         </div>
       </header>
       <main id="main-content" tabIndex="-1" className="ch-desktop__body">

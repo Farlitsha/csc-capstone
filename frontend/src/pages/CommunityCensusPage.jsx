@@ -139,6 +139,12 @@ export default function CommunityCensusPage() {
             Help Ocean View identify employment trends, skills, and community needs.
             Responses are kept confidential and aggregated into community statistics.
           </p>
+          <div className="ch-census-voluntary-notice">
+            <Icon name="info" size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>
+              <strong>POPIA & Voluntary Notice:</strong> Taking this community census survey is purely optional and voluntary. You are never forced or required to complete this survey to browse or use CommHub.
+            </span>
+          </div>
         </div>
 
         {loading ? (
