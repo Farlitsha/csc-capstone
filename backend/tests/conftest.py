@@ -66,7 +66,7 @@ def client(db_session):
     app.dependency_overrides.clear()
 
 
-# ── Helper Factory Functions ───────────────────────────────────────────────────
+# Helper Factory Functions
 
 def create_user_in_db(
     db,
@@ -106,7 +106,7 @@ def get_auth_headers_for_user(user):
     return {"Authorization": f"Bearer {token}"}
 
 
-# ── Fixtures for common roles ──────────────────────────────────────────────────
+# Fixtures for common roles
 
 @pytest.fixture
 def community_user(db_session):

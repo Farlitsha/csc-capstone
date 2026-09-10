@@ -1,4 +1,4 @@
-/* ── Page container ─────────────────────────────────────────────────────────── */
+/* Page container */
 .ch-profile {
   display: flex;
   flex-direction: column;
@@ -6,7 +6,7 @@
   padding: 16px 20px 24px;
 }
 
-/* ── Avatar section ─────────────────────────────────────────────────────────── */
+/* Avatar section */
 .ch-profile__avatar-section {
   display: flex;
   flex-direction: column;
@@ -97,14 +97,14 @@
   text-align: center;
 }
 
-/* ── Field-level hint ───────────────────────────────────────────────────────── */
+/* Field-level hint */
 .ch-profile__field-hint {
   font-size: 11px;
   color: var(--color-sage);
   line-height: 1.4;
 }
 
-/* ── Profile form ───────────────────────────────────────────────────────────── */
+/* Profile form */
 .ch-profile__form {
   display: flex;
   flex-direction: column;
@@ -156,7 +156,7 @@
   padding-top: 4px;
 }
 
-/* ── Account details card ───────────────────────────────────────────────────── */
+/* Account details card */
 .ch-profile__details {
   display: flex;
   flex-direction: column;
@@ -171,7 +171,7 @@
   color: var(--color-ink);
 }
 
-/* ── Role upgrade card ──────────────────────────────────────────────────────── */
+/* Role upgrade card */
 .ch-profile__roles {
   padding: 6px 22px 20px;
   display: flex;
@@ -192,7 +192,7 @@
   gap: 10px;
 }
 
-/* ── Feedback messages ──────────────────────────────────────────────────────── */
+/* Feedback messages */
 .ch-profile__success {
   margin: 0;
   font-size: 12.5px;
@@ -211,7 +211,7 @@
   border-radius: var(--radius-md);
 }
 
-/* ── Activity card ───────────────────────────────────────────────────────────── */
+/* Activity card */
 .ch-profile__activity {
   display: flex;
   flex-direction: column;

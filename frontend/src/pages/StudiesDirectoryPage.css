@@ -58,7 +58,7 @@
   color: var(--color-danger);
 }
 
-/* ── Poster / researcher identity row ── */
+/* Poster / researcher identity row */
 .ch-poster-row {
   display: flex;
   align-items: center;

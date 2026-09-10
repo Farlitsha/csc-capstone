@@ -143,7 +143,7 @@ export const api = {
   approveResearcher: (id) => request(`/users/admin/researchers/${id}/approve`, { method: "PATCH" }),
   rejectResearcher: (id) => request(`/users/admin/researchers/${id}/reject`, { method: "PATCH" }),
 
-  // ── Profile management ──────────────────────────────────────────────────────
+  // Profile management
   getProfile: (userId) => request(`/users/${userId}`),
   updateProfile: (payload) => request("/users/me/profile", { method: "PATCH", body: payload }),
   getAdminBootstrapStatus: () => request("/users/admin-bootstrap-status", { auth: false }),
@@ -185,7 +185,7 @@ export const api = {
   createAnnouncement: (payload) => request("/announcements/", { method: "POST", body: payload }),
   listAnnouncements: () => request("/announcements/", { auth: false }),
 
-  // ── Workshops ─────────────────────────────────────────────────────────────
+  // Workshops
   listWorkshops: (includeCancelled = false) =>
     request(`/workshops/${includeCancelled ? "?include_cancelled=true" : ""}`, { auth: false }),
   getWorkshop: (id) => request(`/workshops/${id}`, { auth: false }),

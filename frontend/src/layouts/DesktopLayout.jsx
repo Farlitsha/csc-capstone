@@ -16,7 +16,7 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
 
   return (
     <div className="ch-desktop">
-      {/* ── Accessible Skip Navigation Link ── */}
+      {/* Accessible Skip Navigation Link */}
       <a href="#main-content" className="ch-skip-link">
         Skip to main content
       </a>

@@ -56,7 +56,7 @@
   flex: 1;
 }
 
-/* ── Offline Prompt Modal Dialog ── */
+/* Offline Prompt Modal Dialog */
 .ch-offline-modal-overlay {
   position: fixed;
   inset: 0;

@@ -9,7 +9,7 @@ import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./ProfilePage.css";
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// Helpers
 
 function getInitials(user) {
   const name = user?.display_name || user?.username || "";
@@ -28,22 +28,22 @@ function avatarSrc(url) {
   return `${API_BASE_URL}${url}`;
 }
 
-// ── Component ──────────────────────────────────────────────────────────────────
+// Component
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, logout, refreshUser } = useAuth();
   const { t } = useLanguage();
 
-  // ── UI toggle ───────────────────────────────────────────────────────────────
+  // UI toggle
   const [showEdit, setShowEdit] = useState(false);
 
-  // ── Profile picture state ──────────────────────────────────────────────────
+  // Profile picture state
   const fileInputRef = useRef(null);
   const [picUploading, setPicUploading] = useState(false);
   const [picError, setPicError] = useState("");
 
-  // ── Profile form state ──────────────────────────────────────────────────────
+  // Profile form state
   const [form, setForm] = useState({
     display_name: user?.display_name ?? "",
     bio: user?.bio ?? "",
@@ -67,11 +67,11 @@ export default function ProfilePage() {
     }
   }, [user, showEdit]);
 
-  // ── Activity state ──────────────────────────────────────────────────────────
+  // Activity state
   const [activity, setActivity] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
 
-  // ── Role upgrade state ──────────────────────────────────────────────────────
+  // Role upgrade state
   const [updating, setUpdating] = useState(false);
   const [roleMessage, setRoleMessage] = useState("");
   const [roleError, setRoleError] = useState("");
@@ -90,7 +90,7 @@ export default function ProfilePage() {
       .catch(() => setCanBootstrapAdmin(false));
   }, [user?.role]);
 
-  // ── Load activity on mount ──────────────────────────────────────────────────
+  // Load activity on mount
   useEffect(() => {
     if (!user) return;
     setActivityLoading(true);
@@ -111,7 +111,7 @@ export default function ProfilePage() {
     }
   }, [user?.id, user?.role]);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // Handlers
 
   function handleFormChange(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -185,7 +185,7 @@ export default function ProfilePage() {
     }
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // Render
 
   const src = avatarSrc(user?.avatar_url);
 
@@ -197,7 +197,7 @@ export default function ProfilePage() {
     <MobileLayout title={t("profile.heading")} onBack={() => navigate(-1)}>
       <div className="ch-profile">
 
-        {/* ── Profile picture ── */}
+        {/* Profile picture */}
         <div className="ch-profile__avatar-section">
           <button
             className="ch-profile__avatar-wrap"
@@ -267,7 +267,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {/* ── Editable profile form (shown only when toggled) ── */}
+        {/* Editable profile form (shown only when toggled) */}
         {showEdit && (
           <Card title="Edit Profile">
             <form className="ch-profile__form" onSubmit={handleSaveProfile}>
@@ -406,7 +406,7 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* ── Admin Bootstrap Card (Only visible before first platform admin is created) ── */}
+        {/* Admin Bootstrap Card (Only visible before first platform admin is created) */}
         {canBootstrapAdmin && user?.role !== "admin" && (
           <Card title={t("profile.adminBootstrapTitle") || "Claim Administrator Role"}>
             <div className="ch-profile__roles">

@@ -137,7 +137,7 @@ async def upload_avatar(
     return current_user
 
 
-# ── Admin / management endpoints ───────────────────────────────────────────────
+# Admin / management endpoints
 # NOTE: these fixed-path routes MUST be registered before /{user_id} so FastAPI
 # does not accidentally try to parse "admin" or "accounts" as an integer user_id.
 
@@ -286,7 +286,7 @@ async def update_account_credentials(
     return current_user
 
 
-# ── Public profile (other users) ───────────────────────────────────────────────
+# Public profile (other users)
 
 @router.get("/{user_id}", status_code=status.HTTP_200_OK, response_model=schemas.PublicProfileOut)
 async def get_user(

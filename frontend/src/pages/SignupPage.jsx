@@ -134,7 +134,7 @@ export default function SignupPage() {
             </p>
           )}
 
-          {/* ── POPIA Data Privacy Notice ── */}
+          {/* POPIA Data Privacy Notice */}
           <div className="ch-popia-box">
             <div className="ch-popia-box__header">
               <Icon name="info" size={15} />

@@ -5,7 +5,7 @@ import LanguageSwitcher from "../components/LanguageSwitcher";
 import Icon from "../components/Icon";
 import "./MobileLayout.css";
 
-// ── Offline Prompt Session State ──
+// Offline Prompt Session State
 // Shows once on initial launch without connection or on connection loss.
 // Once dismissed with "Okay", it stays dismissed until connection is restored.
 let hasDismissedOfflineSession = false;
@@ -62,7 +62,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
 
   return (
     <div className="ch-mobile">
-      {/* ── Accessible Skip Navigation Link ── */}
+      {/* Accessible Skip Navigation Link */}
       <a href="#main-content" className="ch-skip-link">
         Skip to main content
       </a>
@@ -80,7 +80,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         <LanguageSwitcher />
       </header>
 
-      {/* ── Offline Prompt Modal Dialog ── */}
+      {/* Offline Prompt Modal Dialog */}
       {showOfflineModal && (
         <div className="ch-offline-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ch-offline-modal-title">
           <div className="ch-offline-modal-card">

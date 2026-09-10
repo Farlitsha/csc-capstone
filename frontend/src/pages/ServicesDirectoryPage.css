@@ -219,7 +219,7 @@
   color: var(--color-danger);
 }
 
-/* ── Poster identity row (shared with studies cards) ── */
+/* Poster identity row (shared with studies cards) */
 .ch-poster-row {
   display: flex;
   align-items: center;
