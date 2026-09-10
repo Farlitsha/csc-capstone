@@ -5,6 +5,7 @@ import PieChart from "../components/PieChart";
 import BarChart from "../components/BarChart";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
+import Spinner from "../components/Spinner";
 import { api } from "../lib/api";
 import "./CommunityStatsPage.css";
 
@@ -54,9 +55,7 @@ export default function CommunityStatsPage() {
         </div>
 
         {loading ? (
-          <div className="ch-stats-loading">
-            <p>Loading community statistics…</p>
-          </div>
+          <Spinner label="Loading community statistics…" size="lg" />
         ) : !stats || stats.total_respondents === 0 ? (
           <div className="ch-stats-empty-box">
             <div className="ch-stats-empty-icon">

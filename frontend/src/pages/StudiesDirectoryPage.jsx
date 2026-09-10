@@ -5,6 +5,7 @@ import StatusChip from "../components/StatusChip";
 import Chip from "../components/Chip";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
+import Spinner from "../components/Spinner";
 import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./StudiesDirectoryPage.css";
@@ -113,8 +114,8 @@ export default function StudiesDirectoryPage() {
 
       {tab === "open" && (
         <div className="ch-studies-list">
-          {studiesLoading && <p className="ch-studies-empty">{t("common.loading")}</p>}
-          {studiesError && <p className="ch-studies-empty ch-studies-empty--error">{studiesError}</p>}
+          {studiesLoading && <Spinner />}
+          {studiesError && <p className="ch-studies-empty ch-studies-empty--error" role="alert">{studiesError}</p>}
           {!studiesLoading && !studiesError && liveStudies.length === 0 && (
             <p className="ch-studies-empty">{t("studies.noOpen")}</p>
           )}
@@ -163,8 +164,8 @@ export default function StudiesDirectoryPage() {
 
       {tab === "mine" && (
         <div className="ch-studies-list">
-          {myAppsLoading && <p className="ch-studies-empty">{t("common.loading")}</p>}
-          {myAppsError && <p className="ch-studies-empty ch-studies-empty--error">{myAppsError}</p>}
+          {myAppsLoading && <Spinner />}
+          {myAppsError && <p className="ch-studies-empty ch-studies-empty--error" role="alert">{myAppsError}</p>}
           {!myAppsLoading && !myAppsError && myApplications.length === 0 && (
             <p className="ch-studies-empty">{t("studies.noApplications")}</p>
           )}

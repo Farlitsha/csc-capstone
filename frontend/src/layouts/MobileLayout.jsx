@@ -1,17 +1,18 @@
 import { NavLink } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import Icon from "../components/Icon";
 import "./MobileLayout.css";
 
 export default function MobileLayout({ title, children, hideNav = false, onBack }) {
   const { t } = useLanguage();
 
   const NAV_ITEMS = [
-    { to: "/", label: t("nav.home") },
-    { to: "/services", label: t("nav.services") },
-    { to: "/studies", label: t("nav.studies") },
-    { to: "/workshops", label: t("nav.workshops") || "Workshops" },
-    { to: "/profile", label: t("nav.profile") },
+    { to: "/", label: t("nav.home"), icon: "home" },
+    { to: "/services", label: t("nav.services"), icon: "briefcase" },
+    { to: "/studies", label: t("nav.studies"), icon: "clipboard" },
+    { to: "/workshops", label: t("nav.workshops") || "Workshops", icon: "calendar" },
+    { to: "/profile", label: t("nav.profile"), icon: "user" },
   ];
 
   return (
@@ -47,8 +48,9 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
               aria-current={({ isActive }) => (isActive ? "page" : undefined)}
               className={({ isActive }) => `ch-mobile__navitem${isActive ? " ch-mobile__navitem--active" : ""}`}
             >
-              <span className="ch-mobile__navdot" aria-hidden="true" />
-              <span>{item.label}</span>
+              <Icon name={item.icon} size={20} className="ch-mobile__navicon" aria-hidden="true" />
+              <span className="ch-mobile__navlabel">{item.label}</span>
+              <span className="ch-mobile__active-indicator" aria-hidden="true" />
             </NavLink>
           ))}
         </nav>

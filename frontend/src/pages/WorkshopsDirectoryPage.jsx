@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import Chip from "../components/Chip";
 import StatusChip from "../components/StatusChip";
 import Icon from "../components/Icon";
+import Spinner from "../components/Spinner";
 import { api, ApiError } from "../lib/api";
 import "./WorkshopsDirectoryPage.css";
 
@@ -109,7 +110,7 @@ export default function WorkshopsDirectoryPage() {
           </div>
         )}
 
-        {loading && <p className="ch-dash-empty">Loading workshops…</p>}
+        {loading && <Spinner label="Loading workshops…" />}
 
         {/* Tab 1: All Upcoming Workshops */}
         {tab === "all" && !loading && (

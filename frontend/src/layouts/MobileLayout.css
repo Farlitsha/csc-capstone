@@ -63,7 +63,7 @@
 }
 
 .ch-mobile__nav {
-  height: 60px;
+  height: 64px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -73,42 +73,82 @@
   position: sticky;
   bottom: 0;
   z-index: 10;
+  padding: 0 4px;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .ch-mobile__navitem {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 11.5px;
+  gap: 2px;
+  font-size: 11px;
   color: var(--color-sage);
   font-weight: 600;
-  min-width: 48px;
+  min-width: 54px;
   min-height: 48px;
-  padding: 4px 6px;
-  border-radius: var(--radius-sm);
+  padding: 5px 8px 6px;
+  border-radius: var(--radius-md);
   text-decoration: none;
-  transition: color 0.15s ease;
+  border: 1.5px solid transparent;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  user-select: none;
+}
+
+.ch-mobile__navitem:active {
+  transform: scale(0.95);
 }
 
 .ch-mobile__navitem:focus-visible {
   outline: 2px solid var(--color-teal-700);
 }
 
+.ch-mobile__navicon {
+  transition: transform 0.15s ease, stroke-width 0.15s ease;
+}
+
+.ch-mobile__navlabel {
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.ch-mobile__active-indicator {
+  display: block;
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  background-color: transparent;
+  margin-top: 1px;
+  transition: background-color 0.15s ease;
+}
+
+/* Active State: uses Shape, Weight, Outline, and Indicator (not just color) */
 .ch-mobile__navitem--active {
   color: var(--color-teal-700);
+  background: rgba(13, 148, 136, 0.12);
+  border-color: rgba(13, 148, 136, 0.35);
+  font-weight: 800;
 }
 
-.ch-mobile__navdot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: transparent;
+.ch-mobile__navitem--active .ch-mobile__navicon {
+  stroke-width: 2.5px;
+  transform: translateY(-1px);
 }
 
-.ch-mobile__navitem--active .ch-mobile__navdot {
-  background: var(--color-teal-700);
+.ch-mobile__navitem--active .ch-mobile__active-indicator {
+  background-color: var(--color-teal-700);
+}
+
+/* High Contrast Mode for Assistive Tech / Color Vision Accessibility */
+@media (forced-colors: active) {
+  .ch-mobile__navitem--active {
+    border-color: Highlight;
+  }
+  .ch-mobile__navitem--active .ch-mobile__active-indicator {
+    background-color: Highlight;
+  }
 }
 
 /* Announcements & Messages */

@@ -6,6 +6,7 @@ import Chip from "../components/Chip";
 import Button from "../components/Button";
 import Field from "../components/Field";
 import Icon from "../components/Icon";
+import Spinner from "../components/Spinner";
 import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
@@ -289,8 +290,8 @@ export default function ServicesDirectoryPage() {
       </div>
 
       <div className="ch-services-list">
-        {loading && <p className="ch-services-empty">{t("common.loading")}</p>}
-        {error && <p className="ch-services-empty ch-services-empty--error">{error}</p>}
+        {loading && <Spinner />}
+        {error && <p className="ch-services-empty ch-services-empty--error" role="alert">{error}</p>}
         {!loading && !error && displayedServices.length === 0 && (
           <div className="ch-services-empty-state">
             <p>
