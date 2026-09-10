@@ -1,5 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { cache } from "./cache";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 class ApiError extends Error {
   constructor(message, status, detail) {
@@ -13,7 +14,34 @@ function getToken() {
   return localStorage.getItem("commhub_token");
 }
 
-async function request(path, { method = "GET", body, form, auth = true, headers = {} } = {}) {
+/**
+ * Enhanced HTTP request wrapper supporting:
+ * - 'swr': Stale-While-Revalidate (instant offline load + background revalidation)
+ * - 'cache-first': Strict cache check with TTL
+ * - 'network-only': Standard network request
+ * - Automatic mutation cache invalidation
+ */
+async function request(path, {
+  method = "GET",
+  body,
+  form,
+  auth = true,
+  headers = {},
+  cacheStrategy = method === "GET" ? "swr" : "network-only",
+  ttl = null,
+} = {}) {
+  const isGet = method.toUpperCase() === "GET";
+  const cacheKey = path;
+
+  // 1. Strict Cache-First Check
+  if (isGet && cacheStrategy === "cache-first" && cache.isFresh(cacheKey, ttl)) {
+    const cached = cache.get(cacheKey);
+    if (cached) return cached.data;
+  }
+
+  // 2. SWR Cached Copy for Offline Fallback
+  const cachedEntry = isGet ? cache.get(cacheKey) : null;
+
   const finalHeaders = { ...headers };
   let payload = body;
 
@@ -30,20 +58,44 @@ async function request(path, { method = "GET", body, form, auth = true, headers 
     if (token) finalHeaders["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers: finalHeaders,
-    body: payload,
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: finalHeaders,
+      body: payload,
+    });
 
-  const isJson = res.headers.get("content-type")?.includes("application/json");
-  const data = isJson ? await res.json().catch(() => null) : null;
+    const isJson = res.headers.get("content-type")?.includes("application/json");
+    const data = isJson ? await res.json().catch(() => null) : null;
 
-  if (!res.ok) {
-    const detail = data?.detail || res.statusText;
-    throw new ApiError(typeof detail === "string" ? detail : "Request failed", res.status, detail);
+    if (!res.ok) {
+      const detail = data?.detail || res.statusText;
+      throw new ApiError(typeof detail === "string" ? detail : "Request failed", res.status, detail);
+    }
+
+    // Update cache on successful GET
+    if (isGet && (cacheStrategy === "swr" || cacheStrategy === "cache-first")) {
+      cache.set(cacheKey, data, { ttl });
+    }
+
+    // Invalidate related cache entries on successful mutations
+    if (!isGet) {
+      if (path.startsWith("/services")) cache.invalidatePattern("^/services");
+      else if (path.startsWith("/studies") || path.startsWith("/applications")) {
+        cache.invalidatePattern("^/(studies|applications)");
+      } else if (path.startsWith("/workshops")) cache.invalidatePattern("^/workshops");
+      else if (path.startsWith("/community")) cache.invalidatePattern("^/community");
+      else if (path.startsWith("/announcements")) cache.invalidatePattern("^/announcements");
+    }
+
+    return data;
+  } catch (err) {
+    // 3. Graceful Offline Fallback: If network fails and cached data exists, return it seamlessly
+    if (isGet && cachedEntry && cachedEntry.data) {
+      return cachedEntry.data;
+    }
+    throw err;
   }
-  return data;
 }
 
 export const api = {
@@ -155,4 +207,4 @@ export const api = {
 
 
 
-export { ApiError, API_BASE_URL };
+export { ApiError, API_BASE_URL, cache };

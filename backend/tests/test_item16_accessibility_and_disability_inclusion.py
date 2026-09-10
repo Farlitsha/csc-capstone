@@ -160,3 +160,39 @@ def test_design_tokens_and_accessibility_utilities():
     assert "prefers-reduced-motion" in tokens_content, "tokens.css must support prefers-reduced-motion"
     assert "--color-sage" in tokens_content, "tokens.css must define color tokens"
 
+
+def test_offline_hybrid_caching_and_resilience():
+    """DoD 8: cache.js and api.js provide SWR, Cache-First, mutation invalidation, and offline fallback."""
+    cache_path = FRONTEND_SRC / "lib" / "cache.js"
+    api_path = FRONTEND_SRC / "lib" / "api.js"
+    mobile_layout_path = FRONTEND_SRC / "layouts" / "MobileLayout.jsx"
+
+    assert cache_path.exists(), "cache.js engine must exist"
+    assert api_path.exists(), "api.js must exist"
+    assert mobile_layout_path.exists(), "MobileLayout.jsx must exist"
+
+    cache_content = cache_path.read_text(encoding="utf-8")
+    api_content = api_path.read_text(encoding="utf-8")
+    layout_content = mobile_layout_path.read_text(encoding="utf-8")
+
+    # Cache engine tests
+    assert "localStorage" in cache_content, "cache.js must use localStorage for persistence"
+    assert "invalidatePattern" in cache_content, "cache.js must support pattern invalidation"
+    assert "isFresh" in cache_content, "cache.js must support TTL freshness checks"
+
+    # API request wrapper tests
+    assert "cacheStrategy" in api_content, "api.js must support cacheStrategy configuration"
+    assert "swr" in api_content, "api.js must support Stale-While-Revalidate caching"
+    assert "cache-first" in api_content, "api.js must support Cache-First strategy"
+    assert "cache.invalidatePattern" in api_content, "api.js must invalidate cache on mutations"
+
+    # Offline modal tests
+    assert "ch-offline-modal-overlay" in layout_content, "MobileLayout must render an offline modal overlay"
+    assert "You’re offline" in layout_content, "MobileLayout must display offline title"
+    assert "We’ll load recent posts when your connection is restored" in layout_content, (
+        "MobileLayout must display offline message explanation"
+    )
+    assert "Okay" in layout_content, "MobileLayout must provide an Okay confirmation button"
+
+
+

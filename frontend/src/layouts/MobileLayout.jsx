@@ -1,11 +1,56 @@
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { useLanguage } from "../i18n/LanguageContext";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import Icon from "../components/Icon";
 import "./MobileLayout.css";
 
+// ── Offline Prompt Session State ──
+// Shows once on initial launch without connection or on connection loss.
+// Once dismissed with "Okay", it stays dismissed until connection is restored.
+let hasDismissedOfflineSession = false;
+let isOfflineModalActive = typeof navigator !== "undefined" && !navigator.onLine;
+const offlineSubscribers = new Set();
+
+function notifyOfflineSubscribers() {
+  offlineSubscribers.forEach((callback) => callback(isOfflineModalActive));
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("online", () => {
+    hasDismissedOfflineSession = false;
+    isOfflineModalActive = false;
+    notifyOfflineSubscribers();
+  });
+
+  window.addEventListener("offline", () => {
+    hasDismissedOfflineSession = false;
+    isOfflineModalActive = true;
+    notifyOfflineSubscribers();
+  });
+}
+
 export default function MobileLayout({ title, children, hideNav = false, onBack }) {
   const { t } = useLanguage();
+  const [showOfflineModal, setShowOfflineModal] = useState(
+    () => isOfflineModalActive && !hasDismissedOfflineSession
+  );
+
+  useEffect(() => {
+    const handleStatusChange = (isActive) => {
+      setShowOfflineModal(isActive && !hasDismissedOfflineSession);
+    };
+    offlineSubscribers.add(handleStatusChange);
+    return () => {
+      offlineSubscribers.delete(handleStatusChange);
+    };
+  }, []);
+
+  const handleDismissOffline = () => {
+    hasDismissedOfflineSession = true;
+    isOfflineModalActive = false;
+    setShowOfflineModal(false);
+  };
 
   const NAV_ITEMS = [
     { to: "/", label: t("nav.home"), icon: "home" },
@@ -34,6 +79,29 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         <div className="ch-mobile__topbar-spacer" />
         <LanguageSwitcher />
       </header>
+
+      {/* ── Offline Prompt Modal Dialog ── */}
+      {showOfflineModal && (
+        <div className="ch-offline-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ch-offline-modal-title">
+          <div className="ch-offline-modal-card">
+            <div className="ch-offline-modal-icon">
+              <Icon name="wifi-off" size={26} />
+            </div>
+            <h3 id="ch-offline-modal-title">You’re offline</h3>
+            <p className="ch-offline-modal-text">
+              We’ll load recent posts when your connection is restored.
+            </p>
+            <button
+              type="button"
+              className="ch-offline-modal-btn"
+              onClick={handleDismissOffline}
+              autoFocus
+            >
+              Okay
+            </button>
+          </div>
+        </div>
+      )}
 
       <main id="main-content" tabIndex="-1" className="ch-mobile__body">
         {children}
