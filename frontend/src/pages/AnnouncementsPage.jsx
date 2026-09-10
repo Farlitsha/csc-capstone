@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "../layouts/MobileLayout";
 import StatusChip from "../components/StatusChip";
+import { useLanguage } from "../i18n/LanguageContext";
 import { api } from "../lib/api";
 
 export default function AnnouncementsPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -18,18 +20,18 @@ export default function AnnouncementsPage() {
   }, []);
 
   return (
-    <MobileLayout title="Announcements" onBack={() => navigate(-1)}>
+    <MobileLayout title={t("announcements.title")} onBack={() => navigate(-1)}>
       <div className="ch-messages-container">
         <div className="ch-messages-head">
-          <h2>Community Announcements</h2>
+          <h2>{t("announcements.heading")}</h2>
         </div>
 
-        {loading && <p style={{ color: "var(--color-sage)", fontSize: "13px" }}>Loading announcements…</p>}
+        {loading && <p style={{ color: "var(--color-sage)", fontSize: "13px" }}>{t("announcements.loading")}</p>}
 
         {!loading && announcements.length === 0 && (
           <div className="ch-messages-empty">
-            <h3>No announcements yet</h3>
-            <p>Admin broadcasts and platform updates will appear here.</p>
+            <h3>{t("announcements.emptyTitle")}</h3>
+            <p>{t("announcements.emptyDesc")}</p>
           </div>
         )}
 
@@ -45,7 +47,7 @@ export default function AnnouncementsPage() {
               <p className="ch-announcement-card__body">{a.content}</p>
               <div className="ch-announcement-card__footer">
                 <span>
-                  Broadcast by <strong>@{a.author_username}</strong>
+                  {t("announcements.broadcastBy")} <strong>@{a.author_username}</strong>
                 </span>
                 <span>Admin</span>
               </div>

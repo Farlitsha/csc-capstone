@@ -68,12 +68,12 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
     <div className="ch-mobile">
       {/* Accessible Skip Navigation Link */}
       <a href="#main-content" className="ch-skip-link">
-        Skip to main content
+        {t("common.skipLink")}
       </a>
 
       <header className="ch-mobile__topbar">
         {onBack ? (
-          <button className="ch-mobile__back" onClick={onBack} aria-label="Go back">
+          <button className="ch-mobile__back" onClick={onBack} aria-label={t("common.back")}>
             ←
           </button>
         ) : (
@@ -83,7 +83,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         <div className="ch-mobile__topbar-spacer" />
         {!user && (
           <Link to="/login" className="ch-mobile__guest-login">
-            {t("login.button") || "Log In"}
+            {t("login.button")}
           </Link>
         )}
         <LanguageSwitcher />
@@ -96,9 +96,9 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
             <div className="ch-offline-modal-icon">
               <Icon name="wifi-off" size={26} />
             </div>
-            <h3 id="ch-offline-modal-title">You’re offline</h3>
+            <h3 id="ch-offline-modal-title">{t("common.offlineTitle")}</h3>
             <p className="ch-offline-modal-text">
-              We’ll load recent posts when your connection is restored.
+              {t("common.offlineText")}
             </p>
             <button
               type="button"
@@ -106,7 +106,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
               onClick={handleDismissOffline}
               autoFocus
             >
-              Okay
+              {t("common.offlineBtn")}
             </button>
           </div>
         </div>

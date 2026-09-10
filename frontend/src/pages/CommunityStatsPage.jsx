@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import Icon from "../components/Icon";
 import Spinner from "../components/Spinner";
 import { useAuth } from "../auth/AuthContext";
+import { useLanguage } from "../i18n/LanguageContext";
 import GuestAuthModal from "../components/GuestAuthModal";
 import { api } from "../lib/api";
 import "./CommunityStatsPage.css";
@@ -14,6 +15,7 @@ import "./CommunityStatsPage.css";
 export default function CommunityStatsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [stats, setStats] = useState(null);
   const [hasUserResponse, setHasUserResponse] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -33,14 +35,12 @@ export default function CommunityStatsPage() {
   }, [user]);
 
   return (
-    <MobileLayout title="Community Insights" onBack={() => navigate(-1)}>
+    <MobileLayout title={t("stats.title")} onBack={() => navigate(-1)}>
       <div className="ch-stats-page">
         <div className="ch-stats-header">
           <div className="ch-stats-header-text">
-            <h2>Ocean View Census & Job Insights</h2>
-            <p>
-              Aggregated demographic data, employment statistics, poverty rates, and community skill profiles.
-            </p>
+            <h2>{t("stats.heading")}</h2>
+            <p>{t("stats.subheading")}</p>
           </div>
           {user ? (
             <Link to="/community-census" className="ch-stats-cta-link">
@@ -48,12 +48,12 @@ export default function CommunityStatsPage() {
                 {hasUserResponse ? (
                   <>
                     <Icon name="edit" size={14} style={{ marginRight: 6 }} />
-                    Update My Answers
+                    {t("stats.updateAnswers")}
                   </>
                 ) : (
                   <>
                     <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-                    Take Census Survey
+                    {t("stats.takeCensus")}
                   </>
                 )}
               </Button>
@@ -67,25 +67,25 @@ export default function CommunityStatsPage() {
               }}
             >
               <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-              Take Census Survey
+              {t("stats.takeCensus")}
             </Button>
           )}
         </div>
 
         {loading ? (
-          <Spinner label="Loading community statistics…" size="lg" />
+          <Spinner label={t("stats.loading")} size="lg" />
         ) : !stats || stats.total_respondents === 0 ? (
           <div className="ch-stats-empty-box">
             <div className="ch-stats-empty-icon">
               <Icon name="chart" size={36} style={{ color: "var(--color-teal-700)" }} />
             </div>
-            <h3>No Census Data Yet</h3>
-            <p>Be the first member to share your information and help shape community insights.</p>
+            <h3>{t("stats.emptyTitle")}</h3>
+            <p>{t("stats.emptyDesc")}</p>
             {user ? (
               <Link to="/community-census">
                 <Button variant="accent">
                   <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-                  Answer Census Survey
+                  {t("stats.answerCensus")}
                 </Button>
               </Link>
             ) : (
@@ -97,7 +97,7 @@ export default function CommunityStatsPage() {
                 }}
               >
                 <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-                Answer Census Survey
+                {t("stats.answerCensus")}
               </Button>
             )}
           </div>
@@ -187,12 +187,12 @@ export default function CommunityStatsPage() {
 
 
             <div className="ch-stats-footer-card">
-              <h3>Help make this data more accurate</h3>
-              <p>Your responses help local leaders, researchers, and NGOs allocate resources where they are needed most.</p>
+              <h3>{t("stats.footerTitle")}</h3>
+              <p>{t("stats.footerDesc")}</p>
               {user ? (
                 <Link to="/community-census">
                   <Button variant="secondary">
-                    {hasUserResponse ? "Review My Responses" : "Add My Input to the Census"}
+                    {hasUserResponse ? t("stats.reviewMyResponses") : t("stats.addMyInput")}
                   </Button>
                 </Link>
               ) : (
@@ -203,7 +203,7 @@ export default function CommunityStatsPage() {
                     setGuestModalOpen(true);
                   }}
                 >
-                  Add My Input to the Census
+                  {t("stats.addMyInput")}
                 </Button>
               )}
             </div>

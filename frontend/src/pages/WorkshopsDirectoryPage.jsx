@@ -7,6 +7,7 @@ import StatusChip from "../components/StatusChip";
 import Icon from "../components/Icon";
 import Spinner from "../components/Spinner";
 import { useAuth } from "../auth/AuthContext";
+import { useLanguage } from "../i18n/LanguageContext";
 import GuestAuthModal from "../components/GuestAuthModal";
 import { api, ApiError } from "../lib/api";
 import "./WorkshopsDirectoryPage.css";
@@ -14,6 +15,7 @@ import "./WorkshopsDirectoryPage.css";
 export default function WorkshopsDirectoryPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [tab, setTab] = useState("all");
   const [workshops, setWorkshops] = useState([]);
   const [myRegistrations, setMyRegistrations] = useState([]);
@@ -67,13 +69,13 @@ export default function WorkshopsDirectoryPage() {
   }
 
   async function handleCancelRegistration(workshopId) {
-    if (!window.confirm("Cancel your registration for this workshop?")) return;
+    if (!window.confirm(t("workshops.cancelConfirm"))) return;
     setActionId(workshopId);
     setError("");
     setFeedback("");
     try {
       await api.cancelWorkshopRegistration(workshopId);
-      setFeedback("Registration cancelled.");
+      setFeedback(t("workshops.cancelledFeedback"));
       loadData();
       setTimeout(() => setFeedback(""), 4000);
     } catch (err) {
@@ -84,12 +86,12 @@ export default function WorkshopsDirectoryPage() {
   }
 
   return (
-    <MobileLayout title="Workshops" onBack={() => navigate(-1)}>
+    <MobileLayout title={t("workshops.title")} onBack={() => navigate(-1)}>
       <div className="ch-workshops-page">
         <div className="ch-workshops-tabs" role="group" aria-label="Workshops navigation views">
-          <Chip label="Upcoming Workshops" active={tab === "all"} onClick={() => setTab("all")} />
+          <Chip label={t("workshops.upcomingTab")} active={tab === "all"} onClick={() => setTab("all")} />
           <Chip
-            label={`My Bookings (${myRegistrations.length})`}
+            label={`${t("workshops.myBookingsTab")} (${myRegistrations.length})`}
             active={tab === "mine"}
             onClick={() => setTab("mine")}
           />
@@ -97,7 +99,7 @@ export default function WorkshopsDirectoryPage() {
             label={
               <span>
                 <Icon name="clipboard" size={13} style={{ marginRight: 4 }} />
-                Studies & Surveys
+                {t("workshops.studiesTab")}
               </span>
             }
             active={false}
@@ -123,13 +125,13 @@ export default function WorkshopsDirectoryPage() {
           </div>
         )}
 
-        {loading && <Spinner label="Loading workshops…" />}
+        {loading && <Spinner label={t("workshops.loading")} />}
 
         {/* Tab 1: All Upcoming Workshops */}
         {tab === "all" && !loading && (
           <>
             {workshops.length === 0 && (
-              <p className="ch-dash-empty">No workshops or interviews scheduled right now.</p>
+              <p className="ch-dash-empty">{t("workshops.noWorkshops")}</p>
             )}
             {workshops.map((w) => {
               const isRegistered = registeredWorkshopIds.has(w.id);
@@ -143,10 +145,10 @@ export default function WorkshopsDirectoryPage() {
                     <div>
                       <h3 className="ch-workshops-card__title">{w.title}</h3>
                       <span className="ch-workshops-card__organizer">
-                        Organized by {w.organizer_display_name || w.organizer_username || "Researcher"}
+                        {t("workshops.organizedBy")} {w.organizer_display_name || w.organizer_username || "Researcher"}
                       </span>
                     </div>
-                    {isRegistered && <StatusChip label="Registered" tone="positive" />}
+                    {isRegistered && <StatusChip label={t("workshops.registered")} tone="positive" />}
                   </div>
 
                   <p className="ch-workshops-card__desc">{w.description}</p>
@@ -164,7 +166,7 @@ export default function WorkshopsDirectoryPage() {
 
                   <div className="ch-workshops-card__actions">
                     <span className={`ch-workshops-spots ${isFull ? "ch-workshops-spots--full" : "ch-workshops-spots--open"}`}>
-                      {isFull ? "Fully booked" : `${spotsLeft} of ${w.max_participants} spots remaining`}
+                      {isFull ? t("workshops.fullyBooked") : `${spotsLeft} ${t("workshops.of")} ${w.max_participants} ${t("workshops.spotsRemaining")}`}
                     </span>
 
                     {isRegistered ? (
@@ -174,7 +176,7 @@ export default function WorkshopsDirectoryPage() {
                         disabled={actionId === w.id}
                         onClick={() => handleCancelRegistration(w.id)}
                       >
-                        {actionId === w.id ? "Cancelling…" : "Cancel booking"}
+                        {actionId === w.id ? t("workshops.cancelling") : t("workshops.cancelBooking")}
                       </Button>
                     ) : (
                       <Button
@@ -182,7 +184,7 @@ export default function WorkshopsDirectoryPage() {
                         disabled={isFull || actionId === w.id}
                         onClick={() => handleRegister(w.id)}
                       >
-                        {actionId === w.id ? "Registering…" : isFull ? "Full" : "Register"}
+                        {actionId === w.id ? t("workshops.registering") : isFull ? t("workshops.full") : t("workshops.register")}
                       </Button>
                     )}
                   </div>
@@ -198,21 +200,21 @@ export default function WorkshopsDirectoryPage() {
             {!user ? (
               <div style={{ textAlign: "center", padding: "32px 16px" }}>
                 <p style={{ color: "var(--color-sage)", fontSize: "14px", marginBottom: "14px" }}>
-                  You are browsing as a guest. Create an account or log in to view and manage your workshop bookings.
+                  {t("workshops.guestNotice")}
                 </p>
                 <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
                   <Button variant="accent" onClick={() => navigate("/signup")}>
-                    Create Free Account
+                    {t("common.createFreeAccount")}
                   </Button>
                   <Button variant="secondary" onClick={() => navigate("/login")}>
-                    Log In
+                    {t("login.button")}
                   </Button>
                 </div>
               </div>
             ) : (
               <>
                 {myRegistrations.length === 0 && (
-                  <p className="ch-dash-empty">You have not registered for any workshops yet.</p>
+                  <p className="ch-dash-empty">{t("workshops.noBookings")}</p>
                 )}
                 {myRegistrations.map((reg) => {
                   const regDate = new Date(reg.workshop_date_time);
@@ -222,7 +224,7 @@ export default function WorkshopsDirectoryPage() {
                         <div>
                           <h3 className="ch-workshops-card__title">{reg.workshop_title}</h3>
                           <span className="ch-workshops-card__organizer">
-                            Booked on {new Date(reg.registered_at).toLocaleDateString()}
+                            {t("workshops.bookedOn")} {new Date(reg.registered_at).toLocaleDateString()}
                           </span>
                         </div>
                         <StatusChip label={reg.workshop_status} tone={reg.workshop_status === "scheduled" ? "positive" : "warning"} />
@@ -248,7 +250,7 @@ export default function WorkshopsDirectoryPage() {
                           disabled={actionId === reg.workshop_id}
                           onClick={() => handleCancelRegistration(reg.workshop_id)}
                         >
-                          {actionId === reg.workshop_id ? "Cancelling…" : "Cancel booking"}
+                          {actionId === reg.workshop_id ? t("workshops.cancelling") : t("workshops.cancelBooking")}
                         </Button>
                       </div>
                     </div>

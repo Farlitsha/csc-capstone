@@ -88,7 +88,7 @@ export default function LoginPage() {
         </div>
 
         <a href="/" className="ch-login__guest">
-          Browse without an account →
+          {t("login.browseGuest")}
         </a>
       </div>
     </div>

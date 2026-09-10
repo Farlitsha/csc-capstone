@@ -69,21 +69,21 @@ export default function CommunityHomePage() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Icon name="eye" size={16} style={{ color: "#0284c7" }} />
               <span style={{ fontWeight: 600, fontSize: "14px", color: "#0369a1" }}>
-                Browsing as Guest
+                {t("guest.bannerTitle")}
               </span>
             </div>
             <p style={{ margin: 0, fontSize: "13px", lineHeight: "1.45", color: "#334155" }}>
-              You are exploring CommHub without an account. You can browse services, studies, and workshops freely. To post listings, apply to studies, or join workshops, create a free account.
+              {t("guest.bannerText")}
             </p>
             <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
               <Link to="/signup" style={{ textDecoration: "none" }}>
                 <Button variant="accent" style={{ fontSize: "12px", padding: "6px 14px" }}>
-                  Create Free Account
+                  {t("guest.createAccount")}
                 </Button>
               </Link>
               <Link to="/login" style={{ textDecoration: "none" }}>
                 <Button variant="secondary" style={{ fontSize: "12px", padding: "6px 14px" }}>
-                  Log In
+                  {t("login.button")}
                 </Button>
               </Link>
             </div>
@@ -97,10 +97,10 @@ export default function CommunityHomePage() {
             <div className="ch-announcement-banner__head">
               <span className="ch-announcement-badge">
                 <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
-                Announcement
+                {t("home.announcementsBadge")}
               </span>
               <Link to="/announcements" className="ch-announcement-banner__link">
-                View all ({relevantAnnouncements.length})
+                {t("home.viewAll")} ({relevantAnnouncements.length})
               </Link>
             </div>
             <p>{relevantAnnouncements[0].content}</p>
@@ -117,21 +117,21 @@ export default function CommunityHomePage() {
           <div className="ch-insights-card__header">
             <span className="ch-insights-card__badge">
               <Icon name="document" size={13} style={{ marginRight: 5 }} />
-              Community Census & Stats
+              {t("home.censusBadge")}
             </span>
           </div>
-          <h3>Local Job Market & Poverty Insights</h3>
+          <h3>{t("home.censusTitle")}</h3>
           <p>
             {censusStats && censusStats.total_respondents > 0
               ? `${censusStats.total_respondents} residents surveyed (${censusStats.unemployment_rate}% looking for work). Explore community pie charts & graphs on employment, skills, and income.`
-              : "Share demographic input to help Ocean View identify employment trends, job skills, and poverty rates."}
+              : t("home.censusDesc")}
           </p>
           <div className="ch-insights-card__actions">
             {user ? (
               <Link to="/community-census">
                 <Button variant="accent" style={{ fontSize: "12.5px", padding: "7px 12px" }}>
                   <Icon name="clipboard" size={14} style={{ marginRight: 5 }} />
-                  Take Census Survey
+                  {t("home.takeCensusBtn")}
                 </Button>
               </Link>
             ) : (
@@ -144,13 +144,13 @@ export default function CommunityHomePage() {
                 }}
               >
                 <Icon name="clipboard" size={14} style={{ marginRight: 5 }} />
-                Take Census Survey
+                {t("home.takeCensusBtn")}
               </Button>
             )}
             <Link to="/community-stats">
               <Button variant="secondary" style={{ fontSize: "12.5px", padding: "7px 12px" }}>
                 <Icon name="chart" size={14} style={{ marginRight: 5 }} />
-                View Graphs & Charts
+                {t("home.viewStatsBtn")}
               </Button>
             </Link>
           </div>
