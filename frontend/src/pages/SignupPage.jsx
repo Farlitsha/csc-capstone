@@ -152,8 +152,15 @@ export default function SignupPage() {
                 required
               />
               <span>
-                {t("signup.popiaConsent") ||
-                  "I agree to the processing of my personal information in accordance with POPIA. I understand that participating in any census or survey is purely optional and voluntary."}
+                I agree to the{" "}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-teal-700)", fontWeight: 700, textDecoration: "underline" }}>
+                  Terms & Conditions
+                </a>{" "}
+                and{" "}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-teal-700)", fontWeight: 700, textDecoration: "underline" }}>
+                  Privacy Policy
+                </a>{" "}
+                under POPIA. I understand that participating in any census or survey is purely optional and voluntary.
               </span>
             </label>
           </div>
@@ -170,6 +177,12 @@ export default function SignupPage() {
         <div className="ch-login__signup">
           <span>{t("signup.haveAccount")}</span>
           <a href="/login">{t("signup.loginLink")}</a>
+        </div>
+
+        <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--color-line, #e2e8f0)", textAlign: "center", fontSize: "11.5px", color: "var(--color-sage, #64748b)", display: "flex", justifyContent: "center", gap: "12px" }}>
+          <a href="/terms" style={{ color: "inherit", textDecoration: "underline" }}>Terms & Conditions</a>
+          <span>•</span>
+          <a href="/privacy" style={{ color: "inherit", textDecoration: "underline" }}>Privacy Policy</a>
         </div>
       </div>
     </div>

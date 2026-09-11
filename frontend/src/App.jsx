@@ -20,6 +20,8 @@ import TakeSurveyPage from "./pages/TakeSurveyPage";
 import SurveyResponsesPage from "./pages/SurveyResponsesPage";
 import StudyApplicantsPage from "./pages/StudyApplicantsPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 export default function App() {
   return (
@@ -29,6 +31,8 @@ export default function App() {
           <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
           {/* Public / Guest-browsable routes */}
           <Route path="/" element={<HomeRouter />} />

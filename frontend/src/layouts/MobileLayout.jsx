@@ -96,9 +96,9 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
             <div className="ch-offline-modal-icon">
               <Icon name="wifi-off" size={26} />
             </div>
-            <h3 id="ch-offline-modal-title">{t("common.offlineTitle")}</h3>
+            <h3 id="ch-offline-modal-title">{t("common.offlineTitle") || "You’re offline"}</h3>
             <p className="ch-offline-modal-text">
-              {t("common.offlineText")}
+              {t("common.offlineText") || "We’ll load recent posts when your connection is restored."}
             </p>
             <button
               type="button"
@@ -106,7 +106,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
               onClick={handleDismissOffline}
               autoFocus
             >
-              {t("common.offlineBtn")}
+              {t("common.offlineBtn") || "Okay"}
             </button>
           </div>
         </div>

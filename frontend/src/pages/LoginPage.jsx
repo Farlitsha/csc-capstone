@@ -90,6 +90,12 @@ export default function LoginPage() {
         <a href="/" className="ch-login__guest">
           {t("login.browseGuest")}
         </a>
+
+        <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--color-line, #e2e8f0)", textAlign: "center", fontSize: "11.5px", color: "var(--color-sage, #64748b)", display: "flex", justifyContent: "center", gap: "12px" }}>
+          <a href="/terms" style={{ color: "inherit", textDecoration: "underline" }}>Terms & Conditions</a>
+          <span>•</span>
+          <a href="/privacy" style={{ color: "inherit", textDecoration: "underline" }}>Privacy Policy</a>
+        </div>
       </div>
     </div>
   );

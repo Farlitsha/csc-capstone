@@ -425,6 +425,24 @@ export default function ProfilePage() {
           </Card>
         )}
 
+        {/* Legal & Data Privacy Information */}
+        <Card title="Legal & Data Privacy">
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", padding: "4px 4px 6px" }}>
+            <p style={{ margin: 0, fontSize: "12.5px", color: "var(--color-sage)" }}>
+              CommHub processes personal data in accordance with South Africa's POPIA legislation. Review platform rules and data privacy rights:
+            </p>
+            <div style={{ display: "flex", gap: "12px", fontSize: "13px" }}>
+              <a href="/terms" style={{ color: "var(--color-teal-700)", fontWeight: 700, textDecoration: "underline" }}>
+                Terms & Conditions
+              </a>
+              <span style={{ color: "var(--color-line)" }}>•</span>
+              <a href="/privacy" style={{ color: "var(--color-teal-700)", fontWeight: 700, textDecoration: "underline" }}>
+                Privacy Policy (POPIA)
+              </a>
+            </div>
+          </div>
+        </Card>
+
         <Button variant="secondary" fullWidth onClick={logout}>
           {t("common.logout")}
         </Button>
