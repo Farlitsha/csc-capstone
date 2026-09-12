@@ -45,10 +45,7 @@ def get_current_user(token: str = Depends(ouath2_scheme),db: Session = Depends(d
     return user
 
 
-def require_admin(current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)) -> models.User:
-    if current_user.role == models.UserRole.ADMIN:
-        return current_user
-    admin_exists = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).first()
-    if admin_exists is None:
-        return current_user
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+def require_admin(current_user: models.User = Depends(get_current_user)) -> models.User:
+    if current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user

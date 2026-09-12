@@ -45,7 +45,8 @@ export const translations = {
       "signingIn": "Signing in…",
       "signupPrompt": "New to CommHub?",
       "signupLink": "Create an account",
-      "browseGuest": "Browse without an account →"
+      "browseGuest": "Browse without an account →",
+      "adminPortalLink": "Administrator? Sign in to Admin Portal →"
     },
     "signup": {
       "heading": "Create an account",
@@ -224,9 +225,6 @@ export const translations = {
       "myPostedStudies": "My Posted Studies",
       "myStudyApplications": "My Study Applications",
       "noPostedStudies": "You haven't posted any studies yet.",
-      "adminBootstrapTitle": "Claim Administrator Role",
-      "adminBootstrapHint": "No platform administrator exists yet. Claim admin privileges for this account to manage users and listings. Once an administrator is confirmed, this option will permanently disappear.",
-      "becomeAdmin": "Become Administrator",
       "roleCommunityMember": "Community member",
       "roleResearcher": "Researcher",
       "roleAdmin": "Admin"
@@ -297,7 +295,8 @@ export const translations = {
       "signingIn": "Teken in…",
       "signupPrompt": "Nuut by CommHub?",
       "signupLink": "Skep 'n rekening",
-      "browseGuest": "Blaai sonder 'n rekening →"
+      "browseGuest": "Blaai sonder 'n rekening →",
+      "adminPortalLink": "Administrateur? Teken in op Admin-portaal →"
     },
     "signup": {
       "heading": "Skep 'n rekening",
@@ -476,9 +475,6 @@ export const translations = {
       "myPostedStudies": "My Geplaasde Studies",
       "myStudyApplications": "My Studie-aansoeke",
       "noPostedStudies": "Jy het nog geen studies geplaas nie.",
-      "adminBootstrapTitle": "Eis Administrateurrol op",
-      "adminBootstrapHint": "Geen administrateur bestaan nog nie. Eis admin-regte vir hierdie rekening op. Sodra 'n admin bestaan, sal hierdie opsie permanent verdwyn.",
-      "becomeAdmin": "Word Administrateur",
       "roleCommunityMember": "Gemeenskapslid",
       "roleResearcher": "Navorser",
       "roleAdmin": "Admin"
@@ -549,7 +545,8 @@ export const translations = {
       "signingIn": "Uyangena…",
       "signupPrompt": "Mtsha kwiCommHub?",
       "signupLink": "Yenza iakhawunti",
-      "browseGuest": "Brawuza ngaphandle kweakhawunti →"
+      "browseGuest": "Brawuza ngaphandle kweakhawunti →",
+      "adminPortalLink": "Ungumlawuli? Ngena kwi-Admin Portal →"
     },
     "signup": {
       "heading": "Yenza iAkhawunti",
@@ -728,9 +725,6 @@ export const translations = {
       "myPostedStudies": "Uphando Lwam Oluthunyelweyo",
       "myStudyApplications": "Izicelo Zam zoPhando",
       "noPostedStudies": "Awukathumeli ncwadi yophando okwangoku.",
-      "adminBootstrapTitle": "Thatha uxanduva loMlawuli",
-      "adminBootstrapHint": "Akukho mlawuli kule nkqubo okwangoku. Thatha uxanduva lomlawuli lwale akhawunti. Emva koko olu khetho luya kucinywa ngokupheleleyo.",
-      "becomeAdmin": "Yiba nguMlawuli",
       "roleCommunityMember": "Ilungu loluntu",
       "roleResearcher": "Umphandi",
       "roleAdmin": "Umlawuli"
@@ -801,7 +795,8 @@ export const translations = {
       "signingIn": "Uyangena…",
       "signupPrompt": "Umusha ku-CommHub?",
       "signupLink": "Dala i-akhawunti",
-      "browseGuest": "Buka ngaphandle kwe-akhawunti →"
+      "browseGuest": "Buka ngaphandle kwe-akhawunti →",
+      "adminPortalLink": "Ungumphathi? Ngena ku-Admin Portal →"
     },
     "signup": {
       "heading": "Dala i-Akhawunti",
@@ -980,9 +975,6 @@ export const translations = {
       "myPostedStudies": "Ucwaningo Lwami Oluthunyelwe",
       "myStudyApplications": "Izicelo Zami zoCwaningo",
       "noPostedStudies": "Awukathumeli lucwaningo okwamanje.",
-      "adminBootstrapTitle": "Thatha Indima Yomphathi",
-      "adminBootstrapHint": "Akukho mphathi okwamanje. Thatha amalungelo obulawuli bale akhawunti. Uma umphathi eseqinisekisiwe, lokhu kuzophela unomphela.",
-      "becomeAdmin": "Yiba uMphathi",
       "roleCommunityMember": "Ilungu lomphakathi",
       "roleResearcher": "Umcwaningi",
       "roleAdmin": "Umphathi"

@@ -91,6 +91,12 @@ export default function LoginPage() {
           {t("login.browseGuest")}
         </a>
 
+        <div style={{ marginTop: "14px", textAlign: "center" }}>
+          <a href="/admin/login" style={{ color: "var(--color-ink, #1e293b)", fontWeight: 600, fontSize: "12px", textDecoration: "none" }}>
+            {t("login.adminPortalLink") || "Administrator? Sign in to Admin Portal →"}
+          </a>
+        </div>
+
         <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--color-line, #e2e8f0)", textAlign: "center", fontSize: "11.5px", color: "var(--color-sage, #64748b)", display: "flex", justifyContent: "center", gap: "12px" }}>
           <a href="/terms" style={{ color: "inherit", textDecoration: "underline" }}>Terms & Conditions</a>
           <span>•</span>

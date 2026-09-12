@@ -57,6 +57,18 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const adminLogin = useCallback(async (username, password) => {
+    try {
+      const { access_token } = await api.adminLogin(username, password);
+      localStorage.setItem(TOKEN_KEY, access_token);
+      setToken(access_token);
+      return { ok: true };
+    } catch (err) {
+      const message = err instanceof ApiError ? err.detail : "Could not reach the server";
+      return { ok: false, error: message };
+    }
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     setToken(null);
@@ -74,7 +86,7 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   return (
-    <AuthContext.Provider value={{ token, user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ token, user, loading, login, adminLogin, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

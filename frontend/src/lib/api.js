@@ -100,6 +100,7 @@ async function request(path, {
 
 export const api = {
   login: (username, password) => request("/users/login", { method: "POST", form: { username, password }, auth: false }),
+  adminLogin: (username, password) => request("/users/admin/login", { method: "POST", form: { username, password }, auth: false }),
   me: () => request("/users/me"),
   createAccount: (payload) => request("/users/account/create", { method: "POST", body: payload, auth: false }),
   listUsers: (skip = 0, limit = 20) => request(`/users/accounts/all?skip=${skip}&limit=${limit}`),
@@ -146,7 +147,6 @@ export const api = {
   // Profile management
   getProfile: (userId) => request(`/users/${userId}`),
   updateProfile: (payload) => request("/users/me/profile", { method: "PATCH", body: payload }),
-  getAdminBootstrapStatus: () => request("/users/admin-bootstrap-status", { auth: false }),
   uploadAvatar: async (file) => {
     const token = localStorage.getItem("commhub_token");
     const form = new FormData();

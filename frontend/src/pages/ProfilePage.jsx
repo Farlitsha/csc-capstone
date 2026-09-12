@@ -71,24 +71,11 @@ export default function ProfilePage() {
   const [activity, setActivity] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
 
-  // Role upgrade state
-  const [updating, setUpdating] = useState(false);
-  const [roleMessage, setRoleMessage] = useState("");
-  const [roleError, setRoleError] = useState("");
-  const [canBootstrapAdmin, setCanBootstrapAdmin] = useState(false);
-
   const ROLE_LABEL = {
     community_member: t("profile.roleCommunityMember"),
     researcher: t("profile.roleResearcher"),
     admin: t("profile.roleAdmin"),
   };
-
-  useEffect(() => {
-    api
-      .getAdminBootstrapStatus()
-      .then((res) => setCanBootstrapAdmin(Boolean(res?.can_bootstrap_admin)))
-      .catch(() => setCanBootstrapAdmin(false));
-  }, [user?.role]);
 
   // Load activity on mount
   useEffect(() => {
@@ -161,27 +148,6 @@ export default function ProfilePage() {
       setSaveError(err instanceof ApiError ? err.detail : "Could not save profile.");
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function requestRole(role) {
-    if (!user) return;
-    setUpdating(true);
-    setRoleMessage("");
-    setRoleError("");
-    try {
-      await api.updateUserRole(user.id, role);
-      setCanBootstrapAdmin(false);
-      await refreshUser();
-      setRoleMessage(`You are now an administrator.`);
-    } catch (err) {
-      setRoleError(err instanceof ApiError ? err.detail : "Could not claim admin role. An administrator may already exist.");
-      api
-        .getAdminBootstrapStatus()
-        .then((res) => setCanBootstrapAdmin(Boolean(res?.can_bootstrap_admin)))
-        .catch(() => {});
-    } finally {
-      setUpdating(false);
     }
   }
 
@@ -402,25 +368,6 @@ export default function ProfilePage() {
                   )}
                 </div>
               ))}
-            </div>
-          </Card>
-        )}
-
-        {/* Admin Bootstrap Card (Only visible before first platform admin is created) */}
-        {canBootstrapAdmin && user?.role !== "admin" && (
-          <Card title={t("profile.adminBootstrapTitle") || "Claim Administrator Role"}>
-            <div className="ch-profile__roles">
-              <p className="ch-profile__hint">
-                {t("profile.adminBootstrapHint") ||
-                  "No platform administrator exists yet. Claim admin privileges for this account to manage users and listings. Once an administrator is confirmed, this option will permanently disappear."}
-              </p>
-              <div className="ch-profile__role-buttons">
-                <Button variant="accent" disabled={updating} onClick={() => requestRole("admin")}>
-                  {t("profile.becomeAdmin") || "Become Administrator"}
-                </Button>
-              </div>
-              {roleMessage && <p className="ch-profile__success" role="status" aria-live="polite">{roleMessage}</p>}
-              {roleError && <p className="ch-profile__error" role="alert" aria-live="assertive">{roleError}</p>}
             </div>
           </Card>
         )}

@@ -103,3 +103,48 @@ def test_community_member_cannot_post_announcement(client, admin_user, community
     response = client.post("/announcements/", json=payload, headers=community_user_auth_headers)
     assert response.status_code == 403
 
+
+def test_admin_login_endpoint_success(client, admin_user):
+    """DoD: Dedicated /users/admin/login authenticates admin and returns token."""
+    response = client.post(
+        "/users/admin/login",
+        data={"username": admin_user.username, "password": "12345"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "access_token" in data
+    assert data["token_type"] == "bearer"
+
+
+def test_admin_login_rejects_non_admin_user(client, community_user):
+    """DoD: Dedicated /users/admin/login rejects non-admin users with 403 Forbidden."""
+    response = client.post(
+        "/users/admin/login",
+        data={"username": community_user.username, "password": "12345"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status_code == 403
+    assert "administrators are authorized" in response.json()["detail"].lower()
+
+
+def test_standard_login_rejects_admin_user(client, admin_user):
+    """DoD: Standard /users/login rejects administrator accounts with 403 redirecting to /admin/login."""
+    response = client.post(
+        "/users/login",
+        data={"username": admin_user.username, "password": "12345"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status_code == 403
+    assert "/admin/login" in response.json()["detail"]
+
+
+def test_admin_login_invalid_credentials_fails(client, admin_user):
+    """DoD: Invalid password on /users/admin/login returns 401 Unauthorized."""
+    response = client.post(
+        "/users/admin/login",
+        data={"username": admin_user.username, "password": "wrongpassword"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert response.status_code == 401
+

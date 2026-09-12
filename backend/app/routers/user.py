@@ -63,6 +63,35 @@ async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session 
             detail="Invalid Full Name/username or PIN",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if user.role == models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator accounts must sign in via the Admin Login portal at /admin/login.",
+        )
+    access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role.value})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/admin/login", response_model=schemas.Token)
+@router.post("/admin-login", response_model=schemas.Token)
+async def admin_login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Admin-specific login with username/email/name + password. Strictly requires ADMIN role."""
+    user = db.query(models.User).filter(
+        (models.User.username == credentials.username) |
+        (models.User.display_name == credentials.username) |
+        (models.User.email == credentials.username)
+    ).first()
+    if not user or not utils.verify_password(credentials.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Administrator credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if user.role != models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Only administrators are authorized to sign in through this portal.",
+        )
     access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role.value})
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -143,9 +172,9 @@ async def upload_avatar(
 
 @router.get("/admin-bootstrap-status", status_code=status.HTTP_200_OK)
 async def get_admin_bootstrap_status(db: Session = Depends(get_db)):
-    """Check whether an admin already exists on the platform."""
+    """Check whether an admin already exists on the platform. Bootstrap is permanently disabled."""
     admin_exists = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).first() is not None
-    return {"admin_exists": admin_exists, "can_bootstrap_admin": not admin_exists}
+    return {"admin_exists": admin_exists, "can_bootstrap_admin": False}
 
 
 @router.get("/admin/stats", status_code=status.HTTP_200_OK, response_model=schemas.AdminStatsOut)
@@ -245,14 +274,10 @@ async def reject_researcher(
 
 
 
-def _require_admin(current_user: models.User = Depends(oauth2.get_current_user), db: Session = Depends(get_db)) -> models.User:
-    if current_user.role == models.UserRole.ADMIN:
-        return current_user
-    # Bootstrap: allow any logged-in user to promote until the first admin exists
-    admin_exists = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).first()
-    if admin_exists is None:
-        return current_user
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+def _require_admin(current_user: models.User = Depends(oauth2.get_current_user)) -> models.User:
+    if current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user
 
 
 @router.patch("/{user_id}/role", status_code=status.HTTP_200_OK, response_model=schemas.UserOut)
