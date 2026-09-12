@@ -134,8 +134,12 @@ export const api = {
   deleteService: (id) => request(`/services/${id}`, { method: "DELETE" }),
 
   reportService: (serviceId, reason) => request(`/services/${serviceId}/report`, { method: "POST", body: { reason } }),
-  listReports: () => request("/services/admin/reports"),
-  dismissReport: (reportId) => request(`/services/admin/reports/${reportId}`, { method: "DELETE" }),
+  listReports: (statusFilter = null) =>
+    request(statusFilter ? `/reports/?status_filter=${statusFilter}` : "/reports/"),
+  updateReportStatus: (reportId, status) => request(`/reports/${reportId}`, { method: "PATCH", body: { status } }),
+  dismissReport: (reportId) => request(`/reports/${reportId}`, { method: "PATCH", body: { status: "dismissed" } }),
+  resolveReport: (reportId) => request(`/reports/${reportId}`, { method: "PATCH", body: { status: "resolved" } }),
+  deleteReport: (reportId) => request(`/reports/${reportId}`, { method: "DELETE" }),
 
   updateUserRole: (id, role) => request(`/users/${id}/role`, { method: "PATCH", body: { role } }),
   deleteUser: (id) => request(`/users/${id}`, { method: "DELETE" }),
@@ -184,6 +188,8 @@ export const api = {
 
   createAnnouncement: (payload) => request("/announcements/", { method: "POST", body: payload }),
   listAnnouncements: () => request("/announcements/", { auth: false }),
+  deleteAnnouncement: (id) => request(`/announcements/${id}`, { method: "DELETE" }),
+  listAuditLogs: (skip = 0, limit = 50) => request(`/audit-logs/?skip=${skip}&limit=${limit}`),
 
   // Workshops
   listWorkshops: (includeCancelled = false) =>

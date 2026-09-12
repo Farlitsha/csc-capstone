@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import Depends, status, HTTPException, APIRouter
 from sqlalchemy.orm import Session
-from .. import models, schemas, oauth2
+from .. import models, schemas, oauth2, audit
 from ..database import get_db
 
 router = APIRouter(prefix="/announcements", tags=["announcements"])
@@ -48,6 +48,17 @@ async def create_announcement(
         content=announcement.content.strip(),
     )
     db.add(db_announcement)
+    db.flush()
+
+    audit.log_action(
+        db,
+        actor_id=admin_user.id,
+        action="announcement_created",
+        target_type="announcement",
+        target_id=db_announcement.id,
+        details={"audience": db_announcement.audience, "preview": db_announcement.content[:60]},
+    )
+
     db.commit()
     db.refresh(db_announcement)
 
@@ -59,4 +70,29 @@ async def create_announcement(
         content=db_announcement.content,
         created_at=db_announcement.created_at,
     )
+
+
+@router.delete("/{announcement_id}", status_code=status.HTTP_200_OK)
+async def delete_announcement(
+    announcement_id: int,
+    db: Session = Depends(get_db),
+    admin_user: models.User = Depends(oauth2.require_admin),
+):
+    """Admin deletes an announcement."""
+    announcement = db.query(models.Announcement).filter(models.Announcement.id == announcement_id).first()
+    if not announcement:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Announcement {announcement_id} not found")
+
+    audit.log_action(
+        db,
+        actor_id=admin_user.id,
+        action="announcement_deleted",
+        target_type="announcement",
+        target_id=announcement_id,
+        details={"audience": announcement.audience, "preview": announcement.content[:60]},
+    )
+
+    db.delete(announcement)
+    db.commit()
+    return {"message": "Announcement deleted successfully"}
 

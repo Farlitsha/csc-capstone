@@ -1,7 +1,7 @@
 import os
 import shutil
 from pathlib import Path
-from .. import models, schemas, utils, oauth2
+from .. import models, schemas, utils, oauth2, audit
 from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
 from fastapi.security import OAuth2PasswordRequestForm
 from ..database import get_db
@@ -249,6 +249,14 @@ async def approve_researcher(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is not a researcher")
     
     db_user.verification_status = models.VerificationStatus.VERIFIED
+    audit.log_action(
+        db,
+        actor_id=_admin.id,
+        action="researcher_approved",
+        target_type="user",
+        target_id=user_id,
+        details={"username": db_user.username, "display_name": db_user.display_name},
+    )
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -268,6 +276,14 @@ async def reject_researcher(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User is not a researcher")
     
     db_user.verification_status = models.VerificationStatus.REJECTED
+    audit.log_action(
+        db,
+        actor_id=_admin.id,
+        action="researcher_rejected",
+        target_type="user",
+        target_id=user_id,
+        details={"username": db_user.username, "display_name": db_user.display_name},
+    )
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -291,7 +307,22 @@ async def update_user_role(
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if db_user.role == models.UserRole.ADMIN and update.role != models.UserRole.ADMIN:
+        admin_count = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).count()
+        if admin_count <= 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot demote the sole administrator on the platform")
+
+    old_role = db_user.role.value
     db_user.role = update.role
+    audit.log_action(
+        db,
+        actor_id=_admin.id,
+        action="user_role_updated",
+        target_type="user",
+        target_id=user_id,
+        details={"username": db_user.username, "old_role": old_role, "new_role": update.role.value},
+    )
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -338,14 +369,33 @@ async def delete_user(
     if current_user.id != user_id and current_user.role != models.UserRole.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this user")
 
+    # Safety check: Cannot delete your own active admin account from the admin console
+    if current_user.role == models.UserRole.ADMIN and current_user.id == user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete your own active administrator account")
+
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Safety check: Prevent deleting the only administrator
+    if db_user.role == models.UserRole.ADMIN:
+        admin_count = db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).count()
+        if admin_count <= 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot delete the sole administrator on the platform")
 
     # Clean up avatar file if present
     if db_user.avatar_url:
         avatar_path = Path(db_user.avatar_url.lstrip("/"))
         avatar_path.unlink(missing_ok=True)
+
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="user_deleted",
+        target_type="user",
+        target_id=user_id,
+        details={"username": db_user.username, "role": db_user.role.value, "deleted_by_admin": current_user.role == models.UserRole.ADMIN},
+    )
 
     db.delete(db_user)
     db.commit()

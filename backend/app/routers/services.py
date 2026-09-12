@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
 from sqlalchemy.orm import Session, joinedload
+from pydantic import BaseModel
 from .. import models, schemas, oauth2, audit
 from ..database import get_db
 
@@ -230,4 +231,33 @@ async def delete_service(
     db.delete(service)
     db.commit()
     return {"message": "Service listing deleted successfully"}
+
+
+class ServiceReportPayload(BaseModel):
+    reason: str
+
+
+@router.post("/{service_id}/report", response_model=schemas.ReportOut, status_code=status.HTTP_201_CREATED)
+async def report_service(
+    service_id: int,
+    payload: ServiceReportPayload,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Flag a service listing for admin review."""
+    service = db.query(models.Service).filter(models.Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found")
+
+    report = models.Report(
+        reporter_id=current_user.id,
+        target_type=models.ReportTargetType.SERVICE,
+        target_id=service_id,
+        reason=payload.reason.strip(),
+    )
+    db.add(report)
+    db.commit()
+    db.refresh(report)
+    return schemas.ReportOut.from_model(report, target_title=service.title)
+
 

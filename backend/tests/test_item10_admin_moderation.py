@@ -148,3 +148,77 @@ def test_admin_login_invalid_credentials_fails(client, admin_user):
     )
     assert response.status_code == 401
 
+
+def test_admin_delete_announcement(client, admin_user, admin_auth_headers):
+    """DoD: Admin can delete an existing announcement."""
+    post_resp = client.post(
+        "/announcements/",
+        json={"audience": "All members", "content": "Notice to be deleted"},
+        headers=admin_auth_headers,
+    )
+    assert post_resp.status_code == 201
+    ann_id = post_resp.json()["id"]
+
+    del_resp = client.delete(f"/announcements/{ann_id}", headers=admin_auth_headers)
+    assert del_resp.status_code == 200
+
+    # Ensure it is removed
+    list_resp = client.get("/announcements/")
+    ids = [a["id"] for a in list_resp.json()]
+    assert ann_id not in ids
+
+
+def test_admin_cannot_delete_self(client, admin_user, admin_auth_headers):
+    """DoD: Admin cannot delete their own active account from the admin console."""
+    response = client.delete(f"/users/{admin_user.id}", headers=admin_auth_headers)
+    assert response.status_code == 400
+    assert "Cannot delete your own" in response.json()["detail"]
+
+
+def test_admin_delete_user_creates_audit_log(client, admin_user, admin_auth_headers, db_session):
+    """DoD: Deleting a user generates a record in the audit log."""
+    user = create_user_in_db(db_session, username="victim_user", email="victim@example.com")
+    del_resp = client.delete(f"/users/{user.id}", headers=admin_auth_headers)
+    assert del_resp.status_code == 200
+
+    audit_entry = db_session.query(models.AuditLog).filter_by(
+        action="user_deleted",
+        target_type="user",
+        target_id=user.id,
+    ).first()
+    assert audit_entry is not None
+    assert audit_entry.actor_id == admin_user.id
+
+
+def test_reports_include_target_title(client, admin_user, admin_auth_headers, community_user, community_user_auth_headers, db_session):
+    """DoD: GET /reports/ populates target_title for flagged services."""
+    service = models.Service(
+        title="Plumbing Help",
+        description="Fix leaky pipes in Ocean View",
+        type=models.ServiceType.OFFER,
+        category="Maintenance",
+        poster_id=community_user.id,
+        status=models.ServiceStatus.OPEN,
+    )
+    db_session.add(service)
+    db_session.commit()
+    db_session.refresh(service)
+
+    # Report the service
+    rep_resp = client.post(
+        f"/services/{service.id}/report",
+        json={"reason": "Inappropriate listing content"},
+        headers=community_user_auth_headers,
+    )
+    assert rep_resp.status_code == 201
+    assert rep_resp.json()["target_title"] == "Plumbing Help"
+
+    # List reports as admin
+    list_resp = client.get("/reports/", headers=admin_auth_headers)
+    assert list_resp.status_code == 200
+    reports = list_resp.json()
+    matching = [r for r in reports if r["target_id"] == service.id]
+    assert len(matching) > 0
+    assert matching[0]["target_title"] == "Plumbing Help"
+
+

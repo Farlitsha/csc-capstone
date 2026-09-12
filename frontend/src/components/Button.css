@@ -2,15 +2,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-2, 8px);
   padding: 10px 16px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   border: 1px solid transparent;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
   white-space: nowrap;
+  font-family: inherit;
+  line-height: 1.2;
 }
 
 .ch-button:disabled {
@@ -25,14 +27,17 @@
 .ch-button--primary {
   background: var(--color-teal-700);
   color: var(--color-white);
+  border-color: var(--color-teal-700);
 }
 .ch-button--primary:hover:not(:disabled) {
   background: var(--color-teal-700-hover);
+  border-color: var(--color-teal-700-hover);
 }
 
 .ch-button--accent {
   background: var(--color-signal);
   color: var(--color-white);
+  border-color: var(--color-signal);
 }
 .ch-button--accent:hover:not(:disabled) {
   filter: brightness(0.95);
@@ -45,4 +50,63 @@
 }
 .ch-button--secondary:hover:not(:disabled) {
   background: var(--color-sand);
+}
+
+/* --- DANGER / RED BUTTONS ---
+   Designed to match the geometric rhythm, typography, padding, and border styles of the other buttons. */
+
+/* Solid red button (matches primary & accent) */
+.ch-button--danger,
+.ch-button.ch-btn-danger--solid {
+  background: var(--color-danger, #b91c1c);
+  color: var(--color-white, #ffffff);
+  border-color: var(--color-danger, #b91c1c);
+}
+.ch-button--danger:hover:not(:disabled),
+.ch-button.ch-btn-danger--solid:hover:not(:disabled) {
+  background: #991b1b;
+  border-color: #991b1b;
+}
+
+/* Outline red button (matches secondary outline style) */
+.ch-button--danger-outline,
+.ch-button--danger-secondary,
+.ch-button.ch-btn-danger,
+.ch-button--secondary.ch-btn-danger {
+  background: transparent;
+  border-color: var(--color-danger, #b91c1c);
+  color: var(--color-danger, #b91c1c);
+}
+.ch-button--danger-outline:hover:not(:disabled),
+.ch-button--danger-secondary:hover:not(:disabled),
+.ch-button.ch-btn-danger:hover:not(:disabled),
+.ch-button--secondary.ch-btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-dim, #f6dbd7);
+  border-color: var(--color-danger-text, #84180f);
+  color: var(--color-danger-text, #84180f);
+}
+
+/* Standalone .ch-btn-danger fallback if used outside <Button> component */
+button.ch-btn-danger:not(.ch-button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2, 8px);
+  padding: 10px 16px;
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--color-danger, #b91c1c);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-danger, #b91c1c);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+  line-height: 1.2;
+}
+button.ch-btn-danger:not(.ch-button):hover:not(:disabled) {
+  background: var(--color-danger-dim, #f6dbd7);
+  border-color: var(--color-danger-text, #84180f);
+  color: var(--color-danger-text, #84180f);
 }
