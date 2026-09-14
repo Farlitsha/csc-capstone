@@ -105,19 +105,38 @@ export default function StudiesDirectoryPage() {
 
   return (
     <MobileLayout title={t("studies.title")} onBack={() => navigate(-1)}>
-      <div className="ch-studies-tabs" role="group" aria-label="Studies navigation views">
-        <Chip label={t("studies.openTab")} active={tab === "open"} onClick={() => setTab("open")} />
-        <Chip label={t("studies.myAppsTab")} active={tab === "mine"} onClick={() => setTab("mine")} />
-        <Chip
-          label={
-            <span>
-              <Icon name="calendar" size={13} style={{ marginRight: 4 }} />
-              Workshops
-            </span>
-          }
-          active={false}
+      {/* Top Main Tabs: Open Studies vs My Applications vs Workshops */}
+      <div className="ch-service-tabs-row" role="tablist" aria-label="Studies navigation views">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "open"}
+          className={`ch-service-tab-btn ${tab === "open" ? "ch-service-tab-btn--active" : ""}`}
+          onClick={() => setTab("open")}
+        >
+          <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
+          {t("studies.openTab")} ({liveStudies.length})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "mine"}
+          className={`ch-service-tab-btn ${tab === "mine" ? "ch-service-tab-btn--active" : ""}`}
+          onClick={() => setTab("mine")}
+        >
+          <Icon name="user-check" size={14} style={{ marginRight: 6 }} />
+          {t("studies.myAppsTab")} ({user ? myApplications.length : 0})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={false}
+          className="ch-service-tab-btn"
           onClick={() => navigate("/workshops")}
-        />
+        >
+          <Icon name="calendar" size={14} style={{ marginRight: 6 }} />
+          Workshops
+        </button>
       </div>
 
       {/* Screen-reader live region announcing tab and study count updates */}

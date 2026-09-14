@@ -49,6 +49,35 @@ async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     return db_user
 
 
+@router.post("/account/reactivate", response_model=schemas.Token)
+async def reactivate_account(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """Reactivate a deactivated account with username/email + PIN."""
+    user = db.query(models.User).filter(
+        (models.User.username == credentials.username) |
+        (models.User.display_name == credentials.username) |
+        (models.User.email == credentials.username)
+    ).first()
+    if not user or not utils.verify_password(credentials.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user.is_active = True
+    audit.log_action(
+        db,
+        actor_id=user.id,
+        action="user_reactivated",
+        target_type="user",
+        target_id=user.id,
+        details={"username": user.username, "role": user.role.value},
+    )
+    db.commit()
+    db.refresh(user)
+    access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role.value})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
 @router.post("/login", response_model=schemas.Token)
 async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login with Full Name, username, or email + password. Returns a JWT."""
@@ -67,6 +96,11 @@ async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session 
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Administrator accounts must sign in via the Admin Login portal at /admin/login.",
+        )
+    if not getattr(user, "is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account is currently deactivated. Please reactivate your account to sign in.",
         )
     access_token = oauth2.create_access_token(data={"user_id": user.id, "role": user.role.value})
     return {"access_token": access_token, "token_type": "bearer"}
@@ -164,6 +198,44 @@ async def upload_avatar(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.patch("/me/deactivate", status_code=status.HTTP_200_OK)
+async def deactivate_my_account(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Deactivate the authenticated user's account (community member or researcher)."""
+    if current_user.role == models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Administrator accounts cannot be deactivated.",
+        )
+    current_user.is_active = False
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="user_deactivated",
+        target_type="user",
+        target_id=current_user.id,
+        details={"username": current_user.username, "role": current_user.role.value},
+    )
+    db.commit()
+    return {"message": "Account deactivated successfully"}
+
+
+@router.delete("/me", status_code=status.HTTP_200_OK)
+async def delete_my_account(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Delete the authenticated user's account and all associated data."""
+    if current_user.role == models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Administrator accounts cannot be deleted through self-service.",
+        )
+    return await delete_user(user_id=current_user.id, db=db, current_user=current_user)
 
 
 # Admin / management endpoints
@@ -390,11 +462,16 @@ async def delete_user(
 
     audit.log_action(
         db,
-        actor_id=current_user.id,
+        actor_id=None if current_user.id == user_id else current_user.id,
         action="user_deleted",
         target_type="user",
         target_id=user_id,
-        details={"username": db_user.username, "role": db_user.role.value, "deleted_by_admin": current_user.role == models.UserRole.ADMIN},
+        details={
+            "username": db_user.username,
+            "role": db_user.role.value,
+            "deleted_by_admin": current_user.role == models.UserRole.ADMIN,
+            "self_deleted": current_user.id == user_id,
+        },
     )
 
     db.delete(db_user)

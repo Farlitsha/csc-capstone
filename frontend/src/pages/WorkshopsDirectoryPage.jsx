@@ -87,25 +87,41 @@ export default function WorkshopsDirectoryPage() {
 
   return (
     <MobileLayout title={t("workshops.title")} onBack={() => navigate(-1)}>
+      {/* Top Main Tabs: Upcoming vs My Bookings vs Studies */}
+      <div className="ch-service-tabs-row" role="tablist" aria-label="Workshops navigation views">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "all"}
+          className={`ch-service-tab-btn ${tab === "all" ? "ch-service-tab-btn--active" : ""}`}
+          onClick={() => setTab("all")}
+        >
+          <Icon name="calendar" size={14} style={{ marginRight: 6 }} />
+          {t("workshops.upcomingTab")} ({workshops.length})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "mine"}
+          className={`ch-service-tab-btn ${tab === "mine" ? "ch-service-tab-btn--active" : ""}`}
+          onClick={() => setTab("mine")}
+        >
+          <Icon name="user-check" size={14} style={{ marginRight: 6 }} />
+          {t("workshops.myBookingsTab")} ({myRegistrations.length})
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={false}
+          className="ch-service-tab-btn"
+          onClick={() => navigate("/studies")}
+        >
+          <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
+          {t("workshops.studiesTab")}
+        </button>
+      </div>
+
       <div className="ch-workshops-page">
-        <div className="ch-workshops-tabs" role="group" aria-label="Workshops navigation views">
-          <Chip label={t("workshops.upcomingTab")} active={tab === "all"} onClick={() => setTab("all")} />
-          <Chip
-            label={`${t("workshops.myBookingsTab")} (${myRegistrations.length})`}
-            active={tab === "mine"}
-            onClick={() => setTab("mine")}
-          />
-          <Chip
-            label={
-              <span>
-                <Icon name="clipboard" size={13} style={{ marginRight: 4 }} />
-                {t("workshops.studiesTab")}
-              </span>
-            }
-            active={false}
-            onClick={() => navigate("/studies")}
-          />
-        </div>
 
         {/* Screen-reader live region announcing active count */}
         <div className="sr-only" aria-live="polite" aria-atomic="true">

@@ -55,6 +55,13 @@ export default function ProfilePage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [saveError, setSaveError] = useState("");
 
+  // Deactivation and deletion modals state
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [accountActionLoading, setAccountActionLoading] = useState(false);
+  const [accountActionError, setAccountActionError] = useState("");
+
   useEffect(() => {
     if (user && !showEdit) {
       setForm({
@@ -148,6 +155,42 @@ export default function ProfilePage() {
       setSaveError(err instanceof ApiError ? err.detail : "Could not save profile.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDeactivateAccount() {
+    setAccountActionLoading(true);
+    setAccountActionError("");
+    try {
+      await api.deactivateMyAccount();
+      logout();
+      navigate("/login", {
+        replace: true,
+        state: { flashMessage: "Your account has been deactivated. You can sign in anytime to reactivate it." },
+      });
+    } catch (err) {
+      setAccountActionError(err instanceof ApiError ? err.detail : "Could not deactivate account.");
+      setAccountActionLoading(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirmText.trim().toLowerCase() !== "delete") {
+      setAccountActionError("Please type DELETE to confirm permanent deletion.");
+      return;
+    }
+    setAccountActionLoading(true);
+    setAccountActionError("");
+    try {
+      await api.deleteMyAccount();
+      logout();
+      navigate("/login", {
+        replace: true,
+        state: { flashMessage: "Your account and all associated personal data have been permanently deleted." },
+      });
+    } catch (err) {
+      setAccountActionError(err instanceof ApiError ? err.detail : "Could not delete account.");
+      setAccountActionLoading(false);
     }
   }
 
@@ -390,10 +433,142 @@ export default function ProfilePage() {
           </div>
         </Card>
 
+        {/* Account Deactivation & Deletion (Community Members & Researchers) */}
+        {user?.role !== "admin" && (
+          <Card title="Account Management & Danger Zone">
+            <div className="ch-profile__danger-zone">
+              <div className="ch-profile__danger-item">
+                <div className="ch-profile__danger-info">
+                  <h4 className="ch-profile__danger-title">Deactivate Account</h4>
+                  <p className="ch-profile__danger-desc">
+                    Temporarily disable your profile and pause active listings/bookings. You will be signed out immediately. You can reactivate anytime.
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  className="ch-btn--warning"
+                  onClick={() => {
+                    setAccountActionError("");
+                    setShowDeactivateModal(true);
+                  }}
+                >
+                  Deactivate
+                </Button>
+              </div>
+
+              <div className="ch-profile__danger-divider" />
+
+              <div className="ch-profile__danger-item">
+                <div className="ch-profile__danger-info">
+                  <h4 className="ch-profile__danger-title ch-profile__danger-title--delete">
+                    Delete Account Permanently
+                  </h4>
+                  <p className="ch-profile__danger-desc">
+                    Permanently erase your account, personal data, and all listings or applications under POPIA right to erasure. This action cannot be undone.
+                  </p>
+                </div>
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    setAccountActionError("");
+                    setDeleteConfirmText("");
+                    setShowDeleteModal(true);
+                  }}
+                >
+                  Delete Account
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
         <Button variant="secondary" fullWidth onClick={logout}>
           {t("common.logout")}
         </Button>
       </div>
+
+      {/* Deactivate Confirmation Modal */}
+      {showDeactivateModal && (
+        <div className="ch-profile-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="deactivate-modal-title">
+          <div className="ch-profile-modal-card">
+            <h3 id="deactivate-modal-title" className="ch-profile-modal-title">
+              Deactivate Your Account?
+            </h3>
+            <p className="ch-profile-modal-text">
+              You will be signed out immediately. Your profile, listings, and applications will remain saved, but won't be active while deactivated. You can sign in anytime to reactivate your account.
+            </p>
+            {accountActionError && (
+              <p className="ch-profile__error" style={{ marginBottom: "12px" }} role="alert">
+                {accountActionError}
+              </p>
+            )}
+            <div className="ch-profile-modal-actions">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeactivateModal(false)}
+                disabled={accountActionLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="secondary"
+                className="ch-btn--warning"
+                onClick={handleDeactivateAccount}
+                disabled={accountActionLoading}
+              >
+                {accountActionLoading ? "Deactivating…" : "Yes, Deactivate Account"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="ch-profile-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+          <div className="ch-profile-modal-card">
+            <h3 id="delete-modal-title" className="ch-profile-modal-title ch-profile-modal-title--danger">
+              Permanently Delete Account?
+            </h3>
+            <p className="ch-profile-modal-text">
+              This action is <strong>permanent and irreversible</strong>. All your personal data, services, workshop registrations, and study applications will be completely erased.
+            </p>
+            <p className="ch-profile-modal-text" style={{ fontSize: "13px", fontWeight: 600 }}>
+              To confirm, please type <span style={{ color: "var(--color-danger)", letterSpacing: "1px" }}>DELETE</span> below:
+            </p>
+            <input
+              type="text"
+              className="ch-profile__input"
+              style={{ marginBottom: "12px" }}
+              placeholder="Type DELETE"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              autoFocus
+            />
+            {accountActionError && (
+              <p className="ch-profile__error" style={{ marginBottom: "12px" }} role="alert">
+                {accountActionError}
+              </p>
+            )}
+            <div className="ch-profile-modal-actions">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={accountActionLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteAccount}
+                disabled={accountActionLoading || deleteConfirmText.trim().toLowerCase() !== "delete"}
+              >
+                {accountActionLoading ? "Deleting…" : "Permanently Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </MobileLayout>
   );
 }

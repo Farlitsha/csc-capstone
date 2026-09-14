@@ -44,6 +44,7 @@ class UserOut(BaseModel):
     contact_phone: Optional[str] = None
     contact_email: Optional[str] = None
     struggles: Optional[List[str]] = None
+    is_active: bool = True
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -63,6 +64,7 @@ class PrivateProfileOut(BaseModel):
     avatar_url: Optional[str] = None
     phone: Optional[str] = None
     struggles: Optional[List[str]] = None
+    is_active: bool = True
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -100,4 +102,9 @@ class RoleUpdate(BaseModel):
 
 class PhoneUpdate(BaseModel):
     phone: Optional[str] = None
+
+
+class ReactivateRequest(BaseModel):
+    username: str
+    password: str
 

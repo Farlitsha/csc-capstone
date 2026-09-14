@@ -50,6 +50,9 @@ class User(Base):
     # shown on the home page (GET /community/stats) - self-reported, optional, not inferred.
     struggles = Column(JSON, nullable=True)  # list[str]
 
+    # Account status (active / deactivated)
+    is_active = Column(Boolean, nullable=False, server_default=text("1"), default=True)
+
     studies = relationship("StudyListing", back_populates="researcher", cascade="all, delete")
     applications = relationship("Application", back_populates="applicant", cascade="all, delete")
     services = relationship("Service", back_populates="poster", cascade="all, delete")
@@ -59,6 +62,7 @@ class User(Base):
     workshop_registrations = relationship("WorkshopRegistration", back_populates="participant", cascade="all, delete")
     survey_responses = relationship("SurveyResponse", back_populates="respondent", cascade="all, delete")
     census_response = relationship("CommunityCensus", back_populates="user", uselist=False, cascade="all, delete")
+    reports_filed = relationship("Report", foreign_keys="Report.reporter_id", back_populates="reporter", cascade="all, delete")
 
 
 class Post(Base):
@@ -294,7 +298,7 @@ class Report(Base):
     resolved_at = Column(TIMESTAMP(timezone=True), nullable=True)
     resolved_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
-    reporter = relationship("User", foreign_keys=[reporter_id])
+    reporter = relationship("User", foreign_keys=[reporter_id], back_populates="reports_filed")
     resolved_by = relationship("User", foreign_keys=[resolved_by_id])
 
 

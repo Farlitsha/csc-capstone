@@ -114,3 +114,71 @@ def test_get_nonexistent_user_profile_returns_404(client, community_user_auth_he
     response = client.get("/users/99999", headers=community_user_auth_headers)
     assert response.status_code == 404
 
+
+def test_deactivate_and_reactivate_account(client, community_user, community_user_auth_headers, db_session):
+    """DoD: User can deactivate own account; login is blocked; reactivation restores access."""
+    # 1. Deactivate
+    resp = client.patch("/users/me/deactivate", headers=community_user_auth_headers)
+    assert resp.status_code == 200
+    assert resp.json()["message"] == "Account deactivated successfully"
+
+    # 2. Accessing /users/me now returns 403 because account is inactive
+    me_resp = client.get("/users/me", headers=community_user_auth_headers)
+    assert me_resp.status_code == 403
+    assert "deactivated" in me_resp.json()["detail"].lower()
+
+    # 3. Regular login is blocked
+    login_resp = client.post(
+        "/users/login",
+        data={"username": community_user.username, "password": "12345"},
+    )
+    assert login_resp.status_code == 403
+    assert "deactivated" in login_resp.json()["detail"].lower()
+
+    # 4. Reactivate account
+    react_resp = client.post(
+        "/users/account/reactivate",
+        data={"username": community_user.username, "password": "12345"},
+    )
+    assert react_resp.status_code == 200
+    new_token = react_resp.json()["access_token"]
+
+    # 5. User can now access /users/me again
+    me_after = client.get("/users/me", headers={"Authorization": f"Bearer {new_token}"})
+    assert me_after.status_code == 200
+    assert me_after.json()["is_active"] is True
+
+
+def test_community_member_delete_own_account(client, community_user, community_user_auth_headers, db_session):
+    """DoD: Community member can permanently delete their own account."""
+    del_resp = client.delete("/users/me", headers=community_user_auth_headers)
+    assert del_resp.status_code == 200
+    assert del_resp.json()["message"] == "User deleted successfully"
+
+    # User no longer exists in DB
+    db_user = db_session.query(models.User).filter_by(id=community_user.id).first()
+    assert db_user is None
+
+
+def test_researcher_delete_own_account_cascades_studies(client, verified_researcher, verified_researcher_auth_headers, db_session):
+    """DoD: Researcher can delete their own account, cascading studies."""
+    # Create study owned by researcher
+    study = models.StudyListing(
+        researcher_id=verified_researcher.id,
+        title="Impact of Loadshedding on Local Artisans",
+        description="Assessing SME resilience in Ocean View.",
+        honorarium="R150",
+        state=models.StudyState.LIVE,
+    )
+    db_session.add(study)
+    db_session.commit()
+    db_session.refresh(study)
+
+    # Researcher deletes own account via /users/me
+    del_resp = client.delete("/users/me", headers=verified_researcher_auth_headers)
+    assert del_resp.status_code == 200
+
+    # User and their study are deleted
+    assert db_session.query(models.User).filter_by(id=verified_researcher.id).first() is None
+    assert db_session.query(models.StudyListing).filter_by(id=study.id).first() is None
+

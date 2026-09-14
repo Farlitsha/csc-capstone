@@ -5,10 +5,11 @@ import { useLanguage } from "../i18n/LanguageContext";
 import Button from "../components/Button";
 import Field from "../components/Field";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import { api, ApiError } from "../lib/api";
 import "./LoginPage.css";
 
 export default function LoginPage() {
-  const { token, login } = useAuth();
+  const { token, login, refreshUser } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,9 +17,27 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [reactivating, setReactivating] = useState(false);
 
   if (token) {
     return <Navigate to={location.state?.from ?? "/"} replace />;
+  }
+
+  async function handleReactivate() {
+    setReactivating(true);
+    setError("");
+    try {
+      const res = await api.reactivateAccount(username, password);
+      if (res?.access_token) {
+        localStorage.setItem("commhub_token", res.access_token);
+        if (refreshUser) await refreshUser();
+        navigate(location.state?.from ?? "/", { replace: true });
+      }
+    } catch (err) {
+      setError(err instanceof ApiError ? err.detail : "Could not reactivate account.");
+    } finally {
+      setReactivating(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -41,6 +60,26 @@ export default function LoginPage() {
       </div>
       <div className="ch-login__card">
         <h1 className="ch-login__heading">{t("login.heading")}</h1>
+
+        {location.state?.flashMessage && (
+          <div
+            style={{
+              background: "#dcfce7",
+              color: "#15803d",
+              border: "1px solid #86efac",
+              padding: "10px 14px",
+              borderRadius: "8px",
+              fontSize: "13px",
+              marginBottom: "16px",
+              textAlign: "center",
+              lineHeight: "1.4",
+            }}
+            role="status"
+            aria-live="polite"
+          >
+            {location.state.flashMessage}
+          </div>
+        )}
 
         <form className="ch-login__form" onSubmit={handleSubmit}>
           <Field
@@ -68,12 +107,25 @@ export default function LoginPage() {
           />
 
           {error && (
-            <p className="ch-login__error" role="alert" aria-live="assertive">
-              {error}
-            </p>
+            <div style={{ marginBottom: "12px" }}>
+              <p className="ch-login__error" role="alert" aria-live="assertive">
+                {error}
+              </p>
+              {error.toLowerCase().includes("deactivated") && (
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  style={{ marginTop: "8px" }}
+                  disabled={reactivating}
+                  onClick={handleReactivate}
+                >
+                  {reactivating ? "Reactivating…" : "Reactivate Account & Sign In"}
+                </Button>
+              )}
+            </div>
           )}
 
-          <Button type="submit" fullWidth disabled={submitting}>
+          <Button type="submit" fullWidth disabled={submitting || reactivating}>
             {submitting ? t("login.signingIn") : t("login.button")}
           </Button>
         </form>

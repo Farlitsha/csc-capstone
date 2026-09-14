@@ -143,6 +143,10 @@ export const api = {
 
   updateUserRole: (id, role) => request(`/users/${id}/role`, { method: "PATCH", body: { role } }),
   deleteUser: (id) => request(`/users/${id}`, { method: "DELETE" }),
+  deleteMyAccount: () => request("/users/me", { method: "DELETE" }),
+  deactivateMyAccount: () => request("/users/me/deactivate", { method: "PATCH" }),
+  reactivateAccount: (username, password) =>
+    request("/users/account/reactivate", { method: "POST", form: { username, password }, auth: false }),
   getAdminStats: () => request("/users/admin/stats"),
   listPendingResearchers: () => request("/users/admin/researchers/pending"),
   approveResearcher: (id) => request(`/users/admin/researchers/${id}/approve`, { method: "PATCH" }),

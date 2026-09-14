@@ -41,6 +41,13 @@ def get_current_user(token: str = Depends(ouath2_scheme),db: Session = Depends(d
     credentials_exception = HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail= f"could not validate credntials", headers = {"WWW-Authenticate":"Bearer"})
     token = verify_access_token(token, credentials_exception)
     user = db.query(models.User).filter(models.User.id == token.id).first()
+    if not user:
+        raise credentials_exception
+    if not getattr(user, "is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is deactivated. Please contact support or reactivate your account.",
+        )
     
     return user
 

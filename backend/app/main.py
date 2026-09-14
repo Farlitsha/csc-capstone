@@ -26,6 +26,12 @@ SERVICES_DIR.mkdir(parents=True, exist_ok=True)
 
 try:
     Base.metadata.create_all(bind=engine)
+    from sqlalchemy import inspect, text
+    with engine.connect() as conn:
+        cols = [c["name"] for c in inspect(engine).get_columns("users")]
+        if "is_active" not in cols:
+            conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT 1"))
+            conn.commit()
 except Exception:
     pass
 
