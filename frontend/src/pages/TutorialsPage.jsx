@@ -13,26 +13,16 @@ const tutorials = [
     description: "Learn how to post a service on CommHub.",
     video: "/videos/post_service.mp4",
   },
-  // {
-  //   title: "How to Search for Services",
-  //   description: "Learn how to find available community services.",
-  //   video: "/videos/search-services.mp4",
-  // },
-  // {
-  //   title: "How to Join a Workshop",
-  //   description: "Learn how to find and join workshops.",
-  //   video: "/videos/join-workshop.mp4",
-  // },
-  // {
-  //   title: "How to Create a Study",
-  //   description: "Learn how to create a new research study.",
-  //   video: "/videos/create-study.mp4",
-  // },
-  // {
-  //   title: "How to Edit Your Profile",
-  //   description: "Learn how to update your CommHub profile.",
-  //   video: "/videos/edit-profile.mp4",
-  // },
+  {
+    title: "How to Join a Workshop",
+    description: "Learn how to find and join workshops.",
+    video: "/videos/join_workshop.mp4",
+  },
+  {
+    title: "How to Edit Your Profile",
+    description: "Learn how to update your CommHub profile.",
+    video: "/videos/delete_modify_account.mp4",
+  },
 ];
 
 
@@ -56,13 +46,15 @@ export default function TutorialsPage() {
 
               <p>{tutorial.description}</p>
 
-              <iframe
+              <video
                 width="100%"
                 height="250"
-                src={tutorial.video}
-                title={tutorial.title}
-                allowFullScreen
-              />
+                controls
+                preload="metadata"
+              >
+                <source src={tutorial.video} type="video/mp4" />
+                Your browser does not support video playback.
+              </video>
 
             </div>
           ))}
@@ -86,13 +78,15 @@ export default function TutorialsPage() {
 
               <p>{tutorial.description}</p>
 
-              <iframe
-                width="560"
-                height="315"
-                src={tutorial.video}
-                title={tutorial.title}
-                allowFullScreen
-              />
+              <video
+              width="560"
+              height="315"
+              controls
+              preload="metadata"
+              >
+              <source src={tutorial.video} type="video/mp4" />
+              Your browser does not support video playback.
+            </video>
 
             </div>
           ))}
