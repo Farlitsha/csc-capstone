@@ -89,3 +89,50 @@ button{
     color:red;
 
 }
+
+/* =========================
+   common to all except login
+   ========================= */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    color: #222;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%;
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.logo img {
+    width: 100px;
+    height: auto;
+}
+
+.user-info {
+    font-weight: bold;
+}
+
+.nav-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    background-color: #4CAF50;
+}
+
+.nav-bar a {
+    padding: 10px 20px;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+}
+
+.nav-bar a:hover {
+    background-color: #45a049;
+}

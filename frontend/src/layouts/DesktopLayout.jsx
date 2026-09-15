@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import Button from "../components/Button";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import "./DesktopLayout.css";
+
 
 /**
  * eyebrow: small workspace label under the CommHub wordmark, e.g. "RESEARCHER WORKSPACE"
@@ -13,6 +14,15 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const initials = (user?.username || "?").slice(0, 2).toUpperCase();
+
+  const NAV_ITEMS = [
+    { to: "/", label: "Home" },
+    { to: "/services", label: "Services" },
+    { to: "/studies", label: "Studies" },
+    { to: "/workshops", label: "Workshops" },
+    { to: "/tutorials", label: "Tutorials" },
+    ];
+
 
   return (
     <div className="ch-desktop">
@@ -26,6 +36,25 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
           <span className="ch-desktop__wordmark">CommHub</span>
           {eyebrow && <span className="ch-desktop__eyebrow">{eyebrow}</span>}
         </div>
+
+      {/* Desktop Navigation */}
+      <nav className="ch-desktop__nav">
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            className={({ isActive }) =>
+              isActive
+                ? "ch-desktop__nav-link ch-desktop__nav-link--active"
+                : "ch-desktop__nav-link"
+            }
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+
         <div className="ch-desktop__right">
           {rightSlot}
           <LanguageSwitcher />

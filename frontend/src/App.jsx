@@ -23,6 +23,7 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TutorialsPage from "./pages/TutorialsPage";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/tutorials" element={<TutorialsPage />} />
 
           {/* Public / Guest-browsable routes */}
           <Route path="/" element={<HomeRouter />} />

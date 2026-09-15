@@ -223,6 +223,13 @@ export default function Icon({ name, size = 16, className = "", style = {} }) {
           <line x1="12" y1="20" x2="12.01" y2="20" />
         </svg>
       );
+    case "play":
+      return (
+        <svg {...props}>
+          <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
+          <polygon points="10 9 16 12 10 15" />
+        </svg>
+      );
 
     default:
       return null;
