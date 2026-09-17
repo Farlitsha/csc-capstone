@@ -1,5 +1,6 @@
 import MobileLayout from "../layouts/MobileLayout";
 import DesktopLayout from "../layouts/DesktopLayout";
+import "./TutorialsPage.css";
 
 
 const tutorials = [
