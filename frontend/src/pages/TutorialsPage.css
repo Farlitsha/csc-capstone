@@ -1,19 +1,195 @@
-/* Desktop is shown by default */
-.mobile-only {
-  display: none;
+.ch-tutorials-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px 20px 36px;
+  max-width: 840px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.desktop-only {
+.ch-tutorials-hero {
+  text-align: center;
+  padding: 8px 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.ch-tutorials-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 118, 110, 0.1);
+  color: var(--color-teal-700, #0f766e);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill, 9999px);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.ch-tutorials-hero h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-ink, #0f172a);
+  line-height: 1.25;
+}
+
+.ch-tutorials-hero__subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-sage, #64748b);
+  line-height: 1.5;
+  max-width: 560px;
+}
+
+.ch-tutorials-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.ch-tutorial-card {
+  background: var(--color-white, #ffffff);
+  border: 1px solid var(--color-line, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.06));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ch-tutorial-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ch-tutorial-card__header {
+  padding: 16px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ch-tutorial-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ch-tutorial-step-badge {
+  background: var(--color-teal-700, #0f766e);
+  color: var(--color-white, #ffffff);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill, 9999px);
+}
+
+.ch-tutorial-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-sage, #64748b);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ch-tutorial-card__title {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-ink, #0f172a);
+  line-height: 1.35;
+}
+
+.ch-tutorial-card__desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.ch-tutorial-video-wrapper {
+  position: relative;
+  width: 100%;
+  background: #000000;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-tutorial-video {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
   display: block;
+  border: none;
+  background: #000000;
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-  .mobile-only {
-    display: block;
-  }
+.ch-tutorial-video:focus-visible {
+  outline: 3px solid var(--color-teal-700, #0f766e);
+  outline-offset: -3px;
+}
 
-  .desktop-only {
-    display: none;
+.ch-tutorial-card__footer {
+  padding: 12px 16px 16px;
+  background: var(--color-paper, #f8fafc);
+  border-top: 1px solid var(--color-line, #e2e8f0);
+}
+
+.ch-tutorial-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ch-tutorials-help-card {
+  margin-top: 6px;
+}
+
+.ch-tutorials-help-text {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-ink, #0f172a);
+}
+
+.ch-tutorials-help-links {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.ch-tutorials-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+@media (min-width: 600px) {
+  .ch-tutorials-help-links {
+    grid-template-columns: 1fr 1fr;
   }
 }

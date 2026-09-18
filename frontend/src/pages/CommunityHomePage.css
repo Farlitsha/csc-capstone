@@ -4,14 +4,15 @@
 
 .ch-greeting h1 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   color: var(--color-ink);
+  letter-spacing: -0.3px;
 }
 
 .ch-greeting p {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--color-sage);
 }
 
@@ -24,6 +25,7 @@
 
 .ch-stat-link {
   display: block;
+  text-decoration: none;
 }
 
 .ch-announcement-section {
@@ -120,14 +122,14 @@
 
 .ch-insights-card h3 {
   margin: 0 0 4px;
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-ink);
 }
 
 .ch-insights-card p {
   margin: 0 0 12px;
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--color-sage);
 }
@@ -142,11 +144,9 @@
   padding: 16px 20px 20px;
 }
 
-
-
 .ch-section h2 {
   margin: 0 0 12px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--color-ink);
 }
@@ -170,8 +170,8 @@
 
 .ch-service-list,
 .ch-event-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -180,11 +180,16 @@
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   padding: 14px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ch-service-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .ch-service-card h3 {
   margin: 10px 0 4px;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--color-ink);
 }
@@ -203,7 +208,7 @@
 
 .ch-empty-cta {
   text-align: center;
-  padding: 20px;
+  padding: 24px 20px;
   background: var(--color-white);
   border: 1px dashed var(--color-line);
   border-radius: var(--radius-lg);
@@ -212,7 +217,7 @@
 
 .ch-empty-cta p {
   margin: 0 0 12px;
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--color-sage);
 }
 
@@ -220,11 +225,15 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
 }
 
 .ch-event-date {
-  width: 39px;
-  height: 39px;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   border-radius: 8px;
   background: var(--color-sand);
@@ -236,7 +245,7 @@
 }
 
 .ch-event-date span {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-teal-700);
 }
@@ -249,13 +258,43 @@
 
 .ch-event-title {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-ink);
 }
 
 .ch-event-meta {
   margin: 2px 0 0;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--color-sage);
+}
+
+/* Tablet & Desktop Responsiveness */
+@media (min-width: 640px) {
+  .ch-greeting {
+    padding: 24px 24px 0;
+  }
+
+  .ch-greeting h1 {
+    font-size: 28px;
+  }
+
+  .ch-stats-row-mobile {
+    grid-template-columns: repeat(4, 1fr);
+    padding: 18px 24px;
+    gap: 16px;
+  }
+
+  .ch-announcement-section,
+  .ch-insights-card-section,
+  .ch-section {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .ch-service-list,
+  .ch-event-list {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
 }

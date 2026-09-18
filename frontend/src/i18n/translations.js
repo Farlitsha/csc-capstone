@@ -252,6 +252,29 @@ export const translations = {
       "submitting": "Submitting…",
       "surveySubmitted": "Survey Submitted!",
       "thankYou": "Thank you for contributing to this research study."
+    },
+    "tutorials": {
+      "title": "Tutorials",
+      "heading": "Video Tutorials",
+      "subtitle": "Watch these step-by-step video guides to learn how to navigate and make the most of CommHub.",
+      "badge": "Help & Video Guides",
+      "step1Title": "How to Create an Account",
+      "step1Desc": "Learn how to register your CommHub account with a simple 5-digit PIN and start browsing local community services and workshops.",
+      "step1Action": "Create Account",
+      "step2Title": "How to Post a Service",
+      "step2Desc": "Learn how to offer your skills (e.g. plumbing, tutoring, sewing) or request help from nearby Ocean View & Khayelitsha residents.",
+      "step2Action": "Explore Services",
+      "step3Title": "How to Join a Workshop",
+      "step3Desc": "Discover free community skills workshops, book a seat in seconds, and track your upcoming workshop reservations.",
+      "step3Action": "View Workshops",
+      "step4Title": "How to Edit Your Profile & Manage Account",
+      "step4Desc": "Learn how to update your phone/WhatsApp number, upload a profile photo, modify active listings, or manage your account.",
+      "step4Action": "Go to Profile",
+      "helpTitle": "Need More Assistance?",
+      "helpDesc": "Check our community guidelines or read our data privacy policy to learn more about how CommHub works.",
+      "termsLink": "Terms & Guidelines",
+      "privacyLink": "Privacy Policy (POPIA)",
+      "videoNotSupported": "Your browser does not support HTML5 video playback."
     }
   },
   "af": {
@@ -502,6 +525,29 @@ export const translations = {
       "submitting": "Dien tans in…",
       "surveySubmitted": "Opname Ingedien!",
       "thankYou": "Dankie dat jy tot hierdie navorsingstudie bygedra het."
+    },
+    "tutorials": {
+      "title": "Tutoriale",
+      "heading": "Video-tutoriale",
+      "subtitle": "Kyk hierdie stap-vir-stap videogidse om te leer hoe om CommHub optimaal te gebruik.",
+      "badge": "Hulp & Videogidse",
+      "step1Title": "Hoe om 'n Rekening te Skep",
+      "step1Desc": "Leer hoe om jou CommHub-rekening met 'n 5-syfer PIN te registreer en gemeenskapsdienste te ontdek.",
+      "step1Action": "Skep Rekening",
+      "step2Title": "Hoe om 'n Diens te Plaas",
+      "step2Desc": "Leer hoe om jou vaardighede aan te bied of hulp van plaaslike inwoners te vra.",
+      "step2Action": "Verken Dienste",
+      "step3Title": "Hoe om by 'n Werkswinkel aan te sluit",
+      "step3Desc": "Ontdek gratis vaardigheidswerkswinkels en bespreek jou plek binne sekondes.",
+      "step3Action": "Bekyk Werkswinkels",
+      "step4Title": "Hoe om Jou Profiel te Wysig",
+      "step4Desc": "Leer hoe om jou kontaknommer by te werk, 'n profielfoto op te laai en jou rekening te bestuur.",
+      "step4Action": "Gaan na Profiel",
+      "helpTitle": "Benodig jy nog hulp?",
+      "helpDesc": "Lees ons gemeenskapsriglyne of privaatheidsbeleid om meer te wete te kom.",
+      "termsLink": "Terme & Riglyne",
+      "privacyLink": "Privaatheidsbeleid (POPIA)",
+      "videoNotSupported": "Jou webblaaier ondersteun nie video-afspeel nie."
     }
   },
   "xh": {
@@ -752,6 +798,29 @@ export const translations = {
       "submitting": "Iyathunyelwa…",
       "surveySubmitted": "Uvavanyo luthunyelwe!",
       "thankYou": "Enkosi ngokufaka isandla kolu phando."
+    },
+    "tutorials": {
+      "title": "Iitutorial",
+      "heading": "Iividiyo zoQeqesho",
+      "subtitle": "Bukela ezi zikhokelo zevidiyo zenyathelo nenyathelo ukuze ufunde indlela yokusebenzisa iCommHub.",
+      "badge": "Uncedo neZikhokelo zeVidiyo",
+      "step1Title": "Indlela yokwenza iAkhawunti",
+      "step1Desc": "Funda indlela yokubhalisa iakhawunti yakho yeCommHub usebenzisa i-PIN enamadijithi ama-5.",
+      "step1Action": "Yenza iAkhawunti",
+      "step2Title": "Indlela yokuBhengeza iNkonzo",
+      "step2Desc": "Funda indlela yokunikezela ngezakhono zakho okanye ucele uncedo kubahlali basekuhlaleni.",
+      "step2Action": "Khangela Iinkonzo",
+      "step3Title": "Indlela yokuJoyina iNdibano yoCweyo",
+      "step3Desc": "Fumana iindibano zocweyo zasimahla uze ubhukishe indawo yakho ngokukhawuleza.",
+      "step3Action": "Jonga Iindibano",
+      "step4Title": "Indlela yokuHlela iProfayile Yakho",
+      "step4Desc": "Funda indlela yokuhlaziya inombolo yakho, ulayishe umfanekiso weprofayile, ulawule iakhawunti.",
+      "step4Action": "Yiya kwiProfayile",
+      "helpTitle": "Ufuna Olunye Uncedo?",
+      "helpDesc": "Jonga izikhokelo zoluntu okanye ufunde umgaqo-nkqubo wethu wokhuseleko lwedatha.",
+      "termsLink": "Imimiselo neZikhokelo",
+      "privacyLink": "Ukhuseleko lweDatha (POPIA)",
+      "videoNotSupported": "Isikhangeli sakho asixhasi ukudlalwa kwevidiyo."
     }
   },
   "zu": {
@@ -1002,6 +1071,29 @@ export const translations = {
       "submitting": "Kuyathunyelwa…",
       "surveySubmitted": "Ucwaningo luthunyelwe!",
       "thankYou": "Siyabonga ngokufaka isandla kulolu cwaningo."
+    },
+    "tutorials": {
+      "title": "Ama-tutorial",
+      "heading": "Amavidiyo Wokufunda",
+      "subtitle": "Buka le miyalo yevidiyo yesinyathelo ngesinyathelo ukuze ufunde ukusebenzisa i-CommHub.",
+      "badge": "Usizo Namavidiyo",
+      "step1Title": "Indlela Yokudala I-akhawunti",
+      "step1Desc": "Funda indlela yokubhalisa i-akhawunti yakho ye-CommHub usebenzisa i-PIN enezinombolo ezi-5.",
+      "step1Action": "Dala I-akhawunti",
+      "step2Title": "Indlela Yokukhangisa Insizakalo",
+      "step2Desc": "Funda indlela yokunikela ngamakhono akho noma ukucela usizo kubahlali bendawo.",
+      "step2Action": "Buka Izinsizakalo",
+      "step3Title": "Indlela Yokujoyina I-workshop",
+      "step3Desc": "Thola ama-workshop wamahhala bese ubhukha indawo yakho ngokushesha.",
+      "step3Action": "Buka Ama-workshop",
+      "step4Title": "Indlela Yokuhlela Iphrofayela Yakho",
+      "step4Desc": "Funda indlela yokuvuselela inombolo yakho, ukufaka isithombe nokulawula i-akhawunti.",
+      "step4Action": "Yiya Kuphrofayela",
+      "helpTitle": "Udinga Olunye Usizo?",
+      "helpDesc": "Hlola imigomo yomphakathi noma ufunde inqubomgomo yobumfihlo.",
+      "termsLink": "Imigomo Nemibandela",
+      "privacyLink": "Inqubomgomo Yobumfihlo (POPIA)",
+      "videoNotSupported": "Isiphequluli sakho asikwazi ukudlala ividiyo."
     }
   }
 };

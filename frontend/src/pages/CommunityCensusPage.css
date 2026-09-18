@@ -1,5 +1,9 @@
 .ch-census-page {
   padding: 16px 20px 40px;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .ch-census-header {
