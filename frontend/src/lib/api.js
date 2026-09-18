@@ -1,5 +1,4 @@
 import { cache } from "./cache";
-import { compressImage } from "./imageCompressor";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -121,7 +120,10 @@ export const api = {
   getStudySurveyResponses: (id) => request(`/studies/${id}/survey/responses`),
   getStudySurvey: (id) => request(`/studies/${id}/survey`),
   upsertStudySurvey: (id, payload) => request(`/studies/${id}/survey`, { method: "PUT", body: payload }),
-  submitSurveyResponse: (id, payload) => request(`/studies/${id}/survey/responses`, { method: "POST", body: payload }),
+  submitSurveyResponse: (id, payload) => {
+    const body = Array.isArray(payload) ? { answers: payload } : (payload?.answers ? payload : { answers: [payload] });
+    return request(`/studies/${id}/survey/responses`, { method: "POST", body });
+  },
   clearSurveyResponse: (studyId) => request(`/studies/${studyId}/survey/response`, { method: "DELETE" }),
   clearAllCompletedSurveys: () => request("/applications/me/completed", { method: "DELETE" }),
 
@@ -161,10 +163,9 @@ export const api = {
   getProfile: (userId) => request(`/users/${userId}`),
   updateProfile: (payload) => request("/users/me/profile", { method: "PATCH", body: payload }),
   uploadAvatar: async (file) => {
-    const compressed = await compressImage(file, { maxWidth: 300, maxHeight: 300, quality: 0.6 }).catch(() => file);
     const token = localStorage.getItem("commhub_token");
     const form = new FormData();
-    form.append("file", compressed);
+    form.append("file", file);
     const res = await fetch(`${API_BASE_URL}/users/me/avatar`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -179,10 +180,9 @@ export const api = {
     return data;
   },
   uploadServicePhoto: async (file) => {
-    const compressed = await compressImage(file, { maxWidth: 600, maxHeight: 600, quality: 0.6 }).catch(() => file);
     const token = localStorage.getItem("commhub_token");
     const form = new FormData();
-    form.append("file", compressed);
+    form.append("file", file);
     const res = await fetch(`${API_BASE_URL}/services/upload-photo`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},

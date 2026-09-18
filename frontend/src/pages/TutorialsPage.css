@@ -1,41 +1,3 @@
-<<<<<<< HEAD
-.tutorials-page {
-  width: 100%;
-}
-
-.tutorials-page h1 {
-  margin-bottom: 8px;
-}
-
-.tutorials-intro {
-  margin-bottom: 24px;
-}
-
-.tutorials-list {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-.tutorial-card {
-  width: 100%;
-}
-
-.tutorial-card h2 {
-  margin-bottom: 6px;
-}
-
-.tutorial-card p {
-  margin-bottom: 12px;
-}
-
-.tutorial-card video {
-  display: block;
-  width: 100%;
-  max-width: 700px;
-  height: auto;
-  border-radius: 8px;
-=======
 .ch-tutorials-page {
   display: flex;
   flex-direction: column;
@@ -230,5 +192,4 @@
   .ch-tutorials-help-links {
     grid-template-columns: 1fr 1fr;
   }
->>>>>>> eafc5c46ab283daa3d2f474179c0aa248201f5cf
 }

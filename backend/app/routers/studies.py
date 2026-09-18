@@ -1,5 +1,5 @@
-from typing import List
-from fastapi import APIRouter, Depends, status, HTTPException
+from typing import List, Union
+from fastapi import APIRouter, Depends, status, HTTPException, Body
 from sqlalchemy.orm import Session
 from .. import models, audit, oauth2
 from ..database import get_db
@@ -257,7 +257,7 @@ async def get_study_survey(study_id: int, db: Session = Depends(get_db)):
 @router.post("/studies/{study_id}/survey/responses", response_model=study_schemas.SurveyResponseOut, status_code=status.HTTP_201_CREATED)
 async def submit_survey_response(
     study_id: int,
-    response_in: study_schemas.SurveyResponseIn,
+    response_in: Union[study_schemas.SurveyResponseIn, List[study_schemas.SurveyAnswerIn]] = Body(...),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user),
 ):
@@ -286,12 +286,14 @@ async def submit_survey_response(
     if already:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You have already submitted this survey")
 
+    answers = response_in.answers if isinstance(response_in, study_schemas.SurveyResponseIn) else response_in
+
     question_ids = {q.id for q in survey.questions}
-    for a in response_in.answers:
+    for a in answers:
         if a.question_id not in question_ids:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Question {a.question_id} does not belong to this survey")
 
-    answer_by_question = {a.question_id: a.value for a in response_in.answers}
+    answer_by_question = {a.question_id: a.value for a in answers}
     for q in survey.questions:
         if q.required:
             value = answer_by_question.get(q.id)
@@ -301,7 +303,7 @@ async def submit_survey_response(
     db_response = models.SurveyResponse(survey_id=survey.id, user_id=current_user.id)
     db.add(db_response)
     db.flush()
-    for a in response_in.answers:
+    for a in answers:
         db.add(models.SurveyAnswer(response_id=db_response.id, question_id=a.question_id, value=a.value))
     db.commit()
     db.refresh(db_response)

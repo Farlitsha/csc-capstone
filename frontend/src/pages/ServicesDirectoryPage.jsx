@@ -219,11 +219,9 @@ export default function ServicesDirectoryPage() {
     setEditError("");
     try {
       let imageUrl = editingService.image_url;
-      let imageSize = editingService.image_size;
       if (editPhotoFile) {
         const uploadRes = await api.uploadServicePhoto(editPhotoFile);
         imageUrl = uploadRes?.image_url;
-        imageSize = uploadRes?.image_size;
       }
 
       const updated = await api.updateService(editingService.id, {
@@ -233,7 +231,7 @@ export default function ServicesDirectoryPage() {
         category: editForm.category,
         type: editForm.type,
         image_url: imageUrl,
-        image_size: imageSize,
+        image_size: editPhotoFile ? editPhotoFile.size : editingService.image_size,
       });
 
       setServices((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));

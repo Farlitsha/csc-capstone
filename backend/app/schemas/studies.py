@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Any
 from pydantic import BaseModel, ConfigDict
 from app.models import StudyState, ApplicationStatus, QuestionType
 
@@ -57,7 +57,7 @@ class SurveyOut(BaseModel):
 
 class SurveyAnswerIn(BaseModel):
     question_id: int
-    value: Union[str, List[str]]
+    value: Union[str, int, float, bool, List[Any], Any]
 
 
 class SurveyResponseIn(BaseModel):
@@ -66,7 +66,7 @@ class SurveyResponseIn(BaseModel):
 
 class SurveyAnswerOut(BaseModel):
     question_id: int
-    value: Union[str, List[str], None] = None
+    value: Union[str, int, float, bool, List[Any], Any, None] = None
 
     model_config = ConfigDict(from_attributes=True)
 

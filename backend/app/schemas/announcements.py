@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
@@ -11,7 +10,7 @@ class AnnouncementCreate(BaseModel):
 class AnnouncementOut(BaseModel):
     id: int
     author_id: int
-    author_username: Optional[str] = None
+    author_username: str
     audience: str
     content: str
     created_at: datetime

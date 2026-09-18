@@ -96,13 +96,13 @@ export default function TakeSurveyPage() {
       }
     }
 
-    const payload = survey.questions
+    const answersList = survey.questions
       .filter((q) => !isEmpty(answers[q.id]))
       .map((q) => ({ question_id: q.id, value: answers[q.id] }));
 
     setSubmitting(true);
     try {
-      await api.submitSurveyResponse(studyId, payload);
+      await api.submitSurveyResponse(studyId, { answers: answersList });
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
