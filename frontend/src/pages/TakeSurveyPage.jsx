@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import MobileLayout from "../layouts/MobileLayout";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
+import Spinner from "../components/Spinner";
+import ConsentPreamble from "../components/ConsentPreamble";
+import ConfirmModal from "../components/ConfirmModal";
 import { api, ApiError } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./TakeSurveyPage.css";
@@ -14,21 +17,32 @@ export default function TakeSurveyPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const [study, setStudy] = useState(null);
   const [survey, setSurvey] = useState(null);
   const [answers, setAnswers] = useState({});
+  const [consentGiven, setConsentGiven] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [unapplyConfirmOpen, setUnapplyConfirmOpen] = useState(false);
+  const [unapplying, setUnapplying] = useState(false);
+
+  const errorRef = useRef(null);
+
 
   useEffect(() => {
     setLoading(true);
     setLoadError("");
-    api
-      .getStudySurvey(studyId)
-      .then((data) => {
-        setSurvey(data);
+
+    Promise.all([
+      api.getStudy(studyId).catch(() => null),
+      api.getStudySurvey(studyId),
+    ])
+      .then(([studyData, surveyData]) => {
+        setStudy(studyData);
+        setSurvey(surveyData);
         setAnswers({});
       })
       .catch((err) => {
@@ -61,9 +75,23 @@ export default function TakeSurveyPage() {
     e.preventDefault();
     setSubmitError("");
 
+    if (!consentGiven) {
+      setSubmitError("Please review and agree to the informed consent preamble before submitting your survey.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (!survey || !survey.questions || survey.questions.length === 0) {
+      setSubmitError("No questions found in this survey.");
+      return;
+    }
+
     for (const q of survey.questions) {
       if (q.required && isEmpty(answers[q.id])) {
         setSubmitError(`"${q.prompt}" is required.`);
+        if (errorRef.current) {
+          errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
         return;
       }
     }
@@ -76,42 +104,72 @@ export default function TakeSurveyPage() {
     try {
       await api.submitSurveyResponse(studyId, payload);
       setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setSubmitError(err instanceof ApiError ? err.detail : "Could not submit your answers.");
+      if (errorRef.current) {
+        errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     } finally {
       setSubmitting(false);
     }
   }
 
-  return (
-    <MobileLayout title={survey?.title || t("studies.title")} onBack={() => navigate(-1)} hideNav>
-      <div className="ch-take-survey">
-        {loading && <p className="ch-take-survey__status">{t("common.loading")}</p>}
+  const pageTitle = study?.title || t("studies.title");
 
-        {loadError && (
-          <div className="ch-take-survey__status ch-take-survey__status--error">
-            <p>{loadError}</p>
+  return (
+    <MobileLayout title={pageTitle} onBack={() => navigate(-1)} hideNav>
+      <div className="ch-take-survey">
+        {loading && (
+          <div className="ch-take-survey__status">
+            <Spinner />
+            <p style={{ marginTop: 10 }}>{t("common.loading")}</p>
           </div>
         )}
 
-        {!loading && !loadError && submitted && (
-          <div className="ch-take-survey__done">
-            <p className="ch-take-survey__done-title">Thanks for taking part!</p>
-            <p className="ch-take-survey__done-meta">Your answers have been recorded.</p>
-            <Button variant="accent" onClick={() => navigate("/studies")}>
+        {loadError && (
+          <div className="ch-take-survey__status ch-take-survey__status--error" role="alert">
+            <p>{loadError}</p>
+            <Button variant="secondary" onClick={() => navigate("/studies")} style={{ marginTop: 16 }}>
               Back to studies
             </Button>
           </div>
         )}
 
+        {!loading && !loadError && submitted && (
+          <div className="ch-take-survey__done-card">
+            <div className="ch-take-survey__done-icon">
+              <Icon name="check-circle" size={48} />
+            </div>
+            <h2 className="ch-take-survey__done-title">Survey Submitted Successfully!</h2>
+            <p className="ch-take-survey__done-desc">
+              Thank you for participating in <strong>{study?.title || "this research study"}</strong>. Your answers have been securely recorded.
+            </p>
+            <div className="ch-take-survey__done-actions">
+              <Button variant="accent" fullWidth onClick={() => navigate("/studies")}>
+                Back to Research Studies
+              </Button>
+            </div>
+          </div>
+        )}
+
         {!loading && !loadError && !submitted && survey && (
           <form className="ch-take-survey__form" onSubmit={handleSubmit}>
-            <div className="ch-take-survey__voluntary-notice">
-              <Icon name="info" size={16} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span>
-                <strong>Voluntary Participation:</strong> Taking this research survey is purely optional. You are never forced to participate, and you may skip questions or exit at any time.
-              </span>
-            </div>
+            {/* Expanded Informed Consent Preamble */}
+            <ConsentPreamble
+              title={`${study?.title || "Research Study"} • Informed Consent`}
+              subtitle={study?.description || undefined}
+              consentChecked={consentGiven}
+              onConsentChange={setConsentGiven}
+              requireExplicitConsent={true}
+            />
+
+            {submitError && (
+              <div ref={errorRef} className="ch-take-survey__error-banner" role="alert">
+                <Icon name="alert-triangle" size={16} style={{ flexShrink: 0 }} />
+                <span>{submitError}</span>
+              </div>
+            )}
 
             {survey.questions.map((q, idx) => (
               <div className="ch-tq-card" key={q.id}>
@@ -124,6 +182,7 @@ export default function TakeSurveyPage() {
                   <input
                     className="ch-tq-input"
                     value={answers[q.id] || ""}
+                    placeholder="Type your answer…"
                     onChange={(e) => setAnswer(q.id, e.target.value)}
                   />
                 )}
@@ -133,6 +192,7 @@ export default function TakeSurveyPage() {
                     className="ch-tq-input ch-tq-input--area"
                     rows={4}
                     value={answers[q.id] || ""}
+                    placeholder="Type your answer…"
                     onChange={(e) => setAnswer(q.id, e.target.value)}
                   />
                 )}
@@ -148,7 +208,7 @@ export default function TakeSurveyPage() {
                           checked={answers[q.id] === opt}
                           onChange={() => setAnswer(q.id, opt)}
                         />
-                        {opt}
+                        <span>{opt}</span>
                       </label>
                     ))}
                   </div>
@@ -163,7 +223,7 @@ export default function TakeSurveyPage() {
                           checked={Array.isArray(answers[q.id]) && answers[q.id].includes(opt)}
                           onChange={() => toggleCheckboxOption(q.id, opt)}
                         />
-                        {opt}
+                        <span>{opt}</span>
                       </label>
                     ))}
                   </div>
@@ -195,7 +255,7 @@ export default function TakeSurveyPage() {
                           checked={answers[q.id] === opt}
                           onChange={() => setAnswer(q.id, opt)}
                         />
-                        {opt}
+                        <span>{opt}</span>
                       </label>
                     ))}
                   </div>
@@ -203,14 +263,56 @@ export default function TakeSurveyPage() {
               </div>
             ))}
 
-            {submitError && <p className="ch-take-survey__error">{submitError}</p>}
+            {submitError && (
+              <div className="ch-take-survey__error-banner" role="alert">
+                <Icon name="alert-triangle" size={16} style={{ flexShrink: 0 }} />
+                <span>{submitError}</span>
+              </div>
+            )}
 
-            <Button type="submit" variant="accent" fullWidth disabled={submitting}>
-              {submitting ? "Submitting…" : "Submit answers"}
-            </Button>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
+              <Button type="submit" variant="accent" fullWidth disabled={submitting || unapplying}>
+                {submitting ? "Submitting…" : "Submit answers"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                fullWidth
+                disabled={submitting || unapplying}
+                onClick={() => setUnapplyConfirmOpen(true)}
+              >
+                <Icon name="user-minus" size={14} style={{ marginRight: 6 }} />
+                Unapply & Withdraw from Study
+              </Button>
+            </div>
           </form>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={unapplyConfirmOpen}
+        onClose={() => !unapplying && setUnapplyConfirmOpen(false)}
+        onConfirm={async () => {
+          setUnapplying(true);
+          try {
+            await api.unapplyFromStudy(studyId);
+            setUnapplyConfirmOpen(false);
+            navigate("/studies");
+          } catch (err) {
+            alert(err instanceof ApiError ? err.detail : "Could not unapply.");
+          } finally {
+            setUnapplying(false);
+          }
+        }}
+        title="Unapply from Study"
+        message="Are you sure you want to unapply and withdraw your application from this research study? Your draft answers will not be saved."
+        confirmText="Yes, Unapply & Leave"
+        cancelText="Keep Taking Survey"
+        variant="danger"
+        icon="user-minus"
+        loading={unapplying}
+      />
     </MobileLayout>
   );
 }
+

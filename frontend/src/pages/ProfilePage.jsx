@@ -398,9 +398,11 @@ export default function ProfilePage() {
                     <>
                       <span className="ch-profile__activity-title">{item.study_title}</span>
                       <StatusChip
-                        label={item.status}
+                        label={item.has_submitted_survey ? "completed" : item.status}
                         tone={
-                          item.status === "accepted"
+                          item.has_submitted_survey
+                            ? "positive"
+                            : item.status === "accepted"
                             ? "positive"
                             : item.status === "declined"
                             ? "danger"

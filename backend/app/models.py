@@ -26,8 +26,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(255), nullable=False, unique=True)
-    email = Column(String(255), nullable=False, unique=True)
+    username = Column(String(255), nullable=True, unique=True)
+    email = Column(String(255), nullable=True, unique=True)
     phone = Column(String(30), nullable=True)
     password = Column(String(255), nullable=False)
     role = Column(_values_enum(UserRole), nullable=False, server_default=UserRole.COMMUNITY_MEMBER.value)
@@ -142,6 +142,7 @@ class Service(Base):
     description = Column(String(1000), nullable=False)
     price = Column(String(50), nullable=True)
     image_url = Column(String(500), nullable=True)
+    image_size = Column(Integer, nullable=True)  # file size in bytes, for low-data placeholder overlay
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     poster = relationship("User", back_populates="services")
@@ -150,7 +151,7 @@ class Service(Base):
     # Exposed on ServiceOut so members can reach out directly via WhatsApp/email.
     @property
     def poster_username(self):
-        return self.poster.username if self.poster else ""
+        return self.poster.username if self.poster else None
 
     @property
     def poster_display_name(self):
@@ -163,13 +164,13 @@ class Service(Base):
     @property
     def poster_email(self):
         if self.poster:
-            return self.poster.contact_email or self.poster.email
-        return ""
+            return self.poster.contact_email or self.poster.email or None
+        return None
 
     @property
     def poster_phone(self):
         if self.poster:
-            return self.poster.contact_phone or self.poster.phone
+            return self.poster.contact_phone or self.poster.phone or None
         return None
 
 

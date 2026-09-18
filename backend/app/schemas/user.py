@@ -15,8 +15,8 @@ class TokenData(BaseModel):
 
 
 class UserBase(BaseModel):
-    username: str
-    email: str
+    username: Optional[str] = None
+    email: Optional[str] = None
     password: str
     role: Optional[UserRole] = UserRole.COMMUNITY_MEMBER
     display_name: Optional[str] = None
@@ -33,8 +33,8 @@ class UserBase(BaseModel):
 
 class UserOut(BaseModel):
     id: int
-    username: str
-    email: str
+    username: Optional[str] = None
+    email: Optional[str] = None
     role: UserRole
     verification_status: Optional[VerificationStatus] = VerificationStatus.NONE
     time: datetime
@@ -52,8 +52,8 @@ class UserOut(BaseModel):
 class PrivateProfileOut(BaseModel):
     """Full profile returned to the authenticated owner of the account."""
     id: int
-    username: str
-    email: str
+    username: Optional[str] = None
+    email: Optional[str] = None
     role: UserRole
     verification_status: Optional[VerificationStatus] = VerificationStatus.NONE
     time: datetime

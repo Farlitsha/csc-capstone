@@ -9,6 +9,7 @@ import Spinner from "../components/Spinner";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import GuestAuthModal from "../components/GuestAuthModal";
+import ConfirmModal from "../components/ConfirmModal";
 import { api, ApiError } from "../lib/api";
 import "./WorkshopsDirectoryPage.css";
 
@@ -68,8 +69,18 @@ export default function WorkshopsDirectoryPage() {
     }
   }
 
-  async function handleCancelRegistration(workshopId) {
-    if (!window.confirm(t("workshops.cancelConfirm"))) return;
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancellingWorkshopId, setCancellingWorkshopId] = useState(null);
+
+  function handleCancelRegistration(workshopId) {
+    setCancellingWorkshopId(workshopId);
+    setCancelModalOpen(true);
+  }
+
+  async function performCancelRegistration() {
+    if (!cancellingWorkshopId) return;
+    const workshopId = cancellingWorkshopId;
+    setCancelModalOpen(false);
     setActionId(workshopId);
     setError("");
     setFeedback("");
@@ -82,8 +93,10 @@ export default function WorkshopsDirectoryPage() {
       setError(err instanceof ApiError ? err.detail : "Could not cancel registration.");
     } finally {
       setActionId(null);
+      setCancellingWorkshopId(null);
     }
   }
+
 
   return (
     <MobileLayout title={t("workshops.title")} onBack={() => navigate(-1)}>
@@ -283,6 +296,19 @@ export default function WorkshopsDirectoryPage() {
         onClose={() => setGuestModalOpen(false)}
         actionName={guestModalAction}
       />
+
+      <ConfirmModal
+        isOpen={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        onConfirm={performCancelRegistration}
+        title={t("workshops.cancelBooking") || "Cancel Booking"}
+        message={t("workshops.cancelConfirm") || "Are you sure you want to cancel your registration for this workshop?"}
+        confirmText={t("workshops.cancelBooking") || "Yes, Cancel Booking"}
+        cancelText={t("common.cancel") || "Keep Booking"}
+        variant="danger"
+        icon="calendar"
+      />
     </MobileLayout>
   );
 }
+

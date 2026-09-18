@@ -43,7 +43,7 @@ async def upload_service_photo(
     with open(dest, "wb") as f:
         f.write(contents)
 
-    return {"image_url": f"/uploads/services/{filename}"}
+    return {"image_url": f"/uploads/services/{filename}", "image_size": len(contents)}
 
 
 @router.get("/", response_model=List[schemas.ServiceOut])
@@ -119,6 +119,7 @@ async def update_service(
     service.price = service_in.price
     if service_in.image_url is not None:
         service.image_url = service_in.image_url
+        service.image_size = service_in.image_size
 
     audit.log_action(
         db,

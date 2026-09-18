@@ -130,4 +130,38 @@ def test_member_view_my_applications(client, live_study, community_user, communi
     assert len(data) == 1
     assert data[0]["study_title"] == live_study.title
     assert data[0]["status"] == "accepted"
+    assert data[0]["has_submitted_survey"] is False
+
+
+def test_unapply_from_study(client, live_study, community_user, community_user_auth_headers, db_session):
+    """Member can unapply / withdraw their application from a study."""
+    app_record = models.Application(
+        study_id=live_study.id, user_id=community_user.id, status=models.ApplicationStatus.APPLIED
+    )
+    db_session.add(app_record)
+    db_session.commit()
+
+    # Unapply
+    del_resp = client.delete(f"/studies/{live_study.id}/apply", headers=community_user_auth_headers)
+    assert del_resp.status_code == 200
+    assert "withdrawn" in del_resp.json()["message"]
+
+    # Verify no longer applied
+    my_apps = client.get("/applications/me", headers=community_user_auth_headers).json()
+    assert len(my_apps) == 0
+
+
+def test_delete_application_by_id(client, live_study, community_user, community_user_auth_headers, db_session):
+    """Member can delete their application by application id."""
+    app_record = models.Application(
+        study_id=live_study.id, user_id=community_user.id, status=models.ApplicationStatus.APPLIED
+    )
+    db_session.add(app_record)
+    db_session.commit()
+
+    del_resp = client.delete(f"/applications/{app_record.id}", headers=community_user_auth_headers)
+    assert del_resp.status_code == 200
+
+    my_apps = client.get("/applications/me", headers=community_user_auth_headers).json()
+    assert len(my_apps) == 0
 

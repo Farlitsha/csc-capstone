@@ -1,4 +1,5 @@
 import { cache } from "./cache";
+import { compressImage } from "./imageCompressor";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -112,13 +113,17 @@ export const api = {
   deleteStudy: (id) => request(`/studies/${id}`, { method: "DELETE" }),
   closeStudy: (id) => request(`/studies/${id}/close`, { method: "PATCH" }),
   applyToStudy: (id) => request(`/studies/${id}/apply`, { method: "POST" }),
+  unapplyFromStudy: (id) => request(`/studies/${id}/apply`, { method: "DELETE" }),
   getMyApplications: () => request("/applications/me"),
+  deleteApplication: (id) => request(`/applications/${id}`, { method: "DELETE" }),
   getStudyApplicants: (id) => request(`/studies/${id}/applicants`),
   updateApplicationStatus: (id, status) => request(`/applications/${id}`, { method: "PATCH", body: { status } }),
   getStudySurveyResponses: (id) => request(`/studies/${id}/survey/responses`),
   getStudySurvey: (id) => request(`/studies/${id}/survey`),
   upsertStudySurvey: (id, payload) => request(`/studies/${id}/survey`, { method: "PUT", body: payload }),
   submitSurveyResponse: (id, payload) => request(`/studies/${id}/survey/responses`, { method: "POST", body: payload }),
+  clearSurveyResponse: (studyId) => request(`/studies/${studyId}/survey/response`, { method: "DELETE" }),
+  clearAllCompletedSurveys: () => request("/applications/me/completed", { method: "DELETE" }),
 
   listServices: ({ category, query } = {}) => {
     const params = new URLSearchParams();
@@ -156,9 +161,10 @@ export const api = {
   getProfile: (userId) => request(`/users/${userId}`),
   updateProfile: (payload) => request("/users/me/profile", { method: "PATCH", body: payload }),
   uploadAvatar: async (file) => {
+    const compressed = await compressImage(file, { maxWidth: 300, maxHeight: 300, quality: 0.6 }).catch(() => file);
     const token = localStorage.getItem("commhub_token");
     const form = new FormData();
-    form.append("file", file);
+    form.append("file", compressed);
     const res = await fetch(`${API_BASE_URL}/users/me/avatar`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -173,9 +179,10 @@ export const api = {
     return data;
   },
   uploadServicePhoto: async (file) => {
+    const compressed = await compressImage(file, { maxWidth: 600, maxHeight: 600, quality: 0.6 }).catch(() => file);
     const token = localStorage.getItem("commhub_token");
     const form = new FormData();
-    form.append("file", file);
+    form.append("file", compressed);
     const res = await fetch(`${API_BASE_URL}/services/upload-photo`, {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},

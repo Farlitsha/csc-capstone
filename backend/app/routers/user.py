@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from pathlib import Path
 from .. import models, schemas, utils, oauth2, audit
@@ -15,6 +16,17 @@ ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_AVATAR_BYTES = 2 * 1024 * 1024  # 2 MB
 
 
+def _generate_username(display_name: str, db: Session) -> str:
+    """Turn a display name into a unique username, e.g. 'Nomvula Khumalo' -> 'nomvula_khumalo_3'."""
+    base = re.sub(r"[^a-z0-9]+", "_", display_name.lower().strip()).strip("_") or "user"
+    candidate = base
+    counter = 1
+    while db.query(models.User).filter(models.User.username == candidate).first():
+        candidate = f"{base}_{counter}"
+        counter += 1
+    return candidate
+
+
 # User account management endpoints (registration, login, profile updates)
 
 @router.post("/account/create", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
@@ -22,11 +34,11 @@ async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     """Register a new user account. Role can be selected (defaults to community_member).
     Researcher accounts are set to pending verification (Req 1.1, 1.5, 12).
     """
-    if db.query(models.User).filter(models.User.email == user.email).first():
+    if user.email and db.query(models.User).filter(models.User.email == user.email).first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="User with this email already exists, please use a different email")
 
-    if db.query(models.User).filter(models.User.username == user.username).first():
+    if user.username and db.query(models.User).filter(models.User.username == user.username).first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="User with this username already exists, please use a different username")
 
@@ -41,6 +53,15 @@ async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     user_dict["password"] = utils.hash_password(user.password)
     user_dict["role"] = chosen_role
     user_dict["verification_status"] = verification_status
+
+    # Auto-generate a username from display_name if none was provided
+    if not user_dict.get("username"):
+        name_source = user.display_name or user.email or "user"
+        user_dict["username"] = _generate_username(name_source, db)
+
+    # Sanitize struggles — the frontend may send the string "null" instead of None
+    if user_dict.get("struggles") in (None, "null", "", []):
+        user_dict["struggles"] = None
 
     db_user = models.User(**user_dict)
     db.add(db_user)

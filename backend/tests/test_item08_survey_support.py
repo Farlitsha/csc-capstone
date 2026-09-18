@@ -201,3 +201,60 @@ def test_close_and_teardown_study(client, study_with_survey, verified_researcher
     db_study = db_session.query(models.StudyListing).filter_by(id=study.id).first()
     assert db_study.state == models.StudyState.CLOSED
 
+
+def test_clear_completed_survey(client, study_with_survey, community_user, community_user_auth_headers, db_session):
+    """DoD: Community member can clear/erase their completed survey response and application."""
+    study, survey, questions = study_with_survey
+    app_record = models.Application(
+        study_id=study.id, user_id=community_user.id, status=models.ApplicationStatus.ACCEPTED
+    )
+    db_session.add(app_record)
+    db_session.commit()
+
+    # Submit response
+    payload = {
+        "answers": [
+            {"question_id": questions[0].id, "value": "Bus"},
+            {"question_id": questions[1].id, "value": "5"},
+        ]
+    }
+    client.post(f"/studies/{study.id}/survey/responses", json=payload, headers=community_user_auth_headers)
+
+    # Verify survey is completed in my applications
+    my_apps = client.get("/applications/me", headers=community_user_auth_headers).json()
+    assert len(my_apps) == 1
+    assert my_apps[0]["has_submitted_survey"] is True
+
+    # Clear completed survey
+    clear_resp = client.delete(f"/studies/{study.id}/survey/response", headers=community_user_auth_headers)
+    assert clear_resp.status_code == 200
+
+    # Verify survey response and application are cleared
+    my_apps_after = client.get("/applications/me", headers=community_user_auth_headers).json()
+    assert len(my_apps_after) == 0
+
+
+def test_clear_all_completed_surveys(client, study_with_survey, community_user, community_user_auth_headers, db_session):
+    """DoD: Community member can batch-clear all completed survey applications."""
+    study, survey, questions = study_with_survey
+    app_record = models.Application(
+        study_id=study.id, user_id=community_user.id, status=models.ApplicationStatus.ACCEPTED
+    )
+    db_session.add(app_record)
+    db_session.commit()
+
+    payload = {
+        "answers": [
+            {"question_id": questions[0].id, "value": "Bus"},
+            {"question_id": questions[1].id, "value": "4"},
+        ]
+    }
+    client.post(f"/studies/{study.id}/survey/responses", json=payload, headers=community_user_auth_headers)
+
+    clear_all_resp = client.delete("/applications/me/completed", headers=community_user_auth_headers)
+    assert clear_all_resp.status_code == 200
+    assert clear_all_resp.json()["cleared_count"] == 1
+
+    my_apps_after = client.get("/applications/me", headers=community_user_auth_headers).json()
+    assert len(my_apps_after) == 0
+

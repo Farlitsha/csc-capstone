@@ -11,6 +11,7 @@ class ServiceBase(BaseModel):
     description: str
     price: Optional[str] = None
     image_url: Optional[str] = None
+    image_size: Optional[int] = None  # bytes, set at upload time
 
 
 class ServiceCreate(ServiceBase):
@@ -20,10 +21,10 @@ class ServiceCreate(ServiceBase):
 class ServiceOut(ServiceBase):
     id: int
     poster_id: int
-    poster_username: str
+    poster_username: Optional[str] = None
     poster_display_name: Optional[str] = None
     poster_avatar_url: Optional[str] = None
-    poster_email: str
+    poster_email: Optional[str] = None
     poster_phone: Optional[str] = None
     status: ServiceStatus
     created_at: datetime

@@ -7,6 +7,7 @@ import Button from "../components/Button";
 import Card from "../components/Card";
 import Field from "../components/Field";
 import Icon from "../components/Icon";
+import ConfirmModal from "../components/ConfirmModal";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 import "./ResearcherDashboardPage.css";
@@ -106,24 +107,72 @@ export default function ResearcherDashboardPage() {
     }
   }
 
-  async function handleCancelWorkshop(workshopId) {
-    if (!window.confirm("Are you sure you want to cancel this workshop? Registered members will be notified.")) return;
-    try {
-      await api.cancelWorkshop(workshopId);
-      loadData();
-    } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not cancel workshop.");
-    }
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    confirmText: "Confirm",
+    cancelText: "Cancel",
+    variant: "danger",
+    icon: "alert-triangle",
+    loading: false,
+    onConfirm: null,
+  });
+
+  function openConfirm(config) {
+    setConfirmModal({
+      isOpen: true,
+      title: config.title || "Are you sure?",
+      message: config.message || "",
+      confirmText: config.confirmText || "Confirm",
+      cancelText: config.cancelText || "Cancel",
+      variant: config.variant || "danger",
+      icon: config.icon || "alert-triangle",
+      loading: false,
+      onConfirm: config.onConfirm,
+    });
   }
 
-  async function handleDeleteWorkshop(workshopId) {
-    if (!window.confirm("Are you sure you want to permanently delete this workshop?")) return;
-    try {
-      await api.deleteWorkshop(workshopId);
-      setWorkshops((prev) => prev.filter((w) => w.id !== workshopId));
-    } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not delete workshop.");
-    }
+  function closeConfirm() {
+    setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+  }
+
+  function handleCancelWorkshop(workshopId) {
+    openConfirm({
+      title: "Cancel Workshop?",
+      message: "Are you sure you want to cancel this workshop? Registered members will be notified.",
+      confirmText: "Yes, Cancel Workshop",
+      variant: "warning",
+      icon: "calendar",
+      onConfirm: async () => {
+        closeConfirm();
+        try {
+          await api.cancelWorkshop(workshopId);
+          loadData();
+        } catch (err) {
+          alert(err instanceof ApiError ? err.detail : "Could not cancel workshop.");
+        }
+      },
+    });
+  }
+
+  function handleDeleteWorkshop(workshopId) {
+    openConfirm({
+      title: "Permanently Delete Workshop?",
+      message: "Are you sure you want to permanently delete this workshop?",
+      confirmText: "Yes, Delete",
+      variant: "danger",
+      icon: "trash",
+      onConfirm: async () => {
+        closeConfirm();
+        try {
+          await api.deleteWorkshop(workshopId);
+          setWorkshops((prev) => prev.filter((w) => w.id !== workshopId));
+        } catch (err) {
+          alert(err instanceof ApiError ? err.detail : "Could not delete workshop.");
+        }
+      },
+    });
   }
 
   // Edit Study State & Handlers
@@ -167,17 +216,25 @@ export default function ResearcherDashboardPage() {
     }
   }
 
-  async function handleDeleteStudy(study) {
-    if (!window.confirm(`Are you sure you want to permanently delete the study "${study.title}"? All applicant data and survey responses will be removed.`)) {
-      return;
-    }
-    try {
-      await api.deleteStudy(study.id);
-      setStudies((prev) => prev.filter((s) => s.id !== study.id));
-    } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not delete study.");
-    }
+  function handleDeleteStudy(study) {
+    openConfirm({
+      title: "Permanently Delete Study?",
+      message: `Are you sure you want to permanently delete the study "${study.title}"? All applicant data and survey responses will be removed.`,
+      confirmText: "Yes, Delete Study",
+      variant: "danger",
+      icon: "trash",
+      onConfirm: async () => {
+        closeConfirm();
+        try {
+          await api.deleteStudy(study.id);
+          setStudies((prev) => prev.filter((s) => s.id !== study.id));
+        } catch (err) {
+          alert(err instanceof ApiError ? err.detail : "Could not delete study.");
+        }
+      },
+    });
   }
+
 
 
   return (
@@ -536,6 +593,18 @@ export default function ResearcherDashboardPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirm}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmText={confirmModal.confirmText}
+        cancelText={confirmModal.cancelText}
+        variant={confirmModal.variant}
+        icon={confirmModal.icon}
+      />
     </DesktopLayout>
   );
 }

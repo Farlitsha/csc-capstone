@@ -54,26 +54,33 @@ export default function SignupPage() {
 
     setSubmitting(true);
     try {
-      // Auto-derive username if not supplied
-      const derivedUsername =
-        form.username.trim() ||
-        form.display_name.trim().toLowerCase().replace(/[^a-z0-9]/g, "") ||
-        form.email.split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
-
       const payload = {
-        ...form,
-        username: derivedUsername,
         display_name: form.display_name.trim(),
-        email: form.email.trim(),
+        password: form.password,
+        role: form.role,
+        username: form.username.trim() || undefined,
+        email: form.email.trim() || undefined,
         phone: form.phone.trim() || undefined,
       };
 
-      await api.createAccount(payload);
-      const result = await login(payload.username, form.password);
-      if (result.ok) navigate("/", { replace: true });
-      else setError(result.error);
+      const userCreated = await api.createAccount(payload);
+      const loginIdentifier = userCreated?.username || form.display_name.trim();
+      const result = await login(loginIdentifier, form.password);
+      if (result.ok) {
+        navigate("/", { replace: true });
+      } else {
+        setError(result.error || "Account created, but could not sign in automatically. Please log in.");
+      }
     } catch (err) {
-      setError(err instanceof ApiError ? err.detail : "Could not create account");
+      const msg =
+        err instanceof ApiError
+          ? (typeof err.detail === "string"
+              ? err.detail
+              : (Array.isArray(err.detail)
+                  ? err.detail.map((d) => d.msg).join(", ")
+                  : (err.message || "Could not create account")))
+          : (err.message || "Could not create account");
+      setError(msg);
     } finally {
       setSubmitting(false);
     }
@@ -95,8 +102,22 @@ export default function SignupPage() {
             onChange={update("display_name")}
             required
           />
-          <Field label={t("signup.email")} id="email" type="email" value={form.email} onChange={update("email")} required />
-          <Field label={t("signup.phone")} id="phone" type="tel" placeholder="e.g. +27 82 123 4567" value={form.phone} onChange={update("phone")} />
+          <Field
+            label={t("signup.email")}
+            id="email"
+            type="email"
+            placeholder={t("signup.emailPlaceholder") || "Optional, but helps connect you to other users"}
+            value={form.email}
+            onChange={update("email")}
+          />
+          <Field
+            label={t("signup.phone")}
+            id="phone"
+            type="tel"
+            placeholder={t("signup.phonePlaceholder") || "Optional, but helps connect you to other users"}
+            value={form.phone}
+            onChange={update("phone")}
+          />
           <Field
             label={t("signup.password") || "5-Digit PIN"}
             id="password"

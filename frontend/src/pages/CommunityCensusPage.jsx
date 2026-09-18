@@ -4,6 +4,7 @@ import MobileLayout from "../layouts/MobileLayout";
 import Button from "../components/Button";
 import Chip from "../components/Chip";
 import Icon from "../components/Icon";
+import ConsentPreamble from "../components/ConsentPreamble";
 import { api, ApiError } from "../lib/api";
 import "./CommunityCensusPage.css";
 
@@ -67,6 +68,7 @@ export default function CommunityCensusPage() {
   const [educationLevel, setEducationLevel] = useState("");
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [selectedNeeds, setSelectedNeeds] = useState([]);
+  const [consentGiven, setConsentGiven] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -83,6 +85,7 @@ export default function CommunityCensusPage() {
           setEducationLevel(data.education_level || "");
           setSelectedSkills(data.job_skills || []);
           setSelectedNeeds(data.job_support_needs || []);
+          setConsentGiven(true); // Pre-fill consent if user already submitted previously
         }
       })
       .catch(() => {})
@@ -103,6 +106,10 @@ export default function CommunityCensusPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!consentGiven) {
+      setError("Please review and agree to the informed consent preamble before submitting your responses.");
+      return;
+    }
     if (!employmentStatus || !incomeBracket || !educationLevel) {
       setError("Please answer the required questions to help our community statistics.");
       return;
@@ -139,13 +146,14 @@ export default function CommunityCensusPage() {
             Help Ocean View identify employment trends, skills, and community needs.
             Responses are kept confidential and aggregated into community statistics.
           </p>
-          <div className="ch-census-voluntary-notice">
-            <Icon name="info" size={16} style={{ flexShrink: 0, marginTop: 1 }} />
-            <span>
-              <strong>POPIA & Voluntary Notice:</strong> Taking this community census survey is purely optional and voluntary. You are never forced or required to complete this survey to browse or use CommHub.
-            </span>
-          </div>
         </div>
+
+        {/* Expanded Informed Consent Preamble */}
+        <ConsentPreamble
+          consentChecked={consentGiven}
+          onConsentChange={setConsentGiven}
+          requireExplicitConsent={true}
+        />
 
         {loading ? (
           <p className="ch-census-loading">Loading your details…</p>

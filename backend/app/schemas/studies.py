@@ -98,11 +98,13 @@ class ApplicationOut(BaseModel):
 class MyApplicationOut(ApplicationOut):
     study_title: str
     study_honorarium: Optional[str] = None
+    has_submitted_survey: bool = False
+    survey_response_id: Optional[int] = None
 
 
 class ApplicantOut(ApplicationOut):
-    applicant_username: str
-    applicant_email: str
+    applicant_username: Optional[str] = None
+    applicant_email: Optional[str] = None
 
 
 class ApplicationStatusUpdate(BaseModel):

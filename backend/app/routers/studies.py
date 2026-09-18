@@ -66,11 +66,12 @@ async def create_study(
 
 @router.get("/studies/", response_model=List[study_schemas.StudyListingOut])
 async def list_studies(db: Session = Depends(get_db)):
-    """Browse all currently open (live) studies."""
+    """Browse all currently open (live) studies, sorted with newest studies first."""
     rows = (
         db.query(models.StudyListing, models.User.username, models.User.display_name, models.User.avatar_url)
         .join(models.User, models.StudyListing.researcher_id == models.User.id)
         .filter(models.StudyListing.state == models.StudyState.LIVE)
+        .order_by(models.StudyListing.created_at.desc())
         .all()
     )
     return [
@@ -82,6 +83,7 @@ async def list_studies(db: Session = Depends(get_db)):
         )
         for study, username, display_name, avatar_url in rows
     ]
+
 
 
 @router.get("/studies/{study_id}", response_model=study_schemas.StudyListingOut)
@@ -402,10 +404,20 @@ async def get_my_applications(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user),
 ):
-    """Community member views their own study applications and current status."""
+    """Community member views their own study applications, current status, and survey completion state."""
     rows = (
-        db.query(models.Application, models.StudyListing.title, models.StudyListing.honorarium)
+        db.query(
+            models.Application,
+            models.StudyListing.title,
+            models.StudyListing.honorarium,
+            models.SurveyResponse.id.label("survey_response_id"),
+        )
         .join(models.StudyListing, models.Application.study_id == models.StudyListing.id)
+        .outerjoin(models.Survey, models.StudyListing.id == models.Survey.study_id)
+        .outerjoin(
+            models.SurveyResponse,
+            (models.Survey.id == models.SurveyResponse.survey_id) & (models.SurveyResponse.user_id == current_user.id),
+        )
         .filter(models.Application.user_id == current_user.id)
         .order_by(models.Application.applied_at.desc())
         .all()
@@ -419,9 +431,127 @@ async def get_my_applications(
             applied_at=application.applied_at,
             study_title=title,
             study_honorarium=honorarium,
+            has_submitted_survey=bool(survey_response_id is not None),
+            survey_response_id=survey_response_id,
         )
-        for application, title, honorarium in rows
+        for application, title, honorarium, survey_response_id in rows
     ]
+
+
+@router.delete("/studies/{study_id}/apply", status_code=status.HTTP_200_OK)
+async def unapply_from_study(
+    study_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Community member unapplies / withdraws application from a pending or accepted study."""
+    application = db.query(models.Application).filter(
+        models.Application.study_id == study_id,
+        models.Application.user_id == current_user.id,
+    ).first()
+    if not application:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="You have not applied to this study")
+
+    # Clean up any survey response associated with this study for this user
+    survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    if survey:
+        db.query(models.SurveyResponse).filter(
+            models.SurveyResponse.survey_id == survey.id,
+            models.SurveyResponse.user_id == current_user.id,
+        ).delete()
+
+    db.delete(application)
+    db.commit()
+    return {"message": "Application withdrawn successfully", "study_id": study_id}
+
+
+@router.delete("/studies/{study_id}/survey/response", status_code=status.HTTP_200_OK)
+async def clear_survey_response(
+    study_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Community member clears/erases their submitted survey response and cleans up their application (POPIA Right to Erasure)."""
+    survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    if not survey:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This study has no survey")
+
+    resp = db.query(models.SurveyResponse).filter(
+        models.SurveyResponse.survey_id == survey.id,
+        models.SurveyResponse.user_id == current_user.id,
+    ).first()
+    if not resp:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No survey response found for this study")
+
+    db.delete(resp)
+
+    # Also clean up the application record so it no longer clutters their applications list
+    application = db.query(models.Application).filter(
+        models.Application.study_id == study_id,
+        models.Application.user_id == current_user.id,
+    ).first()
+    if application:
+        db.delete(application)
+
+    db.commit()
+    return {"message": "Survey response cleared successfully", "study_id": study_id}
+
+
+@router.delete("/applications/me/completed", status_code=status.HTTP_200_OK)
+async def clear_all_completed_applications(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Batch clears all completed surveys and associated applications for the current user."""
+    rows = (
+        db.query(models.Application.id, models.Application.study_id, models.SurveyResponse.id.label("resp_id"))
+        .join(models.StudyListing, models.Application.study_id == models.StudyListing.id)
+        .outerjoin(models.Survey, models.StudyListing.id == models.Survey.study_id)
+        .outerjoin(
+            models.SurveyResponse,
+            (models.Survey.id == models.SurveyResponse.survey_id) & (models.SurveyResponse.user_id == current_user.id),
+        )
+        .filter(models.Application.user_id == current_user.id)
+        .all()
+    )
+
+    completed_app_ids = [row.id for row in rows if row.resp_id is not None]
+    if completed_app_ids:
+        for row in rows:
+            if row.resp_id is not None:
+                resp = db.query(models.SurveyResponse).filter(models.SurveyResponse.id == row.resp_id).first()
+                if resp:
+                    db.delete(resp)
+        db.query(models.Application).filter(models.Application.id.in_(completed_app_ids)).delete(synchronize_session=False)
+        db.commit()
+
+    return {"message": f"Cleared {len(completed_app_ids)} completed surveys", "cleared_count": len(completed_app_ids)}
+
+
+@router.delete("/applications/{application_id}", status_code=status.HTTP_200_OK)
+async def delete_application(
+    application_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Community member deletes/withdraws their application or removes declined/completed application from history."""
+    application = db.query(models.Application).filter(models.Application.id == application_id).first()
+    if not application:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Application {application_id} not found")
+
+    if application.user_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only delete your own applications")
+
+    survey = db.query(models.Survey).filter(models.Survey.study_id == application.study_id).first()
+    if survey:
+        db.query(models.SurveyResponse).filter(
+            models.SurveyResponse.survey_id == survey.id,
+            models.SurveyResponse.user_id == application.user_id,
+        ).delete()
+
+    db.delete(application)
+    db.commit()
+    return {"message": "Application deleted successfully", "id": application_id}
 
 
 @router.patch("/applications/{application_id}", response_model=study_schemas.ApplicationOut)
@@ -451,4 +581,5 @@ async def update_application_status(
     db.commit()
     db.refresh(application)
     return application
+
 

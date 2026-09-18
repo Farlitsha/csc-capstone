@@ -11,6 +11,7 @@ import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
 import GuestAuthModal from "../components/GuestAuthModal";
+import ConfirmModal from "../components/ConfirmModal";
 import "./ServicesDirectoryPage.css";
 
 const CATEGORIES = ["All", "Home repair", "Tutoring", "Food", "Other"];
@@ -158,18 +159,34 @@ export default function ServicesDirectoryPage() {
     }
   }
 
-  async function handleDelete(service) {
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
+    isOpen: false,
+    service: null,
+    loading: false,
+  });
 
-    if (!window.confirm(`Are you sure you want to delete your listing "${service.title}"? This cannot be undone.`)) {
-      return;
-    }
+  function handleDelete(service) {
+    setDeleteConfirmModal({
+      isOpen: true,
+      service,
+      loading: false,
+    });
+  }
+
+  async function performDeleteService() {
+    if (!deleteConfirmModal.service) return;
+    const service = deleteConfirmModal.service;
+    setDeleteConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
       await api.deleteService(service.id);
       setServices((prev) => prev.filter((s) => s.id !== service.id));
+      setDeleteConfirmModal({ isOpen: false, service: null, loading: false });
     } catch (err) {
       alert(err instanceof ApiError ? err.detail : "Could not delete service.");
+      setDeleteConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   }
+
 
   function startEdit(service) {
     setEditingService(service);
@@ -202,9 +219,11 @@ export default function ServicesDirectoryPage() {
     setEditError("");
     try {
       let imageUrl = editingService.image_url;
+      let imageSize = editingService.image_size;
       if (editPhotoFile) {
         const uploadRes = await api.uploadServicePhoto(editPhotoFile);
         imageUrl = uploadRes?.image_url;
+        imageSize = uploadRes?.image_size;
       }
 
       const updated = await api.updateService(editingService.id, {
@@ -214,6 +233,7 @@ export default function ServicesDirectoryPage() {
         category: editForm.category,
         type: editForm.type,
         image_url: imageUrl,
+        image_size: imageSize,
       });
 
       setServices((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
@@ -356,7 +376,17 @@ export default function ServicesDirectoryPage() {
                   </div>
                 ) : (
                   <div className="ch-service-full-card__media ch-service-full-card__media--low-data">
-                    <span className="ch-low-data-notice">{t("services.photoHidden")}</span>
+                    <div className="ch-low-data-overlay">
+                      <Icon name="image" size={20} />
+                      {s.image_size && (
+                        <span className="ch-low-data-size">
+                          {s.image_size >= 1024 * 1024
+                            ? `${(s.image_size / (1024 * 1024)).toFixed(1)} MB`
+                            : `${Math.round(s.image_size / 1024)} KB`}
+                        </span>
+                      )}
+                      <span className="ch-low-data-notice">{t("services.photoHidden")}</span>
+                    </div>
                     <button
                       type="button"
                       className="ch-load-photo-btn"
@@ -739,7 +769,21 @@ export default function ServicesDirectoryPage() {
         onClose={() => setGuestModalOpen(false)}
         actionName={guestModalAction}
       />
+
+      <ConfirmModal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={() => !deleteConfirmModal.loading && setDeleteConfirmModal({ isOpen: false, service: null, loading: false })}
+        onConfirm={performDeleteService}
+        title="Delete Service Listing?"
+        message={deleteConfirmModal.service ? `Are you sure you want to permanently delete your listing "${deleteConfirmModal.service.title}"? This cannot be undone.` : "Are you sure you want to delete this listing?"}
+        confirmText="Yes, Delete Listing"
+        cancelText="Cancel"
+        variant="danger"
+        icon="trash"
+        loading={deleteConfirmModal.loading}
+      />
     </MobileLayout>
   );
 }
+
 

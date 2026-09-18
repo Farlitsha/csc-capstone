@@ -63,9 +63,11 @@ export default function PostServicePage() {
       }
 
       let imageUrl = undefined;
+      let imageSize = undefined;
       if (photoFile) {
         const uploadRes = await api.uploadServicePhoto(photoFile);
         imageUrl = uploadRes?.image_url;
+        imageSize = uploadRes?.image_size;
       }
 
       await api.createService({
@@ -75,6 +77,7 @@ export default function PostServicePage() {
         description: form.description,
         price: form.price || undefined,
         image_url: imageUrl,
+        image_size: imageSize,
       });
       navigate("/services");
     } catch (err) {
