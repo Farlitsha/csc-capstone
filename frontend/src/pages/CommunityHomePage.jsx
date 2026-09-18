@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import MobileLayout from "../layouts/MobileLayout";
@@ -11,6 +11,7 @@ import { api } from "../lib/api";
 import "./CommunityHomePage.css";
 
 export default function CommunityHomePage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
   const [services, setServices] = useState([]);
@@ -20,6 +21,7 @@ export default function CommunityHomePage() {
   const [loading, setLoading] = useState(true);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [guestModalAction, setGuestModalAction] = useState("");
+  const [newCount, setNewCount] = useState(0);
 
   useEffect(() => {
     Promise.all([
@@ -39,14 +41,29 @@ export default function CommunityHomePage() {
       .finally(() => setLoading(false));
   }, [user]);
 
-
-
   const relevantAnnouncements = announcements.filter((a) => {
     if (!a.audience || a.audience === "All members") return true;
+    if ((!user || user?.role === "community_member") && a.audience === "Community Members") return true;
     if (user?.role === "researcher" && a.audience === "Researchers") return true;
     if (user?.role === "admin") return true;
     return false;
   });
+
+  useEffect(() => {
+    if (relevantAnnouncements.length === 0) {
+      setNewCount(0);
+      return;
+    }
+    const lastSeenId = parseInt(localStorage.getItem("commhub_last_seen_announcement_id") || "0", 10);
+    if (lastSeenId > 0) {
+      const unread = relevantAnnouncements.filter((a) => a.id > lastSeenId).length;
+      setNewCount(unread);
+    } else {
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const recent = relevantAnnouncements.filter((a) => new Date(a.created_at).getTime() > sevenDaysAgo).length;
+      setNewCount(recent > 0 ? recent : 1);
+    }
+  }, [relevantAnnouncements]);
 
   return (
     <MobileLayout>
@@ -81,19 +98,36 @@ export default function CommunityHomePage() {
 
       {relevantAnnouncements.length > 0 && (
         <section className="ch-announcement-section">
-          <div className="ch-announcement-banner">
+          <div
+            className="ch-announcement-banner"
+            onClick={() => navigate("/announcements")}
+            style={{ cursor: "pointer" }}
+            role="region"
+            aria-label="Platform announcement"
+          >
             <div className="ch-announcement-banner__head">
-              <span className="ch-announcement-badge">
-                <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
-                {t("home.announcementsBadge")}
-              </span>
-              <Link to="/announcements" className="ch-announcement-banner__link">
-                {t("home.viewAll")} ({relevantAnnouncements.length})
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span className="ch-announcement-badge">
+                  <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
+                  {t("home.announcementsBadge")}
+                </span>
+                {newCount > 0 && (
+                  <span className="ch-announcement-new-badge">
+                    {newCount === 1 ? t("announcements.oneNew") : `${newCount} ${t("announcements.newCount")}`}
+                  </span>
+                )}
+              </div>
+              <Link
+                to="/announcements"
+                className="ch-announcement-banner__link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {t("home.viewAll")}
               </Link>
             </div>
             <p>{relevantAnnouncements[0].content}</p>
             <span className="ch-announcement-banner__meta">
-              Broadcast by @{relevantAnnouncements[0].author_username} • {new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
+              {t("announcements.broadcastBy")} @{relevantAnnouncements[0].author_username} • {new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
             </span>
           </div>
         </section>

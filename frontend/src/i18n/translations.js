@@ -350,6 +350,19 @@ export const translations = {
       "currentModeTitle": "Community Member Mode:",
       "currentModeDesc": "On this phone, you are viewing CommHub in Community Member mode so you can explore local services, workshops, and community activities.",
       "actionBtn": "Continue in Community Mode"
+    },
+    "announcements": {
+      "title": "Announcements",
+      "heading": "Community Announcements",
+      "loading": "Loading announcements…",
+      "emptyTitle": "No announcements yet",
+      "emptyDesc": "Check back later for official platform and community notices.",
+      "broadcastBy": "Broadcast by",
+      "badge": "Announcement",
+      "oneNew": "1 New",
+      "newCount": "New",
+      "latest": "Latest",
+      "allMembers": "All members"
     }
   },
   "af": {
@@ -698,6 +711,19 @@ export const translations = {
       "currentModeTitle": "Gemeenskapslid-modus:",
       "currentModeDesc": "Op hierdie selfoon word CommHub in Gemeenskapslid-modus vertoon sodat jy dienste, studies en plaaslike inligting kan verken.",
       "actionBtn": "Gaan voort in Gemeenskapsmodus"
+    },
+    "announcements": {
+      "title": "Aankondigings",
+      "heading": "Gemeenskapsaankondigings",
+      "loading": "Laai aankondigings tans…",
+      "emptyTitle": "Nog geen aankondigings nie",
+      "emptyDesc": "Kyk later weer vir amptelike platform- en gemeenskapskennisgewings.",
+      "broadcastBy": "Uitgesaai deur",
+      "badge": "Aankondiging",
+      "oneNew": "1 Nuut",
+      "newCount": "Nuut",
+      "latest": "Nuutste",
+      "allMembers": "Alle lede"
     }
   },
   "xh": {
@@ -1046,6 +1072,19 @@ export const translations = {
       "currentModeTitle": "Imowudi yeLungu loLuntu:",
       "currentModeDesc": "Kule fowuni, iCommHub iboniswa kwimowudi yeLungu loLuntu ukuze ukwazi ukujonga iinkonzo, uphando, nezaziso.",
       "actionBtn": "Qhubeka njengeLungu loLuntu"
+    },
+    "announcements": {
+      "title": "Izaziso",
+      "heading": "Izaziso zoLuntu",
+      "loading": "Ilayisha izaziso…",
+      "emptyTitle": "Akukho zaziso okwangoku",
+      "emptyDesc": "Jonga kwakhona kamva ngezaziso ezisemthethweni.",
+      "broadcastBy": "Isasazwe ngu",
+      "badge": "Isaziso",
+      "oneNew": "1 Entsha",
+      "newCount": "Entsha",
+      "latest": "Kutsha nje",
+      "allMembers": "Amalungu onke"
     }
   },
   "zu": {
@@ -1381,8 +1420,21 @@ export const translations = {
       "title": "Kudingeka Isikrini Esikhudlwana Sasebhodini Lomcwaningi",
       "message": "Ukuze usebenzise amalungelo omcwaningi (ukuphatha ucwaningo, ukwakha izinhlolovo, nokuhlela ama-workshop), sicela usebenzise idivayisi enkulu njenge-tablet, iPad, i-laptop noma ikhompyutha.",
       "currentModeTitle": "Imodi Yelungu Lomphakathi:",
-      "currentModeDesc": "Kule foni ephathwayo, i-CommHub iboniswa njengomphakathi ukuze ukwazi ukuhlola izinsizakalo, ucwaningo nezaziso zendawo.",
+      "currentModeDesc": "Kule foni, iCommHub iboniswa kumodi Yelungu Lomphakathi ukuze ukwazi ukuhlola izinsizakalo, ucwaningo, nemisebenzi yomphakathi.",
       "actionBtn": "Qhubeka njengeLungu lomPhakathi"
+    },
+    "announcements": {
+      "title": "Izaziso",
+      "heading": "Izaziso Zomphakathi",
+      "loading": "Ilayisha izaziso…",
+      "emptyTitle": "Azikho izaziso okwamanje",
+      "emptyDesc": "Hlola futhi kamuva ukuthola izaziso ezisemthethweni.",
+      "broadcastBy": "Kusakazwe ngu",
+      "badge": "Isaziso",
+      "oneNew": "1 Entsha",
+      "newCount": "Entsha",
+      "latest": "Okwakamuva",
+      "allMembers": "Wonke amalungu"
     }
   }
 };

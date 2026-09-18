@@ -476,7 +476,13 @@ def seed_database():
         content="Quarter 4 Community Research Ethics Submissions are now open. Please review the updated community consent guidelines.",
         created_at=now - timedelta(days=5),
     )
-    db.add_all([ann1, ann2])
+    ann3 = models.Announcement(
+        author_id=admin.id,
+        audience="Community Members",
+        content="Free community Wi-Fi voucher renewals and digital literacy assistance are available at the library tech desk this Saturday.",
+        created_at=now - timedelta(hours=6),
+    )
+    db.add_all([ann1, ann2, ann3])
     db.commit()
 
     print("Seeding Moderation Reports & Audit Trail...")

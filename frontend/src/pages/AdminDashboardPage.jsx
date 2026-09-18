@@ -747,7 +747,7 @@ export default function AdminDashboardPage() {
               <form className="ch-announce" onSubmit={handleSendAnnouncement}>
                 <span className="ch-field-block__label">Audience</span>
                 <div className="ch-announce__row">
-                  {["All members", "Researchers", "Admins only"].map((a) => (
+                  {["All members", "Community Members", "Researchers", "Admins only"].map((a) => (
                     <Chip key={a} label={a} active={audience === a} onClick={() => setAudience(a)} />
                   ))}
                 </div>

@@ -275,7 +275,7 @@ export default function ResearcherDashboardPage() {
           alignItems: "center",
           gap: "12px",
         }}>
-          <Icon name="hourglass" size={24} />
+          <Icon name="info" size={24} />
           <div>
             <strong>Account Pending Verification</strong>
             <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
