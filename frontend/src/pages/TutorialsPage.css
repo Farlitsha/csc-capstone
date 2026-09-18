@@ -1,19 +1,37 @@
-/* Desktop is shown by default */
-.mobile-only {
-  display: none;
+.tutorials-page {
+  width: 100%;
 }
 
-.desktop-only {
+.tutorials-page h1 {
+  margin-bottom: 8px;
+}
+
+.tutorials-intro {
+  margin-bottom: 24px;
+}
+
+.tutorials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.tutorial-card {
+  width: 100%;
+}
+
+.tutorial-card h2 {
+  margin-bottom: 6px;
+}
+
+.tutorial-card p {
+  margin-bottom: 12px;
+}
+
+.tutorial-card video {
   display: block;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .mobile-only {
-    display: block;
-  }
-
-  .desktop-only {
-    display: none;
-  }
+  width: 100%;
+  max-width: 700px;
+  height: auto;
+  border-radius: 8px;
 }

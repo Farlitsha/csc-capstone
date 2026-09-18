@@ -1,7 +1,5 @@
 import MobileLayout from "../layouts/MobileLayout";
-import DesktopLayout from "../layouts/DesktopLayout";
 import "./TutorialsPage.css";
-
 
 const tutorials = [
   {
@@ -12,7 +10,7 @@ const tutorials = [
   {
     title: "How to Post a Service",
     description: "Learn how to post a service on CommHub.",
-    video: "/videos/post_service.mp4",
+    video: "/videos/post_service_V2.mp4",
   },
   {
     title: "How to Join a Workshop",
@@ -26,74 +24,31 @@ const tutorials = [
   },
 ];
 
-
-
 export default function TutorialsPage() {
   return (
-    <>
-       <div className="mobile-only">
-        <MobileLayout title="Tutorials">
+    <MobileLayout title="Tutorials">
+      <div className="tutorials-page">
+        <h1>Video Tutorials</h1>
 
-          <h1>Video Tutorials</h1>
+        <p className="tutorials-intro">
+          Watch these tutorials to learn how to use CommHub.
+        </p>
 
-          <p>
-            Watch these tutorials to learn how to use CommHub.
-          </p>
-
+        <div className="tutorials-list">
           {tutorials.map((tutorial) => (
-            <div key={tutorial.video}>
-
+            <div className="tutorial-card" key={tutorial.video}>
               <h2>{tutorial.title}</h2>
 
               <p>{tutorial.description}</p>
 
-              <video
-                width="100%"
-                height="250"
-                controls
-                preload="metadata"
-              >
+              <video controls preload="metadata">
                 <source src={tutorial.video} type="video/mp4" />
                 Your browser does not support video playback.
               </video>
-
             </div>
           ))}
-
-        </MobileLayout>
+        </div>
       </div>
-
-      <div className="desktop-only">
-        <DesktopLayout>
-
-          <h1>Video Tutorials</h1>
-
-          <p>
-            Watch these tutorials to learn how to use CommHub.
-          </p>
-
-          {tutorials.map((tutorial) => (
-            <div key={tutorial.video}>
-
-              <h2>{tutorial.title}</h2>
-
-              <p>{tutorial.description}</p>
-
-              <video
-              width="560"
-              height="315"
-              controls
-              preload="metadata"
-              >
-              <source src={tutorial.video} type="video/mp4" />
-              Your browser does not support video playback.
-            </video>
-
-            </div>
-          ))}
-
-        </DesktopLayout>
-      </div>
-    </>
+    </MobileLayout>
   );
 }
