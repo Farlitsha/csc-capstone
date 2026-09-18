@@ -2,7 +2,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.database import Base, engine
+from app.database import Base, engine, sync_db_schema
 from app.config import settings
 from .routers import (
     user,
@@ -24,16 +24,7 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 SERVICES_DIR = Path("uploads/services")
 SERVICES_DIR.mkdir(parents=True, exist_ok=True)
 
-try:
-    Base.metadata.create_all(bind=engine)
-    from sqlalchemy import inspect, text
-    with engine.connect() as conn:
-        cols = [c["name"] for c in inspect(engine).get_columns("users")]
-        if "is_active" not in cols:
-            conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT 1"))
-            conn.commit()
-except Exception:
-    pass
+sync_db_schema(engine)
 
 # Serve uploaded files (e.g. avatars, service photos) at /uploads/...
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

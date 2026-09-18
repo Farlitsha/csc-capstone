@@ -46,7 +46,6 @@ export default function ProfilePage() {
   // Profile form state
   const [form, setForm] = useState({
     display_name: user?.display_name ?? "",
-    bio: user?.bio ?? "",
     phone: user?.phone ?? user?.contact_phone ?? "",
     contact_phone: user?.contact_phone ?? user?.phone ?? "",
     contact_email: user?.contact_email ?? user?.email ?? "",
@@ -66,7 +65,6 @@ export default function ProfilePage() {
     if (user && !showEdit) {
       setForm({
         display_name: user.display_name ?? "",
-        bio: user.bio ?? "",
         phone: user.phone ?? user.contact_phone ?? "",
         contact_phone: user.contact_phone ?? user.phone ?? "",
         contact_email: user.contact_email ?? user.email ?? "",
@@ -290,19 +288,6 @@ export default function ProfilePage() {
                   value={form.display_name}
                   onChange={handleFormChange}
                   maxLength={100}
-                />
-              </label>
-
-              <label className="ch-profile__field">
-                <span className="ch-profile__label">Bio</span>
-                <textarea
-                  className="ch-profile__input ch-profile__textarea"
-                  name="bio"
-                  placeholder="Tell the community about yourself…"
-                  value={form.bio}
-                  onChange={handleFormChange}
-                  maxLength={500}
-                  rows={3}
                 />
               </label>
 

@@ -19,6 +19,12 @@ import os
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # Ensure backend root is on sys.path
 backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
@@ -31,7 +37,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
-from app.database import Base
+from app.database import Base, sync_db_schema
 from app import models, utils
 
 def get_engine():
@@ -61,8 +67,8 @@ def seed_database():
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = Session()
 
-    print("Ensuring all database tables exist...")
-    Base.metadata.create_all(bind=engine)
+    print("Ensuring all database tables and schema exist...")
+    sync_db_schema(engine)
 
     print("Clearing old seed data...")
     with engine.connect() as conn:
@@ -483,16 +489,16 @@ def seed_database():
 
     db.close()
     print("========================================================")
-    print("✅ SUCCESS! CommHub database has been populated with mock data!")
+    print("[SUCCESS] CommHub database has been populated with mock data!")
     print("========================================================")
     print("Sample Login Accounts (PIN: 12345 for all):")
-    print("  • Admin:              chief_admin   / 12345")
-    print("  • Verified Researcher: dr_nomvula    / 12345")
-    print("  • Pending Researcher:  prof_khalid   / 12345")
-    print("  • Community Member:    sipho_member  / 12345")
-    print("  • Community Member:    ayanda_m      / 12345")
-    print("  • Community Member:    thabo_k       / 12345")
-    print("  • Community Member:    lungile_d     / 12345")
+    print("  - Admin:               chief_admin   / 12345")
+    print("  - Verified Researcher: dr_nomvula    / 12345")
+    print("  - Pending Researcher:  prof_khalid   / 12345")
+    print("  - Community Member:    sipho_member  / 12345")
+    print("  - Community Member:    ayanda_m      / 12345")
+    print("  - Community Member:    thabo_k       / 12345")
+    print("  - Community Member:    lungile_d     / 12345")
     print("========================================================")
 
 
