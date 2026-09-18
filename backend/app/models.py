@@ -63,6 +63,7 @@ class User(Base):
     survey_responses = relationship("SurveyResponse", back_populates="respondent", cascade="all, delete")
     census_response = relationship("CommunityCensus", back_populates="user", uselist=False, cascade="all, delete")
     reports_filed = relationship("Report", foreign_keys="Report.reporter_id", back_populates="reporter", cascade="all, delete")
+    service_ratings = relationship("ServiceRating", back_populates="user", cascade="all, delete")
 
 
 class Post(Base):
@@ -147,6 +148,17 @@ class Service(Base):
 
     poster = relationship("User", back_populates="services")
     applications = relationship("ServiceApplication", back_populates="service", cascade="all, delete")
+    ratings = relationship("ServiceRating", back_populates="service", cascade="all, delete")
+
+    @property
+    def average_rating(self):
+        if not self.ratings:
+            return None
+        return round(sum(r.score for r in self.ratings) / len(self.ratings), 1)
+
+    @property
+    def rating_count(self):
+        return len(self.ratings) if self.ratings else 0
 
     # Exposed on ServiceOut so members can reach out directly via WhatsApp/email.
     @property
@@ -271,6 +283,37 @@ class ServiceApplication(Base):
 
     service = relationship("Service", back_populates="applications")
     applicant = relationship("User", back_populates="service_applications")
+
+
+class ServiceRating(Base):
+    """A community peer review and star rating on a Service listing."""
+    __tablename__ = "service_ratings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    service_id = Column(Integer, ForeignKey("services.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    score = Column(Integer, nullable=False)  # 1 to 5
+    comment = Column(String(500), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("service_id", "user_id", name="uq_service_user_rating"),
+    )
+
+    service = relationship("Service", back_populates="ratings")
+    user = relationship("User", back_populates="service_ratings")
+
+    @property
+    def rater_username(self):
+        return self.user.username if self.user else None
+
+    @property
+    def rater_display_name(self):
+        return self.user.display_name if self.user else None
+
+    @property
+    def rater_avatar_url(self):
+        return self.user.avatar_url if self.user else None
 
 
 class ReportTargetType(str, enum.Enum):

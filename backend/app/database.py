@@ -19,10 +19,19 @@ def sync_db_schema(target_engine=None):
         table_names = insp.get_table_names()
         with eng.connect() as conn:
             if "users" in table_names:
-                user_cols = [c["name"] for c in insp.get_columns("users")]
+                user_cols = {c["name"]: c for c in insp.get_columns("users")}
                 if "is_active" not in user_cols:
                     conn.execute(text("ALTER TABLE users ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT 1"))
                     conn.commit()
+                if "email" in user_cols and not user_cols["email"].get("nullable", True):
+                    conn.execute(text("ALTER TABLE users MODIFY COLUMN email VARCHAR(255) NULL"))
+                    conn.commit()
+                if "username" in user_cols and not user_cols["username"].get("nullable", True):
+                    conn.execute(text("ALTER TABLE users MODIFY COLUMN username VARCHAR(255) NULL"))
+                    conn.commit()
+                conn.execute(text("UPDATE users SET email = NULL WHERE email = ''"))
+                conn.execute(text("UPDATE users SET phone = NULL WHERE phone = ''"))
+                conn.commit()
             if "services" in table_names:
                 service_cols = [c["name"] for c in insp.get_columns("services")]
                 if "image_size" not in service_cols:

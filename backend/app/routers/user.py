@@ -34,14 +34,6 @@ async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     """Register a new user account. Role can be selected (defaults to community_member).
     Researcher accounts are set to pending verification (Req 1.1, 1.5, 12).
     """
-    if user.email and db.query(models.User).filter(models.User.email == user.email).first():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail="User with this email already exists, please use a different email")
-
-    if user.username and db.query(models.User).filter(models.User.username == user.username).first():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail="User with this username already exists, please use a different username")
-
     chosen_role = user.role or models.UserRole.COMMUNITY_MEMBER
     verification_status = (
         models.VerificationStatus.PENDING
@@ -54,9 +46,32 @@ async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     user_dict["role"] = chosen_role
     user_dict["verification_status"] = verification_status
 
+    # Normalize empty strings to None so they don't trigger unique constraint errors or invalid entries
+    email_val = user_dict.get("email")
+    user_dict["email"] = email_val.strip() if (email_val and email_val.strip()) else None
+
+    phone_val = user_dict.get("phone")
+    user_dict["phone"] = phone_val.strip() if (phone_val and phone_val.strip()) else None
+
+    display_name_val = user_dict.get("display_name")
+    user_dict["display_name"] = display_name_val.strip() if (display_name_val and display_name_val.strip()) else None
+
+    username_val = user_dict.get("username")
+    user_dict["username"] = username_val.strip() if (username_val and username_val.strip()) else None
+
+    # Check unique email only if an email is provided
+    if user_dict["email"] and db.query(models.User).filter(models.User.email == user_dict["email"]).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="User with this email already exists, please use a different email")
+
+    # Check unique username only if a username is explicitly provided
+    if user_dict["username"] and db.query(models.User).filter(models.User.username == user_dict["username"]).first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="User with this username already exists, please use a different username")
+
     # Auto-generate a username from display_name if none was provided
     if not user_dict.get("username"):
-        name_source = user.display_name or user.email or "user"
+        name_source = user_dict.get("display_name") or user_dict.get("email") or "user"
         user_dict["username"] = _generate_username(name_source, db)
 
     # Sanitize struggles — the frontend may send the string "null" instead of None

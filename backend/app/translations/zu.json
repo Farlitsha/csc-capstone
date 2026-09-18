@@ -42,7 +42,10 @@
     "title_label": "Isihloko",
     "content_label": "Incazelo",
     "amount_label": "Imali (R)",
-    "image_label": "Isithombe (akuphoqelekile)"
+    "image_label": "Isithombe (akuphoqelekile)",
+    "rate_service_button": "Linganisa uphinde Ubukeze",
+    "reviews_label": "Ukubuyekezwa",
+    "no_reviews": "Akukho ukubuyekezwa okwamanje"
   },
   "studies": {
     "heading": "Ucwaningo Lwezifundo",

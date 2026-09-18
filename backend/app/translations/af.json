@@ -42,7 +42,10 @@
     "title_label": "Titel",
     "content_label": "Beskrywing",
     "amount_label": "Bedrag (R)",
-    "image_label": "Prent (opsioneel)"
+    "image_label": "Prent (opsioneel)",
+    "rate_service_button": "Gradeer & Resenseer",
+    "reviews_label": "Resensies",
+    "no_reviews": "Nog geen resensies nie"
   },
   "studies": {
     "heading": "Navorsingsprojekte",

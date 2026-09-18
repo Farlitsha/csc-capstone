@@ -12,6 +12,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
 import GuestAuthModal from "../components/GuestAuthModal";
 import ConfirmModal from "../components/ConfirmModal";
+import ServiceRatingModal from "../components/ServiceRatingModal";
 import "./ServicesDirectoryPage.css";
 
 const CATEGORIES = ["All", "Home repair", "Tutoring", "Food", "Other"];
@@ -78,6 +79,18 @@ export default function ServicesDirectoryPage() {
   const [revealedPhotos, setRevealedPhotos] = useState([]);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [guestModalAction, setGuestModalAction] = useState("");
+  const [ratingModalService, setRatingModalService] = useState(null);
+
+  function handleRatingSubmitted(serviceId, { average_rating, rating_count }) {
+    setServices((prev) =>
+      prev.map((s) =>
+        s.id === serviceId ? { ...s, average_rating, rating_count } : s
+      )
+    );
+    if (ratingModalService && ratingModalService.id === serviceId) {
+      setRatingModalService((prev) => prev ? { ...prev, average_rating, rating_count } : null);
+    }
+  }
 
   // Editing state
   const [editingService, setEditingService] = useState(null);
@@ -397,7 +410,7 @@ export default function ServicesDirectoryPage() {
               )}
 
               <div className="ch-service-card-top">
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                   <StatusChip
                     label={s.type === "request" ? t("services.requested") : t("services.offered")}
                     tone={s.type === "request" ? "warning" : "positive"}
@@ -407,6 +420,18 @@ export default function ServicesDirectoryPage() {
                       Your Post
                     </span>
                   )}
+                  <button
+                    type="button"
+                    className="ch-service-rating-badge"
+                    title={t("ratings.modalTitle") || "View reviews and ratings"}
+                    onClick={() => setRatingModalService(s)}
+                  >
+                    <Icon name="star-fill" size={12} style={{ color: "#f59e0b" }} />
+                    <span>{s.average_rating ? s.average_rating.toFixed(1) : (t("services.newListing") || "New")}</span>
+                    {s.rating_count > 0 && (
+                      <span className="ch-service-rating-count">({s.rating_count})</span>
+                    )}
+                  </button>
                 </div>
 
                 {isMine ? (
@@ -471,73 +496,85 @@ export default function ServicesDirectoryPage() {
 
               <div className="ch-service-full-card__foot">
                 <span className="ch-service-price">{s.price || t("services.priceOnRequest")}</span>
-                {!isMine && (
-                  <div className="ch-service-actions">
-                    {s.poster_phone ? (
-                      user ? (
-                        <a
-                          href={formatWhatsAppUrl(s.poster_phone, s)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ch-contact-btn ch-contact-btn--whatsapp"
-                          title={`WhatsApp: ${s.poster_phone}`}
-                        >
-                          <Icon name="whatsapp" size={15} />
-                          <span>{t("services.whatsapp")}</span>
-                        </a>
-                      ) : (
-                        <button
-                          type="button"
-                          className="ch-contact-btn ch-contact-btn--whatsapp"
-                          title="Create an account to contact this provider"
-                          onClick={() => {
-                            setGuestModalAction("contact service providers or request services");
-                            setGuestModalOpen(true);
-                          }}
-                        >
-                          <Icon name="whatsapp" size={15} />
-                          <span>{t("services.whatsapp")}</span>
-                        </button>
-                      )
-                    ) : (
-                      <button
-                        type="button"
-                        className="ch-contact-btn ch-contact-btn--disabled"
-                        title={t("services.noPhoneHint")}
-                        onClick={() => alert(t("services.noPhoneHint"))}
-                      >
-                        <Icon name="whatsapp" size={15} />
-                        <span>{t("services.whatsapp")}</span>
-                      </button>
-                    )}
+                <div className="ch-service-actions">
+                  <button
+                    type="button"
+                    className="ch-contact-btn ch-contact-btn--reviews"
+                    title={isMine ? (t("ratings.communityFeedback") || "Peer reviews") : (t("services.rateService") || "Rate & Review")}
+                    onClick={() => setRatingModalService(s)}
+                  >
+                    <Icon name="star" size={14} />
+                    <span>{s.rating_count > 0 ? `${s.rating_count} ${t("services.reviews") || "Reviews"}` : (isMine ? `0 ${t("services.reviews") || "Reviews"}` : (t("services.rate") || "Rate"))}</span>
+                  </button>
 
-                    {s.poster_email ? (
-                      user ? (
-                        <a
-                          href={formatEmailUrl(s.poster_email, s)}
-                          className="ch-contact-btn ch-contact-btn--email"
-                          title={`Email: ${s.poster_email}`}
-                        >
-                          <Icon name="mail" size={15} />
-                          <span>{t("services.email")}</span>
-                        </a>
+                  {!isMine && (
+                    <>
+                      {s.poster_phone ? (
+                        user ? (
+                          <a
+                            href={formatWhatsAppUrl(s.poster_phone, s)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ch-contact-btn ch-contact-btn--whatsapp"
+                            title={`WhatsApp: ${s.poster_phone}`}
+                          >
+                            <Icon name="whatsapp" size={15} />
+                            <span>{t("services.whatsapp")}</span>
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            className="ch-contact-btn ch-contact-btn--whatsapp"
+                            title="Create an account to contact this provider"
+                            onClick={() => {
+                              setGuestModalAction("contact service providers or request services");
+                              setGuestModalOpen(true);
+                            }}
+                          >
+                            <Icon name="whatsapp" size={15} />
+                            <span>{t("services.whatsapp")}</span>
+                          </button>
+                        )
                       ) : (
                         <button
                           type="button"
-                          className="ch-contact-btn ch-contact-btn--email"
-                          title="Create an account to contact this provider"
-                          onClick={() => {
-                            setGuestModalAction("contact service providers via email");
-                            setGuestModalOpen(true);
-                          }}
+                          className="ch-contact-btn ch-contact-btn--disabled"
+                          title={t("services.noPhoneHint")}
+                          onClick={() => alert(t("services.noPhoneHint"))}
                         >
-                          <Icon name="mail" size={15} />
-                          <span>{t("services.email")}</span>
+                          <Icon name="whatsapp" size={15} />
+                          <span>{t("services.whatsapp")}</span>
                         </button>
-                      )
-                    ) : null}
-                  </div>
-                )}
+                      )}
+
+                      {s.poster_email ? (
+                        user ? (
+                          <a
+                            href={formatEmailUrl(s.poster_email, s)}
+                            className="ch-contact-btn ch-contact-btn--email"
+                            title={`Email: ${s.poster_email}`}
+                          >
+                            <Icon name="mail" size={15} />
+                            <span>{t("services.email")}</span>
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            className="ch-contact-btn ch-contact-btn--email"
+                            title="Create an account to contact this provider"
+                            onClick={() => {
+                              setGuestModalAction("contact service providers via email");
+                              setGuestModalOpen(true);
+                            }}
+                          >
+                            <Icon name="mail" size={15} />
+                            <span>{t("services.email")}</span>
+                          </button>
+                        )
+                      ) : null}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -779,6 +816,17 @@ export default function ServicesDirectoryPage() {
         variant="danger"
         icon="trash"
         loading={deleteConfirmModal.loading}
+      />
+
+      <ServiceRatingModal
+        service={ratingModalService}
+        isOpen={Boolean(ratingModalService)}
+        onClose={() => setRatingModalService(null)}
+        onRatingSubmitted={handleRatingSubmitted}
+        onOpenGuestModal={(action) => {
+          setGuestModalAction(action);
+          setGuestModalOpen(true);
+        }}
       />
     </MobileLayout>
   );

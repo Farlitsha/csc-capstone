@@ -264,6 +264,38 @@ def seed_database():
     db.add_all([app1, app2])
     db.commit()
 
+    print("Seeding Peer Service Ratings & Reviews...")
+    r1 = models.ServiceRating(
+        service_id=s1.id,
+        user_id=sipho.id,
+        score=5,
+        comment="Fast emergency response and fixed the pipe properly. Very reliable local plumber!",
+        created_at=now - timedelta(days=2),
+    )
+    r2 = models.ServiceRating(
+        service_id=s1.id,
+        user_id=thabo.id,
+        score=5,
+        comment="Lungile helped unblock our community centre drain. Excellent workmanship.",
+        created_at=now - timedelta(days=1),
+    )
+    r3 = models.ServiceRating(
+        service_id=s2.id,
+        user_id=ayanda.id,
+        score=5,
+        comment="Patient and clear math tutor. My nephew's test score improved noticeably!",
+        created_at=now - timedelta(days=1),
+    )
+    r4 = models.ServiceRating(
+        service_id=s3.id,
+        user_id=sipho.id,
+        score=4,
+        comment="Delicious traditional stew for our gathering. Everyone enjoyed the meal.",
+        created_at=now - timedelta(hours=18),
+    )
+    db.add_all([r1, r2, r3, r4])
+    db.commit()
+
     print("Seeding Research Studies & In-House Survey Engine...")
     study1 = models.StudyListing(
         researcher_id=dr_nomvula.id,

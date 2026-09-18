@@ -2,7 +2,7 @@ import uuid
 from pathlib import Path
 from typing import List, Optional
 from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from pydantic import BaseModel
 from .. import models, schemas, oauth2, audit
 from ..database import get_db
@@ -59,8 +59,11 @@ async def list_services(
     through the platform.
     """
 
-    #q is query object, not a list of results yet. We can add filters to it before executing it.
-    q = db.query(models.Service).options(joinedload(models.Service.poster)).filter(
+    # q is query object, not a list of results yet. We can add filters to it before executing it.
+    q = db.query(models.Service).options(
+        joinedload(models.Service.poster),
+        selectinload(models.Service.ratings),
+    ).filter(
         models.Service.status == models.ServiceStatus.OPEN
     )
     if category and category.lower() != "all":
@@ -86,7 +89,10 @@ async def create_service(
 
 @router.get("/{service_id}", response_model=schemas.ServiceOut)
 async def get_service(service_id: int, db: Session = Depends(get_db)):
-    service = db.query(models.Service).options(joinedload(models.Service.poster)).filter(
+    service = db.query(models.Service).options(
+        joinedload(models.Service.poster),
+        selectinload(models.Service.ratings),
+    ).filter(
         models.Service.id == service_id
     ).first()
     if not service:
@@ -260,5 +266,109 @@ async def report_service(
     db.commit()
     db.refresh(report)
     return schemas.ReportOut.from_model(report, target_title=service.title)
+
+
+@router.post("/{service_id}/ratings", response_model=schemas.ServiceRatingOut, status_code=status.HTTP_200_OK)
+async def rate_service(
+    service_id: int,
+    rating_in: schemas.ServiceRatingCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Community member rates and reviews a service listing (1-5 stars, optional comment)."""
+    service = db.query(models.Service).filter(models.Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found")
+
+    if service.poster_id == current_user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot rate your own service listing")
+
+    existing_rating = db.query(models.ServiceRating).filter(
+        models.ServiceRating.service_id == service_id,
+        models.ServiceRating.user_id == current_user.id,
+    ).first()
+
+    if existing_rating:
+        existing_rating.score = rating_in.score
+        existing_rating.comment = rating_in.comment.strip() if rating_in.comment else None
+        audit.log_action(
+            db,
+            actor_id=current_user.id,
+            action="service_rating_updated",
+            target_type="service",
+            target_id=service_id,
+            details={"score": rating_in.score, "has_comment": bool(rating_in.comment)},
+        )
+        db.commit()
+        db.refresh(existing_rating)
+        return existing_rating
+    else:
+        new_rating = models.ServiceRating(
+            service_id=service_id,
+            user_id=current_user.id,
+            score=rating_in.score,
+            comment=rating_in.comment.strip() if rating_in.comment else None,
+        )
+        db.add(new_rating)
+        audit.log_action(
+            db,
+            actor_id=current_user.id,
+            action="service_rated",
+            target_type="service",
+            target_id=service_id,
+            details={"score": rating_in.score, "has_comment": bool(rating_in.comment)},
+        )
+        db.commit()
+        db.refresh(new_rating)
+        return new_rating
+
+
+@router.get("/{service_id}/ratings", response_model=schemas.ServiceRatingsSummaryOut)
+async def get_service_ratings(service_id: int, db: Session = Depends(get_db)):
+    """Fetch peer reviews and rating summary for a service listing."""
+    service = db.query(models.Service).filter(models.Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found")
+
+    ratings = (
+        db.query(models.ServiceRating)
+        .options(joinedload(models.ServiceRating.user))
+        .filter(models.ServiceRating.service_id == service_id)
+        .order_by(models.ServiceRating.created_at.desc())
+        .all()
+    )
+
+    avg = round(sum(r.score for r in ratings) / len(ratings), 1) if ratings else None
+    return schemas.ServiceRatingsSummaryOut(
+        average_rating=avg,
+        total_ratings=len(ratings),
+        ratings=ratings,
+    )
+
+
+@router.delete("/{service_id}/ratings/mine", status_code=status.HTTP_200_OK)
+async def delete_my_service_rating(
+    service_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Member removes their previous rating for a service listing."""
+    rating = db.query(models.ServiceRating).filter(
+        models.ServiceRating.service_id == service_id,
+        models.ServiceRating.user_id == current_user.id,
+    ).first()
+    if not rating:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="You haven't rated this service")
+
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="service_rating_deleted",
+        target_type="service",
+        target_id=service_id,
+    )
+    db.delete(rating)
+    db.commit()
+    return {"message": "Rating deleted successfully"}
 
 

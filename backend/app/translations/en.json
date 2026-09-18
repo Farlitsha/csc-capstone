@@ -42,7 +42,10 @@
     "title_label": "Title",
     "content_label": "Description",
     "amount_label": "Amount (R)",
-    "image_label": "Image (optional)"
+    "image_label": "Image (optional)",
+    "rate_service_button": "Rate & Review",
+    "reviews_label": "Reviews",
+    "no_reviews": "No reviews yet"
   },
   "studies": {
     "heading": "Research Studies",

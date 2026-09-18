@@ -179,10 +179,29 @@ export default function CommunityHomePage() {
             <Link to="/services" key={s.id} style={{ textDecoration: "none", color: "inherit" }}>
               <div className="ch-service-card">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <StatusChip
-                    label={s.type === "request" ? t("services.requested") : t("services.offered")}
-                    tone={s.type === "request" ? "warning" : "positive"}
-                  />
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <StatusChip
+                      label={s.type === "request" ? t("services.requested") : t("services.offered")}
+                      tone={s.type === "request" ? "warning" : "positive"}
+                    />
+                    {s.average_rating ? (
+                      <span style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "2px",
+                        background: "#fefce8",
+                        border: "1px solid #fde68a",
+                        borderRadius: "12px",
+                        padding: "1px 6px",
+                        fontSize: "11px",
+                        fontWeight: "700",
+                        color: "#92400e"
+                      }}>
+                        <Icon name="star-fill" size={10} style={{ color: "#f59e0b" }} />
+                        {s.average_rating.toFixed(1)}
+                      </span>
+                    ) : null}
+                  </div>
                   <span style={{ fontSize: "12px", color: "var(--color-sage)" }}>
                     By @{s.poster_username}
                   </span>

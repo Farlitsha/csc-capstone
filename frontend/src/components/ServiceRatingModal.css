@@ -1,0 +1,332 @@
+/* Peer Rating & Reviews Modal */
+.ch-rating-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+  animation: ch-fade-in 0.2s ease-out;
+}
+
+.ch-rating-modal {
+  background: var(--color-white);
+  border-radius: var(--radius-lg, 16px);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: ch-scale-up 0.2s ease-out;
+}
+
+.ch-rating-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.ch-rating-modal__title-wrap {
+  flex: 1;
+  padding-right: 12px;
+}
+
+.ch-rating-modal__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.ch-rating-modal__subtitle {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  color: var(--color-sage);
+}
+
+.ch-rating-modal__close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--color-sage);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.ch-rating-modal__close:hover {
+  color: var(--color-ink);
+  background: var(--color-sand);
+}
+
+.ch-rating-modal__body {
+  padding: 18px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Average Rating Summary Card */
+.ch-rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.ch-rating-summary__score {
+  font-size: 32px;
+  font-weight: 800;
+  color: #92400e;
+  line-height: 1;
+}
+
+.ch-rating-summary__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ch-rating-summary__stars {
+  display: flex;
+  gap: 3px;
+  color: #f59e0b;
+}
+
+.ch-rating-summary__count {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #78350f;
+}
+
+/* Rating Form */
+.ch-rating-form-card {
+  background: var(--color-paper, #f8fafc);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ch-rating-form-card__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.ch-star-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ch-star-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #cbd5e1;
+  transition: transform 0.15s ease, color 0.15s ease;
+  border-radius: 4px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-star-btn:hover {
+  transform: scale(1.15);
+}
+
+.ch-star-btn--filled {
+  color: #f59e0b;
+}
+
+.ch-star-label {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.ch-rating-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 64px;
+  outline: none;
+  background: var(--color-white);
+  color: var(--color-ink);
+}
+
+.ch-rating-textarea:focus {
+  border-color: var(--color-teal-700);
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.15);
+}
+
+.ch-rating-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.ch-rating-delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.ch-rating-delete-btn:hover {
+  background: #fee2e2;
+}
+
+/* Reviews List */
+.ch-reviews-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ch-reviews-section__title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.ch-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ch-review-item {
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ch-review-item__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ch-review-item__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ch-review-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-sand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-teal-700);
+}
+
+.ch-review-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.ch-review-item__stars {
+  display: flex;
+  gap: 2px;
+  color: #f59e0b;
+}
+
+.ch-review-item__comment {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #334155;
+}
+
+.ch-review-item__date {
+  font-size: 11px;
+  color: var(--color-sage);
+  margin-top: 2px;
+}
+
+.ch-reviews-empty {
+  text-align: center;
+  padding: 20px 12px;
+  color: var(--color-sage);
+  font-size: 13px;
+  border: 1px dashed var(--color-line);
+  border-radius: 10px;
+}
+
+.ch-rating-notice {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ch-rating-notice--self {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.ch-rating-error {
+  color: #b91c1c;
+  font-size: 12.5px;
+  margin: 0;
+}
+
+.ch-rating-success {
+  color: #047857;
+  font-size: 12.5px;
+  margin: 0;
+}
+

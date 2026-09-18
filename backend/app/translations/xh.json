@@ -42,7 +42,10 @@
     "title_label": "Isihloko",
     "content_label": "Inkcazo",
     "amount_label": "Imali (R)",
-    "image_label": "Umfanekiso (akunyanzelekanga)"
+    "image_label": "Umfanekiso (akunyanzelekanga)",
+    "rate_service_button": "Linganisela kwaye Uhlole",
+    "reviews_label": "Uhlaziyo",
+    "no_reviews": "Akukho luhlaziyo okwangoku"
   },
   "studies": {
     "heading": "Uphando Lwezifundo",
