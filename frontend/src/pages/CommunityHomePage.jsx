@@ -51,8 +51,18 @@ export default function CommunityHomePage() {
   return (
     <MobileLayout>
       <section className="ch-greeting">
-        <h1>{t("home.greeting")}, {user?.username || "Guest"}</h1>
+
+        <div className="home-heading-row">
+          <h1>{t("home.greeting")}, {user?.username || "Guest"}</h1>
+
+          <Link to="/tutorials" className="home-tutorials-button">
+            <Icon name="play" size={18} aria-hidden="true" />
+            <span>Tutorials</span>
+          </Link>
+        </div>
+
         <p>{t("home.subtitle")}</p>
+
       </section>
 
       {!user && (
@@ -194,6 +204,7 @@ export default function CommunityHomePage() {
                   <StatusChip
                     label={s.type === "request" ? t("services.requested") : t("services.offered")}
                     tone={s.type === "request" ? "warning" : "positive"}
+                    icon=""
                   />
                   <span style={{ fontSize: "12px", color: "var(--color-sage)" }}>
                     By @{s.poster_username}

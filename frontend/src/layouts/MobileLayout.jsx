@@ -62,7 +62,6 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
     { to: "/services", label: t("nav.services"), icon: "briefcase" },
     { to: "/studies", label: t("nav.studies"), icon: "clipboard" },
     { to: "/workshops", label: t("nav.workshops") || "Workshops", icon: "calendar" },
-    { to: "/tutorials", label: t("tutorials.title") || "Tutorials", icon: "play" },
     user
       ? { to: "/profile", label: t("nav.profile"), icon: "user" }
       : { to: "/login", label: t("login.button") || "Log In", icon: "user" },
@@ -134,6 +133,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
                 <span className="ch-mobile__user-name">{user.username}</span>
               </Link>
             )}
+
             <LanguageSwitcher />
           </div>
         </div>

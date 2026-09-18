@@ -373,6 +373,7 @@ export default function ServicesDirectoryPage() {
                   <StatusChip
                     label={s.type === "request" ? t("services.requested") : t("services.offered")}
                     tone={s.type === "request" ? "warning" : "positive"}
+                    icon=""
                   />
                   {isMine && (
                     <span className="ch-own-badge">

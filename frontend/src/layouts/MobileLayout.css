@@ -61,6 +61,7 @@
   max-width: 180px;
 }
 
+
 /* Desktop navigation links in header (hidden on mobile, visible on desktop/tablet >= 768px) */
 .ch-mobile__desktop-nav {
   display: none;

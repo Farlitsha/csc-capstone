@@ -8,14 +8,10 @@ import Field from "../components/Field";
 import Chip from "../components/Chip";
 import Icon from "../components/Icon";
 import { useAuth } from "../auth/AuthContext";
+import { useLanguage } from "../i18n/LanguageContext";
 import { api, ApiError } from "../lib/api";
 import "./AdminDashboardPage.css";
 
-const ROLE_LABEL = {
-  community_member: "Community member",
-  researcher: "Researcher",
-  admin: "Administrator",
-};
 const ROLES = ["community_member", "researcher", "admin"];
 
 const TARGET_ICONS = {
@@ -26,6 +22,18 @@ const TARGET_ICONS = {
 
 export default function AdminDashboardPage() {
   const { user: currentUser } = useAuth();
+  const { lang, t } = useLanguage();
+  const locale = { en: "en-ZA", af: "af-ZA", xh: "xh-ZA", zu: "zu-ZA" }[lang] || "en-ZA";
+  const roleLabel = {
+    community_member: t("adminDashboard.roles.communityMember"),
+    researcher: t("adminDashboard.roles.researcher"),
+    admin: t("adminDashboard.roles.admin"),
+  };
+  const audienceOptions = [
+    { value: "All members", label: t("adminDashboard.allMembers") },
+    { value: "Researchers", label: t("adminDashboard.researchersAudience") },
+    { value: "Admins only", label: t("adminDashboard.adminsOnly") },
+  ];
 
   // Data states
   const [users, setUsers] = useState([]);
@@ -115,7 +123,7 @@ export default function AdminDashboardPage() {
         }
       })
       .catch((err) => {
-        showToast("Could not load latest admin data from the server.", "error");
+        showToast(t("adminDashboard.loadError"), "error");
       })
       .finally(() => {
         setLoading(false);
@@ -133,10 +141,10 @@ export default function AdminDashboardPage() {
     try {
       const updated = await api.updateUserRole(userId, newRole);
       setUsers((list) => list.map((u) => (u.id === userId ? updated : u)));
-      showToast(`User role updated to ${ROLE_LABEL[newRole] || newRole}.`);
+      showToast(`${t("adminDashboard.roleUpdated")} ${roleLabel[newRole] || newRole}.`);
       loadData(true);
     } catch (err) {
-      showToast(err instanceof ApiError ? err.detail : "Could not update user role.", "error");
+      showToast(err instanceof ApiError ? err.detail : t("adminDashboard.roleUpdateError"), "error");
     } finally {
       setUpdatingId(null);
     }
@@ -144,23 +152,23 @@ export default function AdminDashboardPage() {
 
   function promptDeleteUser(user) {
     if (currentUser?.id === user.id) {
-      showToast("You cannot delete your own active administrator account.", "error");
+      showToast(t("adminDashboard.cannotDeleteSelf"), "error");
       return;
     }
     setConfirmDialog({
-      title: "Delete User Account",
-      message: `Are you sure you want to permanently delete account @${user.username} (${user.email})? This action removes their access and is recorded to the system audit trail.`,
-      confirmText: "Delete Account",
+      title: t("adminDashboard.deleteUserTitle"),
+      message: `${t("adminDashboard.deleteUserStart")} @${user.username} (${user.email})? ${t("adminDashboard.deleteUserEnd")}`,
+      confirmText: t("adminDashboard.deleteAccount"),
       confirmVariant: "danger",
       onConfirm: async () => {
         setDeletingId(user.id);
         try {
           await api.deleteUser(user.id);
           setUsers((list) => list.filter((u) => u.id !== user.id));
-          showToast(`Account @${user.username} deleted successfully.`);
+          showToast(`${t("adminDashboard.accountDeleted")} @${user.username}.`);
           loadData(true);
         } catch (err) {
-          showToast(err instanceof ApiError ? err.detail : "Could not delete user account.", "error");
+          showToast(err instanceof ApiError ? err.detail : t("adminDashboard.deleteUserError"), "error");
         } finally {
           setDeletingId(null);
           setConfirmDialog(null);
@@ -173,10 +181,10 @@ export default function AdminDashboardPage() {
     setVerifyingId(user.id);
     try {
       await api.approveResearcher(user.id);
-      showToast(`Researcher @${user.username} has been approved.`);
+      showToast(`${t("adminDashboard.researcherApproved")} @${user.username}.`);
       loadData(true);
     } catch (err) {
-      showToast(err instanceof ApiError ? err.detail : "Could not approve researcher.", "error");
+      showToast(err instanceof ApiError ? err.detail : t("adminDashboard.approveError"), "error");
     } finally {
       setVerifyingId(null);
     }
@@ -184,18 +192,18 @@ export default function AdminDashboardPage() {
 
   function promptRejectResearcher(user) {
     setConfirmDialog({
-      title: "Reject Researcher Application",
-      message: `Reject researcher verification request for @${user.username} (${user.email})?`,
-      confirmText: "Reject Researcher",
+      title: t("adminDashboard.rejectTitle"),
+      message: `${t("adminDashboard.rejectQuestion")} @${user.username} (${user.email})?`,
+      confirmText: t("adminDashboard.rejectResearcher"),
       confirmVariant: "danger",
       onConfirm: async () => {
         setVerifyingId(user.id);
         try {
           await api.rejectResearcher(user.id);
-          showToast(`Researcher application for @${user.username} rejected.`);
+          showToast(`${t("adminDashboard.researcherRejected")} @${user.username}.`);
           loadData(true);
         } catch (err) {
-          showToast(err instanceof ApiError ? err.detail : "Could not reject researcher.", "error");
+          showToast(err instanceof ApiError ? err.detail : t("adminDashboard.rejectError"), "error");
         } finally {
           setVerifyingId(null);
           setConfirmDialog(null);
@@ -208,10 +216,10 @@ export default function AdminDashboardPage() {
     setActioningReportId(reportId);
     try {
       await api.dismissReport(reportId);
-      showToast("Report has been dismissed.");
+      showToast(t("adminDashboard.reportDismissed"));
       loadData(true);
     } catch (err) {
-      showToast(err instanceof ApiError ? err.detail : "Could not dismiss report.", "error");
+      showToast(err instanceof ApiError ? err.detail : t("adminDashboard.dismissError"), "error");
     } finally {
       setActioningReportId(null);
     }
@@ -221,10 +229,10 @@ export default function AdminDashboardPage() {
     setActioningReportId(reportId);
     try {
       await api.resolveReport(reportId);
-      showToast("Report marked as resolved.");
+      showToast(t("adminDashboard.reportResolved"));
       loadData(true);
     } catch (err) {
-      showToast(err instanceof ApiError ? err.detail : "Could not resolve report.", "error");
+      showToast(err instanceof ApiError ? err.detail : t("adminDashboard.resolveError"), "error");
     } finally {
       setActioningReportId(null);
     }
@@ -264,18 +272,18 @@ export default function AdminDashboardPage() {
 
   function promptDeleteReport(reportId) {
     setConfirmDialog({
-      title: "Delete Report Entry",
-      message: "Are you sure you want to permanently delete this report record?",
-      confirmText: "Delete Report",
+      title: t("adminDashboard.deleteReportTitle"),
+      message: t("adminDashboard.deleteReportQuestion"),
+      confirmText: t("adminDashboard.deleteReport"),
       confirmVariant: "danger",
       onConfirm: async () => {
         setActioningReportId(reportId);
         try {
           await api.deleteReport(reportId);
-          showToast("Report entry deleted.");
+          showToast(t("adminDashboard.reportDeleted"));
           loadData(true);
         } catch (err) {
-          showToast(err instanceof ApiError ? err.detail : "Could not delete report.", "error");
+          showToast(err instanceof ApiError ? err.detail : t("adminDashboard.deleteReportError"), "error");
         } finally {
           setActioningReportId(null);
           setConfirmDialog(null);
@@ -294,7 +302,7 @@ export default function AdminDashboardPage() {
       setAnnouncementContent("");
       loadData(true);
     } catch (err) {
-      showToast(err instanceof ApiError ? err.detail : "Could not send announcement.", "error");
+      showToast(err instanceof ApiError ? err.detail : t("adminDashboard.announcementError"), "error");
     } finally {
       setSendingAnnouncement(false);
     }
@@ -302,18 +310,18 @@ export default function AdminDashboardPage() {
 
   function promptDeleteAnnouncement(announcement) {
     setConfirmDialog({
-      title: "Delete Platform Announcement",
+      title: t("adminDashboard.deleteAnnouncementTitle"),
       message: `Delete announcement "${announcement.content.slice(0, 50)}..."? It will no longer be visible to ${announcement.audience}.`,
-      confirmText: "Delete Announcement",
+      confirmText: t("adminDashboard.deleteAnnouncement"),
       confirmVariant: "danger",
       onConfirm: async () => {
         setDeletingAnnouncementId(announcement.id);
         try {
           await api.deleteAnnouncement(announcement.id);
-          showToast("Announcement deleted successfully.");
+          showToast(t("adminDashboard.announcementDeleted"));
           loadData(true);
         } catch (err) {
-          showToast(err instanceof ApiError ? err.detail : "Could not delete announcement.", "error");
+          showToast(err instanceof ApiError ? err.detail : t("adminDashboard.deleteAnnouncementError"), "error");
         } finally {
           setDeletingAnnouncementId(null);
           setConfirmDialog(null);
@@ -341,7 +349,7 @@ export default function AdminDashboardPage() {
 
   return (
     <DesktopLayout
-      eyebrow="COMMUNITY HUB • ADMIN CONSOLE"
+      eyebrow={t("adminDashboard.eyebrow")}
       rightSlot={
         <Button
           variant="secondary"
@@ -350,31 +358,27 @@ export default function AdminDashboardPage() {
           className="ch-admin-refresh-btn"
         >
           <Icon name="clock" size={13} style={{ marginRight: 6 }} />
-          {refreshing ? "Refreshing…" : "Sync data"}
+          {refreshing ? t("adminDashboard.refreshing") : t("adminDashboard.syncData")}
         </Button>
       }
     >
       {/* Page Header */}
       <div className="ch-desktop__heading ch-admin-header">
         <div>
-          <h1>Admin Console</h1>
-          <p>Supervise platform safety, verify researchers, manage roles, and monitor system events.</p>
-        </div>
-        <div className="ch-admin-status-badge">
-          <span className="ch-admin-live-dot" />
-          <span>Admin mode active</span>
+          <h1>{t("adminDashboard.title")}</h1>
+          <p>{t("adminDashboard.subtitle")}</p>
         </div>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="ch-admin-tabs" role="tablist" aria-label="Admin console navigation">
+      <div className="ch-admin-tabs" role="tablist" aria-label={t("adminDashboard.navigationLabel")}>
         <button
           role="tab"
           aria-selected={activeTab === "overview"}
           className={`ch-admin-tab ${activeTab === "overview" ? "ch-admin-tab--active" : ""}`}
           onClick={() => setActiveTab("overview")}
         >
-          Overview
+          {t("adminDashboard.tabs.overview")}
         </button>
         <button
           role="tab"
@@ -382,7 +386,7 @@ export default function AdminDashboardPage() {
           className={`ch-admin-tab ${activeTab === "users" ? "ch-admin-tab--active" : ""}`}
           onClick={() => setActiveTab("users")}
         >
-          User Accounts ({users.length})
+          {t("adminDashboard.tabs.users")} ({users.length})
         </button>
         <button
           role="tab"
@@ -390,7 +394,7 @@ export default function AdminDashboardPage() {
           className={`ch-admin-tab ${activeTab === "moderation" ? "ch-admin-tab--active" : ""}`}
           onClick={() => setActiveTab("moderation")}
         >
-          Moderation Queue {openReportsCount > 0 && <span className="ch-tab-counter">{openReportsCount}</span>}
+          {t("adminDashboard.tabs.moderation")} {openReportsCount > 0 && <span className="ch-tab-counter">{openReportsCount}</span>}
         </button>
         <button
           role="tab"
@@ -398,7 +402,7 @@ export default function AdminDashboardPage() {
           className={`ch-admin-tab ${activeTab === "announcements" ? "ch-admin-tab--active" : ""}`}
           onClick={() => setActiveTab("announcements")}
         >
-          Announcements ({announcements.length})
+          {t("adminDashboard.tabs.announcements")} ({announcements.length})
         </button>
         <button
           role="tab"
@@ -406,7 +410,7 @@ export default function AdminDashboardPage() {
           className={`ch-admin-tab ${activeTab === "audit" ? "ch-admin-tab--active" : ""}`}
           onClick={() => setActiveTab("audit")}
         >
-          Audit Log ({auditLogs.length})
+          {t("adminDashboard.tabs.audit")} ({auditLogs.length})
         </button>
       </div>
 
@@ -414,29 +418,29 @@ export default function AdminDashboardPage() {
       {activeTab === "overview" && (
         <div className="ch-admin-view">
           <div className="ch-stats-row">
-            <StatCard label="TOTAL USERS" value={String(stats.total_users || users.length)} />
+            <StatCard label={t("adminDashboard.stats.totalUsers")} value={String(stats.total_users || users.length)} />
             <StatCard
-              label="RESEARCHERS"
+              label={t("adminDashboard.stats.researchers")}
               value={String(stats.researchers || users.filter((u) => u.role === "researcher").length)}
             />
-            <StatCard label="PENDING VERIFICATION" value={String(pendingResearchers.length)} />
-            <StatCard label="OPEN REPORTS" value={String(openReportsCount)} />
+            <StatCard label={t("adminDashboard.stats.pendingVerification")} value={String(pendingResearchers.length)} />
+            <StatCard label={t("adminDashboard.stats.openReports")} value={String(openReportsCount)} />
           </div>
 
           {/* Pending Researcher Verifications */}
           <Card
             title={
               <div className="ch-card-title-row">
-                <span>Pending researcher verifications</span>
+                <span>{t("adminDashboard.pendingResearchers")}</span>
                 {pendingResearchers.length > 0 && (
-                  <span className="ch-badge-pill">{pendingResearchers.length} awaiting action</span>
+                  <span className="ch-badge-pill">{pendingResearchers.length} {t("adminDashboard.awaitingAction")}</span>
                 )}
               </div>
             }
           >
-            {loading && <p className="ch-dash-empty">Loading pending applications…</p>}
+            {loading && <p className="ch-dash-empty">{t("adminDashboard.loadingApplications")}</p>}
             {!loading && pendingResearchers.length === 0 && (
-              <p className="ch-dash-empty">No researchers currently awaiting verification. All caught up!</p>
+              <p className="ch-dash-empty">{t("adminDashboard.noPendingResearchers")}</p>
             )}
             {pendingResearchers.map((pr) => (
               <div className="ch-row" key={pr.id}>
@@ -446,7 +450,7 @@ export default function AdminDashboardPage() {
                     <span className="ch-admin-subhandle">@{pr.username}</span>
                   </p>
                   <p className="ch-row__meta">
-                    {pr.email} • Registered {new Date(pr.time).toLocaleDateString()}
+                    {pr.email} • {t("adminDashboard.registered")} {new Date(pr.time).toLocaleDateString(locale)}
                   </p>
                 </div>
                 <div className="ch-action-group">
@@ -455,7 +459,7 @@ export default function AdminDashboardPage() {
                     disabled={verifyingId === pr.id}
                     onClick={() => handleApproveResearcher(pr)}
                   >
-                    Approve
+                    {t("adminDashboard.approve")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -463,7 +467,7 @@ export default function AdminDashboardPage() {
                     disabled={verifyingId === pr.id}
                     onClick={() => promptRejectResearcher(pr)}
                   >
-                    Reject
+                    {t("adminDashboard.reject")}
                   </Button>
                 </div>
               </div>
@@ -474,16 +478,16 @@ export default function AdminDashboardPage() {
           <Card
             title={
               <div className="ch-card-title-row">
-                <span>Flagged listings preview</span>
+                <span>{t("adminDashboard.flaggedPreview")}</span>
                 <Button variant="secondary" onClick={() => setActiveTab("moderation")}>
-                  View all ({reports.length})
+                  {t("adminDashboard.viewAll")} ({reports.length})
                 </Button>
               </div>
             }
           >
-            {loading && <p className="ch-dash-empty">Checking flagged listings…</p>}
+            {loading && <p className="ch-dash-empty">{t("adminDashboard.checkingListings")}</p>}
             {!loading && openReportsCount === 0 && (
-              <p className="ch-dash-empty">Zero open flagged listings. Community content is healthy!</p>
+              <p className="ch-dash-empty">{t("adminDashboard.noFlaggedListings")}</p>
             )}
             {reports
               .filter((r) => r.status === "open")
@@ -498,7 +502,7 @@ export default function AdminDashboardPage() {
                       </p>
                     </div>
                     <p className="ch-row__meta">
-                      Flagged by @{m.reporter_username} • Reason: <em>{m.reason}</em>
+                      {t("adminDashboard.flaggedBy")} @{m.reporter_username} • {t("adminDashboard.reason")}: <em>{m.reason}</em>
                     </p>
                   </div>
                   <div className="ch-action-group">
@@ -508,14 +512,14 @@ export default function AdminDashboardPage() {
                       disabled={actioningReportId === m.id}
                       onClick={() => promptTakeDownAndResolve(m)}
                     >
-                      Take Down
+                      {t("adminDashboard.takeDown")}
                     </Button>
                     <Button
                       variant="secondary"
                       disabled={actioningReportId === m.id}
                       onClick={() => handleDismissReport(m.id)}
                     >
-                      Dismiss
+                      {t("adminDashboard.dismiss")}
                     </Button>
                   </div>
                 </div>
@@ -530,9 +534,9 @@ export default function AdminDashboardPage() {
           <Card
             title={
               <div className="ch-card-title-row">
-                <span>User directory & role permissions</span>
+                <span>{t("adminDashboard.userDirectory")}</span>
                 <span className="ch-row__meta">
-                  Showing {filteredUsers.length} of {users.length} accounts
+                  {t("adminDashboard.showing")} {filteredUsers.length} {t("adminDashboard.of")} {users.length} {t("adminDashboard.accounts")}
                 </span>
               </div>
             }
@@ -542,37 +546,37 @@ export default function AdminDashboardPage() {
               <input
                 type="text"
                 className="ch-search-input"
-                placeholder="Search by username, name, or email…"
+                placeholder={t("adminDashboard.searchUsers")}
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
               />
               <div className="ch-filter-chips">
                 <Chip
-                  label="All roles"
+                  label={t("adminDashboard.allRoles")}
                   active={userRoleFilter === "all"}
                   onClick={() => setUserRoleFilter("all")}
                 />
                 <Chip
-                  label="Community"
+                  label={t("adminDashboard.community")}
                   active={userRoleFilter === "community_member"}
                   onClick={() => setUserRoleFilter("community_member")}
                 />
                 <Chip
-                  label="Researchers"
+                  label={t("adminDashboard.roles.researchers")}
                   active={userRoleFilter === "researcher"}
                   onClick={() => setUserRoleFilter("researcher")}
                 />
                 <Chip
-                  label="Admins"
+                  label={t("adminDashboard.admins")}
                   active={userRoleFilter === "admin"}
                   onClick={() => setUserRoleFilter("admin")}
                 />
               </div>
             </div>
 
-            {loading && <p className="ch-dash-empty">Loading users…</p>}
+            {loading && <p className="ch-dash-empty">{t("adminDashboard.loadingUsers")}</p>}
             {!loading && filteredUsers.length === 0 && (
-              <p className="ch-dash-empty">No accounts matching your search criteria.</p>
+              <p className="ch-dash-empty">{t("adminDashboard.noMatchingAccounts")}</p>
             )}
 
             {filteredUsers.map((u) => {
@@ -587,17 +591,17 @@ export default function AdminDashboardPage() {
                       <p className="ch-row__title">
                         {u.display_name || u.username}{" "}
                         <span className="ch-admin-subhandle">@{u.username}</span>
-                        {isSelf && <span className="ch-self-tag">You</span>}
+                        {isSelf && <span className="ch-self-tag">{t("adminDashboard.you")}</span>}
                       </p>
                       <p className="ch-row__meta">
-                        {u.email} • ID #{u.id} • Joined {new Date(u.time).toLocaleDateString()}
+                        {u.email} • ID #{u.id} • {t("adminDashboard.joined")} {new Date(u.time).toLocaleDateString(locale)}
                       </p>
                     </div>
                   </div>
 
                   <div className="ch-role-control">
                     <StatusChip
-                      label={ROLE_LABEL[u.role] || u.role}
+                      label={roleLabel[u.role] || u.role}
                       tone={u.role === "admin" ? "warning" : u.role === "researcher" ? "positive" : "neutral"}
                     />
                     <select
@@ -605,11 +609,11 @@ export default function AdminDashboardPage() {
                       value={u.role}
                       disabled={updatingId === u.id || deletingId === u.id || isSelf}
                       onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                      title={isSelf ? "You cannot modify your own role" : "Modify user role"}
+                      title={isSelf ? t("adminDashboard.cannotModifyOwnRole") : t("adminDashboard.modifyRole")}
                     >
                       {ROLES.map((r) => (
                         <option key={r} value={r}>
-                          {ROLE_LABEL[r]}
+                          {roleLabel[r]}
                         </option>
                       ))}
                     </select>
@@ -619,9 +623,9 @@ export default function AdminDashboardPage() {
                       className="ch-btn-danger"
                       disabled={deletingId === u.id || isSelf}
                       onClick={() => promptDeleteUser(u)}
-                      title={isSelf ? "Cannot delete your own account" : "Permanently delete account"}
+                      title={isSelf ? t("adminDashboard.cannotDeleteOwnAccount") : t("adminDashboard.permanentlyDeleteAccount")}
                     >
-                      Delete
+                      {t("adminDashboard.delete")}
                     </Button>
                   </div>
                 </div>
@@ -637,25 +641,25 @@ export default function AdminDashboardPage() {
           <Card
             title={
               <div className="ch-card-title-row">
-                <span>Moderation Queue</span>
+                <span>{t("adminDashboard.tabs.moderation")}</span>
                 <div className="ch-filter-chips">
                   <Chip
-                    label={`Open (${openReportsCount})`}
+                    label={`${t("adminDashboard.open")} (${openReportsCount})`}
                     active={reportStatusFilter === "open"}
                     onClick={() => setReportStatusFilter("open")}
                   />
                   <Chip
-                    label="Resolved"
+                    label={t("adminDashboard.resolved")}
                     active={reportStatusFilter === "resolved"}
                     onClick={() => setReportStatusFilter("resolved")}
                   />
                   <Chip
-                    label="Dismissed"
+                    label={t("adminDashboard.dismissed")}
                     active={reportStatusFilter === "dismissed"}
                     onClick={() => setReportStatusFilter("dismissed")}
                   />
                   <Chip
-                    label="All reports"
+                    label={t("adminDashboard.allReports")}
                     active={reportStatusFilter === "all"}
                     onClick={() => setReportStatusFilter("all")}
                   />
@@ -663,9 +667,9 @@ export default function AdminDashboardPage() {
               </div>
             }
           >
-            {loading && <p className="ch-dash-empty">Loading reports…</p>}
+            {loading && <p className="ch-dash-empty">{t("adminDashboard.loadingReports")}</p>}
             {!loading && filteredReports.length === 0 && (
-              <p className="ch-dash-empty">No reports found under status "{reportStatusFilter}".</p>
+              <p className="ch-dash-empty">{t("adminDashboard.noReports")} "{reportStatusFilter}".</p>
             )}
 
             {filteredReports.map((m) => {
@@ -685,12 +689,12 @@ export default function AdminDashboardPage() {
                       />
                     </div>
                     <p className="ch-row__meta">
-                      Reported by <strong>@{m.reporter_username}</strong> • Reason:{" "}
+                      {t("adminDashboard.reportedBy")} <strong>@{m.reporter_username}</strong> • {t("adminDashboard.reason")}:{" "}
                       <span className="ch-report-reason">"{m.reason}"</span>
                     </p>
                     <p className="ch-row__meta">
-                      Logged on {new Date(m.created_at).toLocaleString()}
-                      {m.resolved_at && ` • Processed ${new Date(m.resolved_at).toLocaleString()}`}
+                      {t("adminDashboard.loggedOn")} {new Date(m.created_at).toLocaleString(locale)}
+                      {m.resolved_at && ` • ${t("adminDashboard.processed")} ${new Date(m.resolved_at).toLocaleString(locale)}`}
                     </p>
                   </div>
 
@@ -703,21 +707,21 @@ export default function AdminDashboardPage() {
                           disabled={actioningReportId === m.id}
                           onClick={() => promptTakeDownAndResolve(m)}
                         >
-                          Take Down & Resolve
+                          {t("adminDashboard.takeDownResolve")}
                         </Button>
                         <Button
                           variant="secondary"
                           disabled={actioningReportId === m.id}
                           onClick={() => handleResolveReportOnly(m.id)}
                         >
-                          Mark Resolved
+                          {t("adminDashboard.markResolved")}
                         </Button>
                         <Button
                           variant="secondary"
                           disabled={actioningReportId === m.id}
                           onClick={() => handleDismissReport(m.id)}
                         >
-                          Dismiss
+                          {t("adminDashboard.dismiss")}
                         </Button>
                       </>
                     ) : (
@@ -727,7 +731,7 @@ export default function AdminDashboardPage() {
                         disabled={actioningReportId === m.id}
                         onClick={() => promptDeleteReport(m.id)}
                       >
-                        Delete Report
+                        {t("adminDashboard.deleteReport")}
                       </Button>
                     )}
                   </div>
@@ -743,19 +747,19 @@ export default function AdminDashboardPage() {
         <div className="ch-admin-view">
           <div className="ch-admin-split">
             {/* Compose Card */}
-            <Card title="Broadcast system announcement">
+            <Card title={t("adminDashboard.broadcastTitle")}>
               <form className="ch-announce" onSubmit={handleSendAnnouncement}>
-                <span className="ch-field-block__label">Audience</span>
+                <span className="ch-field-block__label">{t("adminDashboard.audience")}</span>
                 <div className="ch-announce__row">
-                  {["All members", "Researchers", "Admins only"].map((a) => (
-                    <Chip key={a} label={a} active={audience === a} onClick={() => setAudience(a)} />
+                  {audienceOptions.map((option) => (
+                    <Chip key={option.value} label={option.label} active={audience === option.value} onClick={() => setAudience(option.value)} />
                   ))}
                 </div>
                 <Field
-                  label="Announcement Message"
+                  label={t("adminDashboard.announcementMessage")}
                   id="announcement"
                   as="textarea"
-                  placeholder="Share a community notice, maintenance window, or platform update…"
+                  placeholder={t("adminDashboard.announcementPlaceholder")}
                   value={announcementContent}
                   onChange={(e) => setAnnouncementContent(e.target.value)}
                   rows={4}
@@ -766,15 +770,15 @@ export default function AdminDashboardPage() {
                   variant="accent"
                   disabled={!announcementContent.trim() || sendingAnnouncement}
                 >
-                  {sendingAnnouncement ? "Broadcasting…" : "Post announcement"}
+                  {sendingAnnouncement ? t("adminDashboard.broadcasting") : t("adminDashboard.postAnnouncement")}
                 </Button>
               </form>
             </Card>
 
             {/* Active Announcements */}
-            <Card title={`Active announcements (${announcements.length})`}>
+            <Card title={`${t("adminDashboard.activeAnnouncements")} (${announcements.length})`}>
               {announcements.length === 0 && (
-                <p className="ch-dash-empty">No active broadcast announcements.</p>
+                <p className="ch-dash-empty">{t("adminDashboard.noAnnouncements")}</p>
               )}
               {announcements.map((a) => (
                 <div className="ch-row ch-announcement-item" key={a.id}>
@@ -782,7 +786,7 @@ export default function AdminDashboardPage() {
                     <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "4px" }}>
                       <span className="ch-audience-pill">{a.audience}</span>
                       <span className="ch-row__meta">
-                        By @{a.author_username} • {new Date(a.created_at).toLocaleDateString()}
+                        {t("adminDashboard.by")} @{a.author_username} • {new Date(a.created_at).toLocaleDateString(locale)}
                       </span>
                     </div>
                     <p className="ch-announcement-text">{a.content}</p>
@@ -794,7 +798,7 @@ export default function AdminDashboardPage() {
                       disabled={deletingAnnouncementId === a.id}
                       onClick={() => promptDeleteAnnouncement(a)}
                     >
-                      Delete
+                      {t("adminDashboard.delete")}
                     </Button>
                   </div>
                 </div>
@@ -810,32 +814,32 @@ export default function AdminDashboardPage() {
           <Card
             title={
               <div className="ch-card-title-row">
-                <span>System Audit Trail</span>
-                <span className="ch-row__meta">Immutable record of administrative and moderation actions</span>
+                <span>{t("adminDashboard.auditTitle")}</span>
+                <span className="ch-row__meta">{t("adminDashboard.auditDescription")}</span>
               </div>
             }
           >
-            {loading && <p className="ch-dash-empty">Loading audit records…</p>}
+            {loading && <p className="ch-dash-empty">{t("adminDashboard.loadingAudit")}</p>}
             {!loading && auditLogs.length === 0 && (
-              <p className="ch-dash-empty">No audit records logged yet.</p>
+              <p className="ch-dash-empty">{t("adminDashboard.noAuditRecords")}</p>
             )}
 
             <div className="ch-audit-table-wrapper">
               <table className="ch-audit-table">
                 <thead>
                   <tr>
-                    <th>Timestamp</th>
-                    <th>Actor</th>
-                    <th>Action</th>
-                    <th>Target</th>
-                    <th>Details</th>
+                    <th>{t("adminDashboard.timestamp")}</th>
+                    <th>{t("adminDashboard.actor")}</th>
+                    <th>{t("adminDashboard.action")}</th>
+                    <th>{t("adminDashboard.target")}</th>
+                    <th>{t("adminDashboard.details")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {auditLogs.map((entry) => (
                     <tr key={entry.id}>
                       <td className="ch-audit-time">
-                        {new Date(entry.created_at).toLocaleString()}
+                        {new Date(entry.created_at).toLocaleString(locale)}
                       </td>
                       <td>
                         <strong>@{entry.actor_username || `User #${entry.actor_id}`}</strong>
@@ -871,14 +875,14 @@ export default function AdminDashboardPage() {
             <p className="ch-modal-message">{confirmDialog.message}</p>
             <div className="ch-modal-actions">
               <Button variant="secondary" onClick={() => setConfirmDialog(null)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 variant={confirmDialog.confirmVariant || "danger"}
                 className={confirmDialog.confirmVariant === "danger" ? "ch-btn-danger--solid" : ""}
                 onClick={confirmDialog.onConfirm}
               >
-                {confirmDialog.confirmText || "Confirm"}
+                {confirmDialog.confirmText || t("adminDashboard.confirm")}
               </Button>
             </div>
           </div>
@@ -889,7 +893,7 @@ export default function AdminDashboardPage() {
       {toast && (
         <div className={`ch-admin-toast ch-admin-toast--${toast.type}`} role="alert">
           <span>{toast.message}</span>
-          <button className="ch-admin-toast-close" onClick={() => setToast(null)} aria-label="Close notification">
+          <button className="ch-admin-toast-close" onClick={() => setToast(null)} aria-label={t("adminDashboard.closeNotification")}>
             ✕
           </button>
         </div>

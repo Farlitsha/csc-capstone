@@ -269,6 +269,33 @@
   color: var(--color-sage);
 }
 
+.home-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.home-heading-row h1 {
+  margin: 0;
+}
+
+.home-tutorials-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 7px 12px;
+  border: 1px solid #003f46;
+  border-radius: 8px;
+
+  color: #003f46;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
 /* Tablet & Desktop Responsiveness */
 @media (min-width: 640px) {
   .ch-greeting {
