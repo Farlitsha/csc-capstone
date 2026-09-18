@@ -1,11 +1,39 @@
 import { useNavigate } from "react-router-dom";
 import MobileLayout from "../layouts/MobileLayout";
+<<<<<<< HEAD
+import "./TutorialsPage.css";
+
+const tutorials = [
+  {
+    title: "How to Create an Account",
+    description: "Learn how to create a CommHub account.",
+    video: "/videos/create_account.mp4",
+  },
+  {
+    title: "How to Post a Service",
+    description: "Learn how to post a service on CommHub.",
+    video: "/videos/post_service_V2.mp4",
+  },
+  {
+    title: "How to Join a Workshop",
+    description: "Learn how to find and join workshops.",
+    video: "/videos/join_workshop.mp4",
+  },
+  {
+    title: "How to Edit Your Profile",
+    description: "Learn how to update your CommHub profile.",
+    video: "/videos/delete_modify_account.mp4",
+  },
+];
+
+=======
 import Card from "../components/Card";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./TutorialsPage.css";
 
+>>>>>>> eafc5c46ab283daa3d2f474179c0aa248201f5cf
 export default function TutorialsPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -63,6 +91,30 @@ export default function TutorialsPage() {
   ];
 
   return (
+<<<<<<< HEAD
+    <MobileLayout title="Tutorials">
+      <div className="tutorials-page">
+        <h1>Video Tutorials</h1>
+
+        <p className="tutorials-intro">
+          Watch these tutorials to learn how to use CommHub.
+        </p>
+
+        <div className="tutorials-list">
+          {tutorials.map((tutorial) => (
+            <div className="tutorial-card" key={tutorial.video}>
+              <h2>{tutorial.title}</h2>
+
+              <p>{tutorial.description}</p>
+
+              <video controls preload="metadata">
+                <source src={tutorial.video} type="video/mp4" />
+                Your browser does not support video playback.
+              </video>
+            </div>
+          ))}
+        </div>
+=======
     <MobileLayout title={t("tutorials.title") || "Tutorials"} onBack={() => navigate(-1)}>
       <div className="ch-tutorials-page">
         <header className="ch-tutorials-hero">
@@ -147,6 +199,7 @@ export default function TutorialsPage() {
             </div>
           </Card>
         </section>
+>>>>>>> eafc5c46ab283daa3d2f474179c0aa248201f5cf
       </div>
     </MobileLayout>
   );
