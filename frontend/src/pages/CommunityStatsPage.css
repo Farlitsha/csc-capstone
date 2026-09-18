@@ -116,34 +116,10 @@
   text-overflow: ellipsis;
 }
 
-@media (min-width: 480px) {
-  .ch-kpi-grid {
-    gap: 10px;
-  }
-
-  .ch-kpi-card {
-    padding: 12px 14px;
-    gap: 3px;
-  }
-
-  .ch-kpi-label {
-    font-size: 10px;
-    letter-spacing: 0.04em;
-  }
-
-  .ch-kpi-val {
-    font-size: 22px;
-  }
-
-  .ch-kpi-sub {
-    font-size: 11px;
-  }
-}
-
 .ch-stats-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 16px;
 }
 
 .ch-stats-footer-card {
@@ -172,3 +148,52 @@
   width: 100%;
 }
 
+@media (min-width: 480px) {
+  .ch-kpi-grid {
+    gap: 10px;
+  }
+
+  .ch-kpi-card {
+    padding: 12px 14px;
+    gap: 3px;
+  }
+
+  .ch-kpi-label {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  .ch-kpi-val {
+    font-size: 22px;
+  }
+
+  .ch-kpi-sub {
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 768px) {
+  .ch-stats-page {
+    padding: 24px 28px 48px;
+  }
+
+  .ch-stats-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .ch-stats-header-text h2 {
+    font-size: 24px;
+  }
+
+  .ch-stats-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .ch-stats-footer-card {
+    grid-column: 1 / -1;
+  }
+}

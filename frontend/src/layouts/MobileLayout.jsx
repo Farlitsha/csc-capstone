@@ -4,6 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import Icon from "../components/Icon";
+import ResearcherMobileNoticeModal from "../components/ResearcherMobileNoticeModal";
 import "./MobileLayout.css";
 
 // Offline Prompt Session State
@@ -34,6 +35,8 @@ if (typeof window !== "undefined") {
 export default function MobileLayout({ title, children, hideNav = false, onBack }) {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const isAdmin = user?.role === "admin";
+  const shouldHideNav = hideNav || isAdmin;
   const [showOfflineModal, setShowOfflineModal] = useState(
     () => isOfflineModalActive && !hasDismissedOfflineSession
   );
@@ -59,13 +62,11 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
     { to: "/services", label: t("nav.services"), icon: "briefcase" },
     { to: "/studies", label: t("nav.studies"), icon: "clipboard" },
     { to: "/workshops", label: t("nav.workshops") || "Workshops", icon: "calendar" },
-    { to: "/tutorials", label: "Tutorials", icon: "play" },
+    { to: "/tutorials", label: t("tutorials.title") || "Tutorials", icon: "play" },
     user
       ? { to: "/profile", label: t("nav.profile"), icon: "user" }
       : { to: "/login", label: t("login.button") || "Log In", icon: "user" },
   ];
-
-  
 
   return (
     <div className="ch-mobile">
@@ -75,31 +76,84 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
       </a>
 
       <header className="ch-mobile__topbar">
-        {onBack ? (
-          <button className="ch-mobile__back" onClick={onBack} aria-label={t("common.back")}>
-            ←
-          </button>
-        ) : (
-          <span className="ch-mobile__brand">{title || "CommHub"}</span>
-        )}
-        {onBack && <span className="ch-mobile__title">{title}</span>}
-        <div className="ch-mobile__topbar-spacer" />
-        {!user && (
-          <Link to="/login" className="ch-mobile__guest-login">
-            {t("login.button")}
-          </Link>
-        )}
-        <LanguageSwitcher />
+        <div className="ch-mobile__topbar-inner">
+          <div className="ch-mobile__topbar-left">
+            {onBack ? (
+              <button
+                type="button"
+                className="ch-mobile__back"
+                onClick={onBack}
+                aria-label={t("common.back")}
+              >
+                ←
+              </button>
+            ) : (
+              <Link to="/" className="ch-mobile__brand">
+                CommHub
+              </Link>
+            )}
+            {title && <span className="ch-mobile__title">{title}</span>}
+          </div>
+
+          {/* Desktop & Tablet Navigation Bar in Header */}
+          {!isAdmin && (
+            <nav className="ch-mobile__desktop-nav" aria-label="Desktop Navigation">
+              {NAV_ITEMS.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === "/"}
+                  className={({ isActive }) =>
+                    `ch-mobile__desktop-navlink${isActive ? " ch-mobile__desktop-navlink--active" : ""}`
+                  }
+                >
+                  <Icon name={item.icon} size={15} aria-hidden="true" />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          )}
+
+          <div className="ch-mobile__topbar-right">
+            {!user ? (
+              <Link to="/login" className="ch-mobile__guest-login">
+                {t("login.button") || "Log In"}
+              </Link>
+            ) : isAdmin ? (
+              <span className="ch-mobile__user-badge">
+                <span className="ch-mobile__user-avatar" aria-hidden="true">
+                  {(user.username || "A").charAt(0).toUpperCase()}
+                </span>
+                <span className="ch-mobile__user-name">{user.username}</span>
+              </span>
+            ) : (
+              <Link to="/profile" className="ch-mobile__user-badge">
+                <span className="ch-mobile__user-avatar" aria-hidden="true">
+                  {(user.username || "U").charAt(0).toUpperCase()}
+                </span>
+                <span className="ch-mobile__user-name">{user.username}</span>
+              </Link>
+            )}
+            <LanguageSwitcher />
+          </div>
+        </div>
       </header>
 
       {/* Offline Prompt Modal Dialog */}
       {showOfflineModal && (
-        <div className="ch-offline-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ch-offline-modal-title">
+        <div
+          className="ch-offline-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ch-offline-modal-title"
+        >
           <div className="ch-offline-modal-card">
             <div className="ch-offline-modal-icon">
               <Icon name="wifi-off" size={26} />
             </div>
-            <h3 id="ch-offline-modal-title">{t("common.offlineTitle") || "You’re offline"}</h3>
+            <h3 id="ch-offline-modal-title">
+              {t("common.offlineTitle") || "You’re offline"}
+            </h3>
             <p className="ch-offline-modal-text">
               {t("common.offlineText") || "We’ll load recent posts when your connection is restored."}
             </p>
@@ -115,18 +169,26 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         </div>
       )}
 
+      {/* Researcher Screen Size Pop-up Notice Modal for Phones */}
+      <ResearcherMobileNoticeModal />
+
+      {/* Main Landmark for Accessibility */}
       <main id="main-content" tabIndex="-1" className="ch-mobile__body">
-        {children}
+        <div className="ch-mobile__body-inner">
+          {children}
+        </div>
       </main>
 
-      {!hideNav && (
+      {!shouldHideNav && (
         <nav className="ch-mobile__nav" aria-label="Main Navigation">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               aria-current={({ isActive }) => (isActive ? "page" : undefined)}
-              className={({ isActive }) => `ch-mobile__navitem${isActive ? " ch-mobile__navitem--active" : ""}`}
+              className={({ isActive }) =>
+                `ch-mobile__navitem${isActive ? " ch-mobile__navitem--active" : ""}`
+              }
             >
               <Icon name={item.icon} size={20} className="ch-mobile__navicon" aria-hidden="true" />
               <span className="ch-mobile__navlabel">{item.label}</span>
