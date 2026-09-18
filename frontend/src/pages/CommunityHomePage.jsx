@@ -56,26 +56,14 @@ export default function CommunityHomePage() {
       </section>
 
       {!user && (
-        <section className="ch-guest-banner-section" style={{ margin: "0 0 16px 0" }}>
-          <div style={{
-            background: "linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)",
-            border: "1px solid #bae6fd",
-            borderRadius: "12px",
-            padding: "14px 16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <section className="ch-guest-banner-section">
+          <div className="ch-guest-banner">
+            <div className="ch-guest-banner__head">
               <Icon name="eye" size={16} style={{ color: "#0284c7" }} />
-              <span style={{ fontWeight: 600, fontSize: "14px", color: "#0369a1" }}>
-                {t("guest.bannerTitle")}
-              </span>
+              <span>{t("guest.bannerTitle")}</span>
             </div>
-            <p style={{ margin: 0, fontSize: "13px", lineHeight: "1.45", color: "#334155" }}>
-              {t("guest.bannerText")}
-            </p>
-            <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
+            <p>{t("guest.bannerText")}</p>
+            <div className="ch-guest-banner__actions">
               <Link to="/signup" style={{ textDecoration: "none" }}>
                 <Button variant="accent" style={{ fontSize: "12px", padding: "6px 14px" }}>
                   {t("guest.createAccount")}
