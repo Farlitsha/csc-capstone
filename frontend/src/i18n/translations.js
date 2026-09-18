@@ -275,6 +275,13 @@ export const translations = {
       "termsLink": "Terms & Guidelines",
       "privacyLink": "Privacy Policy (POPIA)",
       "videoNotSupported": "Your browser does not support HTML5 video playback."
+    },
+    "researcherMobile": {
+      "title": "Larger Screen Required for Researcher Tools",
+      "message": "To access researcher privileges (managing studies, building surveys, and scheduling workshops), please open CommHub on a larger device such as a tablet, iPad, laptop, or desktop computer.",
+      "currentModeTitle": "Community Member Mode:",
+      "currentModeDesc": "On this phone, you are viewing CommHub in Community Member mode so you can explore local services, workshops, and community activities.",
+      "actionBtn": "Continue in Community Mode"
     }
   },
   "af": {
@@ -548,6 +555,13 @@ export const translations = {
       "termsLink": "Terme & Riglyne",
       "privacyLink": "Privaatheidsbeleid (POPIA)",
       "videoNotSupported": "Jou webblaaier ondersteun nie video-afspeel nie."
+    },
+    "researcherMobile": {
+      "title": "Groter Skerm Vereis vir Navorser-nutsmiddels",
+      "message": "Om toegang tot navorsersvoorregte te kry (bestuur van studies, opstel van opnames en skedulering van werkswinkels), gebruik asseblief 'n groter toestel soos 'n tablet, iPad, skootrekenaar of rekenaar.",
+      "currentModeTitle": "Gemeenskapslid-modus:",
+      "currentModeDesc": "Op hierdie selfoon word CommHub in Gemeenskapslid-modus vertoon sodat jy dienste, studies en plaaslike inligting kan verken.",
+      "actionBtn": "Gaan voort in Gemeenskapsmodus"
     }
   },
   "xh": {
@@ -821,6 +835,13 @@ export const translations = {
       "termsLink": "Imimiselo neZikhokelo",
       "privacyLink": "Ukhuseleko lweDatha (POPIA)",
       "videoNotSupported": "Isikhangeli sakho asixhasi ukudlalwa kwevidiyo."
+    },
+    "researcherMobile": {
+      "title": "Kufuneka Isikrini Esikhudlwana kuCweyo loMphandi",
+      "message": "Ukufikelela kumalungelo abaphandi (ukulawula uphando, ukwenza uvavanyo, nokucwangcisa iindibano zocweyo), nceda usebenzise isixhobo esikhudlwana esifana ne-tablet, iPad, ilaptop okanye ikhompyutha.",
+      "currentModeTitle": "Imowudi yeLungu loLuntu:",
+      "currentModeDesc": "Kule fowuni, iCommHub iboniswa kwimowudi yeLungu loLuntu ukuze ukwazi ukujonga iinkonzo, uphando, nezaziso.",
+      "actionBtn": "Qhubeka njengeLungu loLuntu"
     }
   },
   "zu": {
@@ -1094,6 +1115,13 @@ export const translations = {
       "termsLink": "Imigomo Nemibandela",
       "privacyLink": "Inqubomgomo Yobumfihlo (POPIA)",
       "videoNotSupported": "Isiphequluli sakho asikwazi ukudlala ividiyo."
+    },
+    "researcherMobile": {
+      "title": "Kudingeka Isikrini Esikhudlwana Sasebhodini Lomcwaningi",
+      "message": "Ukuze usebenzise amalungelo omcwaningi (ukuphatha ucwaningo, ukwakha izinhlolovo, nokuhlela ama-workshop), sicela usebenzise idivayisi enkulu njenge-tablet, iPad, i-laptop noma ikhompyutha.",
+      "currentModeTitle": "Imodi Yelungu Lomphakathi:",
+      "currentModeDesc": "Kule foni ephathwayo, i-CommHub iboniswa njengomphakathi ukuze ukwazi ukuhlola izinsizakalo, ucwaningo nezaziso zendawo.",
+      "actionBtn": "Qhubeka njengeLungu lomPhakathi"
     }
   }
 };

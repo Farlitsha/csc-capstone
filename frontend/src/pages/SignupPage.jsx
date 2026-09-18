@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import Field from "../components/Field";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
@@ -11,7 +11,7 @@ import "./LoginPage.css";
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { token, user, login } = useAuth();
   const { t } = useLanguage();
   const [form, setForm] = useState({
     display_name: "",
@@ -24,6 +24,10 @@ export default function SignupPage() {
   const [popiaConsent, setPopiaConsent] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  if (token) {
+    return <Navigate to={user?.role === "admin" ? "/admin" : "/"} replace />;
+  }
 
   function update(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));

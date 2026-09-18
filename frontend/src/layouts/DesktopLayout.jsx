@@ -10,10 +10,12 @@ import "./DesktopLayout.css";
  * eyebrow: small workspace label under the CommHub wordmark, e.g. "RESEARCHER WORKSPACE"
  * rightSlot: optional extra controls before the account avatar (e.g. "New study" button)
  */
-export default function DesktopLayout({ eyebrow, rightSlot, children }) {
+export default function DesktopLayout({ eyebrow, rightSlot, children, hideNav = false }) {
   const { user, logout } = useAuth();
   const { t } = useLanguage();
   const initials = (user?.username || "?").slice(0, 2).toUpperCase();
+  const isAdmin = user?.role === "admin";
+  const shouldHideNav = hideNav || isAdmin;
 
   const NAV_ITEMS = [
     { to: "/", label: "Home" },
@@ -21,8 +23,7 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
     { to: "/studies", label: "Studies" },
     { to: "/workshops", label: "Workshops" },
     { to: "/tutorials", label: "Tutorials" },
-    ];
-
+  ];
 
   return (
     <div className="ch-desktop">
@@ -38,31 +39,35 @@ export default function DesktopLayout({ eyebrow, rightSlot, children }) {
         </div>
 
       {/* Desktop Navigation */}
-      <nav className="ch-desktop__nav">
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
-            className={({ isActive }) =>
-              isActive
-                ? "ch-desktop__nav-link ch-desktop__nav-link--active"
-                : "ch-desktop__nav-link"
-            }
-          >
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
+      {!shouldHideNav && (
+        <nav className="ch-desktop__nav">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) =>
+                isActive
+                  ? "ch-desktop__nav-link ch-desktop__nav-link--active"
+                  : "ch-desktop__nav-link"
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+      )}
 
         <div className="ch-desktop__right">
           {rightSlot}
           <LanguageSwitcher />
           {user ? (
             <>
-              <Link to="/profile" className="ch-desktop__profile-link">
-                {t("common.myProfile")}
-              </Link>
+              {!isAdmin && (
+                <Link to="/profile" className="ch-desktop__profile-link">
+                  {t("common.myProfile")}
+                </Link>
+              )}
               <Button variant="secondary" onClick={logout}>
                 {t("common.logout")}
               </Button>

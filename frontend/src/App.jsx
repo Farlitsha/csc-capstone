@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { LanguageProvider } from "./i18n/LanguageContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import NonAdminRoute from "./auth/NonAdminRoute";
 
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -31,73 +32,77 @@ export default function App() {
       <LanguageProvider>
         <AuthProvider>
           <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route path="/admin-login" element={<AdminLoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPolicyPage />} />
-          <Route path="/tutorials" element={<TutorialsPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin-login" element={<AdminLoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/terms" element={<NonAdminRoute><TermsPage /></NonAdminRoute>} />
+            <Route path="/privacy" element={<NonAdminRoute><PrivacyPolicyPage /></NonAdminRoute>} />
+            <Route path="/tutorials" element={<NonAdminRoute><TutorialsPage /></NonAdminRoute>} />
 
-          {/* Public / Guest-browsable routes */}
-          <Route path="/" element={<HomeRouter />} />
-          <Route path="/services" element={<ServicesDirectoryPage />} />
-          <Route path="/studies" element={<StudiesDirectoryPage />} />
-          <Route path="/workshops" element={<WorkshopsDirectoryPage />} />
-          <Route path="/announcements" element={<AnnouncementsPage />} />
-          <Route path="/community-stats" element={<CommunityStatsPage />} />
+            {/* Root Route: renders AdminDashboardPage for admin, Researcher for researcher, Community for member/guest */}
+            <Route path="/" element={<HomeRouter />} />
 
-          {/* Account-required routes (apply/request/census/profile) */}
-          <Route path="/services/new" element={<ProtectedRoute><PostServicePage /></ProtectedRoute>} />
-          <Route path="/community-census" element={<ProtectedRoute><CommunityCensusPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            {/* Public / Guest-browsable routes (non-admin only) */}
+            <Route path="/services" element={<NonAdminRoute><ServicesDirectoryPage /></NonAdminRoute>} />
+            <Route path="/studies" element={<NonAdminRoute><StudiesDirectoryPage /></NonAdminRoute>} />
+            <Route path="/workshops" element={<NonAdminRoute><WorkshopsDirectoryPage /></NonAdminRoute>} />
+            <Route path="/announcements" element={<NonAdminRoute><AnnouncementsPage /></NonAdminRoute>} />
+            <Route path="/community-stats" element={<NonAdminRoute><CommunityStatsPage /></NonAdminRoute>} />
 
+            {/* Account-required routes (apply/request/census/profile) */}
+            <Route path="/services/new" element={<ProtectedRoute><PostServicePage /></ProtectedRoute>} />
+            <Route path="/community-census" element={<ProtectedRoute><CommunityCensusPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
-          <Route
-            path="/researcher"
-            element={
-              <ProtectedRoute roles={["researcher"]}>
-                <ResearcherDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/researcher/studies/new"
-            element={
-              <ProtectedRoute roles={["researcher"]}>
-                <BuildSurveyPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/studies/:studyId/survey"
-            element={<ProtectedRoute><TakeSurveyPage /></ProtectedRoute>}
-          />
-          <Route
-            path="/researcher/studies/:studyId/applicants"
-            element={
-              <ProtectedRoute roles={["researcher", "admin"]}>
-                <StudyApplicantsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/researcher/studies/:studyId/responses"
-            element={
-              <ProtectedRoute roles={["researcher", "admin"]}>
-                <SurveyResponsesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute roles={["admin"]}>
-                <AdminDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+            {/* Researcher routes */}
+            <Route
+              path="/researcher"
+              element={
+                <ProtectedRoute roles={["researcher"]}>
+                  <ResearcherDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/researcher/studies/new"
+              element={
+                <ProtectedRoute roles={["researcher"]}>
+                  <BuildSurveyPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/studies/:studyId/survey"
+              element={<ProtectedRoute><TakeSurveyPage /></ProtectedRoute>}
+            />
+            <Route
+              path="/researcher/studies/:studyId/applicants"
+              element={
+                <ProtectedRoute roles={["researcher"]}>
+                  <StudyApplicantsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/researcher/studies/:studyId/responses"
+              element={
+                <ProtectedRoute roles={["researcher"]}>
+                  <SurveyResponsesPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin-only route */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute roles={["admin"]}>
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
         </AuthProvider>
       </LanguageProvider>
     </BrowserRouter>

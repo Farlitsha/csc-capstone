@@ -4,6 +4,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import Icon from "../components/Icon";
+import ResearcherMobileNoticeModal from "../components/ResearcherMobileNoticeModal";
 import "./MobileLayout.css";
 
 // Offline Prompt Session State
@@ -34,6 +35,8 @@ if (typeof window !== "undefined") {
 export default function MobileLayout({ title, children, hideNav = false, onBack }) {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const isAdmin = user?.role === "admin";
+  const shouldHideNav = hideNav || isAdmin;
   const [showOfflineModal, setShowOfflineModal] = useState(
     () => isOfflineModalActive && !hasDismissedOfflineSession
   );
@@ -93,27 +96,36 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
           </div>
 
           {/* Desktop & Tablet Navigation Bar in Header */}
-          <nav className="ch-mobile__desktop-nav" aria-label="Desktop Navigation">
-            {NAV_ITEMS.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/"}
-                className={({ isActive }) =>
-                  `ch-mobile__desktop-navlink${isActive ? " ch-mobile__desktop-navlink--active" : ""}`
-                }
-              >
-                <Icon name={item.icon} size={15} aria-hidden="true" />
-                <span>{item.label}</span>
-              </NavLink>
-            ))}
-          </nav>
+          {!isAdmin && (
+            <nav className="ch-mobile__desktop-nav" aria-label="Desktop Navigation">
+              {NAV_ITEMS.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === "/"}
+                  className={({ isActive }) =>
+                    `ch-mobile__desktop-navlink${isActive ? " ch-mobile__desktop-navlink--active" : ""}`
+                  }
+                >
+                  <Icon name={item.icon} size={15} aria-hidden="true" />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          )}
 
           <div className="ch-mobile__topbar-right">
             {!user ? (
               <Link to="/login" className="ch-mobile__guest-login">
                 {t("login.button") || "Log In"}
               </Link>
+            ) : isAdmin ? (
+              <span className="ch-mobile__user-badge">
+                <span className="ch-mobile__user-avatar" aria-hidden="true">
+                  {(user.username || "A").charAt(0).toUpperCase()}
+                </span>
+                <span className="ch-mobile__user-name">{user.username}</span>
+              </span>
             ) : (
               <Link to="/profile" className="ch-mobile__user-badge">
                 <span className="ch-mobile__user-avatar" aria-hidden="true">
@@ -157,6 +169,9 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         </div>
       )}
 
+      {/* Researcher Screen Size Pop-up Notice Modal for Phones */}
+      <ResearcherMobileNoticeModal />
+
       {/* Main Landmark for Accessibility */}
       <main id="main-content" tabIndex="-1" className="ch-mobile__body">
         <div className="ch-mobile__body-inner">
@@ -164,7 +179,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
         </div>
       </main>
 
-      {!hideNav && (
+      {!shouldHideNav && (
         <nav className="ch-mobile__nav" aria-label="Main Navigation">
           {NAV_ITEMS.map((item) => (
             <NavLink

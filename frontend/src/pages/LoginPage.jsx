@@ -9,7 +9,7 @@ import { api, ApiError } from "../lib/api";
 import "./LoginPage.css";
 
 export default function LoginPage() {
-  const { token, login, refreshUser } = useAuth();
+  const { token, user, login, refreshUser } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [reactivating, setReactivating] = useState(false);
 
   if (token) {
-    return <Navigate to={location.state?.from ?? "/"} replace />;
+    return <Navigate to={user?.role === "admin" ? "/admin" : (location.state?.from ?? "/")} replace />;
   }
 
   async function handleReactivate() {
