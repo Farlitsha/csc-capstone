@@ -60,6 +60,20 @@ export default function TutorialsPage() {
       actionLabel: t("tutorials.step4Action") || "Go to Profile",
       actionPath: "/profile",
     },
+    //   {
+    //   step: 5,
+    //   category: "Workshop Management",
+    //   icon: "edit",
+    //   title:
+    //     t("tutorials.step5Title") || "How to Create and Manage Workshops",
+    //   description:
+    //     t("tutorials.step5Desc") ||
+    //     "Learn how to create your own workshops as a Researcher and manage them.",
+    //   video: "/videos/manage_workshops.mp4",
+    //   actionLabel: t("tutorials.step3Action") || "View Workshops",
+    //   actionPath: "/workshops",
+    // },
+
   ];
 
   return (
