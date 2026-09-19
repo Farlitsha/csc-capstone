@@ -123,3 +123,74 @@ def test_verified_researcher_can_create_study(client, verified_researcher_auth_h
     assert response.json()["title"] == payload["title"]
     assert response.json()["state"] == "live"
 
+
+def test_researcher_downgrade_to_community_member(client, verified_researcher_auth_headers):
+    """DoD: Researcher can voluntarily downgrade account back to community member."""
+    response = client.post("/users/me/downgrade", headers=verified_researcher_auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["role"] == "community_member"
+    assert data["verification_status"] == "none"
+
+
+def test_community_member_cannot_downgrade(client, community_user_auth_headers):
+    """DoD: Standard community member cannot downgrade (already community member)."""
+    response = client.post("/users/me/downgrade", headers=community_user_auth_headers)
+    assert response.status_code == 400
+
+
+def test_downgraded_researcher_auto_restores_within_6_months(client, verified_researcher, verified_researcher_auth_headers):
+    """DoD: Downgraded researcher applying within 6 months auto-restores without admin review."""
+    res_down = client.post("/users/me/downgrade", headers=verified_researcher_auth_headers)
+    assert res_down.status_code == 200
+    assert res_down.json()["role"] == "community_member"
+    assert res_down.json()["researcher_downgraded_at"] is not None
+
+    res_up = client.post("/users/me/request-researcher", json={"phone": "+27821112233"}, headers=verified_researcher_auth_headers)
+    assert res_up.status_code == 200
+    up_data = res_up.json()
+    assert up_data["role"] == "researcher"
+    assert up_data["verification_status"] == "verified"
+    assert up_data["researcher_downgraded_at"] is None
+
+
+def test_downgraded_researcher_after_6_months_requires_admin(client, db_session, verified_researcher, verified_researcher_auth_headers):
+    """DoD: Downgraded researcher applying after 6 months (180 days) requires admin review (pending)."""
+    from datetime import datetime, timezone, timedelta
+    client.post("/users/me/downgrade", headers=verified_researcher_auth_headers)
+
+    verified_researcher.researcher_downgraded_at = datetime.now(timezone.utc) - timedelta(days=200)
+    db_session.commit()
+
+    res_up = client.post("/users/me/request-researcher", json={"phone": "+27821112233"}, headers=verified_researcher_auth_headers)
+    assert res_up.status_code == 200
+    up_data = res_up.json()
+    assert up_data["role"] == "researcher"
+    assert up_data["verification_status"] == "pending"
+
+
+def test_downgraded_researcher_studies_hidden_from_public(client, verified_researcher, verified_researcher_auth_headers):
+    """DoD: Downgrading hides researcher's studies from public browse list until restored."""
+    payload = {
+        "title": "Public Visibility Study",
+        "description": "Testing that studies are hidden when researcher downgrades",
+        "target_group": "Community",
+        "participant_limit": 10,
+    }
+    create_res = client.post("/studies/", json=payload, headers=verified_researcher_auth_headers)
+    assert create_res.status_code == 201
+
+    list_before = client.get("/studies/").json()
+    assert any(s["title"] == "Public Visibility Study" for s in list_before)
+
+    client.post("/users/me/downgrade", headers=verified_researcher_auth_headers)
+
+    list_after_down = client.get("/studies/").json()
+    assert not any(s["title"] == "Public Visibility Study" for s in list_after_down)
+
+    client.post("/users/me/request-researcher", json={"phone": "+27821112233"}, headers=verified_researcher_auth_headers)
+
+    list_after_restore = client.get("/studies/").json()
+    assert any(s["title"] == "Public Visibility Study" for s in list_after_restore)
+
+

@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from .. import models, schemas, utils, oauth2, audit
 from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
@@ -216,6 +217,129 @@ async def upload_avatar(
 
     # Store a relative URL that maps to the FastAPI /uploads static mount
     current_user.avatar_url = f"/uploads/avatars/{filename}"
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/me/request-researcher", status_code=status.HTTP_200_OK, response_model=schemas.PrivateProfileOut)
+async def request_researcher_upgrade(
+    payload: schemas.ResearcherApplicationRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Community member applies to become a verified researcher."""
+    if current_user.role == models.UserRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Administrators already have full privileges.")
+    if current_user.role == models.UserRole.RESEARCHER and current_user.verification_status == models.VerificationStatus.VERIFIED:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You are already a verified researcher.")
+    if current_user.verification_status == models.VerificationStatus.PENDING:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your researcher application is already under review.")
+
+    if payload.phone and payload.phone.strip():
+        phone_val = payload.phone.strip()
+        current_user.phone = phone_val
+        current_user.contact_phone = phone_val
+
+    # Check if previously verified researcher re-applying within the 6-month grace period (180 days)
+    six_months = timedelta(days=180)
+    now = datetime.now(timezone.utc)
+    auto_restore = False
+
+    if getattr(current_user, "researcher_downgraded_at", None) is not None:
+        downgraded_at = current_user.researcher_downgraded_at
+        if downgraded_at.tzinfo is None:
+            downgraded_at = downgraded_at.replace(tzinfo=timezone.utc)
+        if (now - downgraded_at) <= six_months:
+            auto_restore = True
+
+    if auto_restore:
+        current_user.role = models.UserRole.RESEARCHER
+        current_user.verification_status = models.VerificationStatus.VERIFIED
+        current_user.researcher_downgraded_at = None
+
+        audit.log_action(
+            db,
+            actor_id=current_user.id,
+            action="researcher_auto_restored_within_grace_period",
+            target_type="user",
+            target_id=current_user.id,
+            details={
+                "username": current_user.username,
+                "phone": current_user.phone or current_user.contact_phone,
+                "email": current_user.email,
+                "reason": "Re-applied within 6 months of voluntary downgrade - auto-verified without admin review",
+            },
+        )
+        db.commit()
+        db.refresh(current_user)
+        return current_user
+
+    current_user.role = models.UserRole.RESEARCHER
+    current_user.verification_status = models.VerificationStatus.PENDING
+    current_user.researcher_downgraded_at = None
+
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="researcher_application_submitted",
+        target_type="user",
+        target_id=current_user.id,
+        details={
+            "username": current_user.username,
+            "phone": current_user.phone or current_user.contact_phone,
+            "email": current_user.email,
+        },
+    )
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/me/downgrade", status_code=status.HTTP_200_OK, response_model=schemas.PrivateProfileOut)
+async def downgrade_to_community_member(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Researcher downgrades their account back to a standard community member.
+    If verified, researcher data is preserved for 6 months (hidden from public)
+    and allows auto-restoration without admin review if re-applying within 6 months.
+    """
+    if current_user.role == models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Administrator accounts cannot be downgraded through this endpoint.",
+        )
+    if current_user.role == models.UserRole.COMMUNITY_MEMBER:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already a community member.",
+        )
+
+    # If verified researcher, start the 6-month retention grace period timestamp
+    if current_user.verification_status == models.VerificationStatus.VERIFIED:
+        current_user.researcher_downgraded_at = datetime.now(timezone.utc)
+    else:
+        current_user.researcher_downgraded_at = None
+
+    current_user.role = models.UserRole.COMMUNITY_MEMBER
+    current_user.verification_status = models.VerificationStatus.NONE
+
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="researcher_downgraded_to_community",
+        target_type="user",
+        target_id=current_user.id,
+        details={
+            "username": current_user.username,
+            "previous_role": "researcher",
+            "new_role": "community_member",
+            "grace_period_months": 6 if current_user.researcher_downgraded_at else 0,
+        },
+    )
+
     db.commit()
     db.refresh(current_user)
     return current_user

@@ -132,8 +132,7 @@
 .ch-tutorial-video {
   width: 100%;
   height: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   border: none;
   background: #000000;

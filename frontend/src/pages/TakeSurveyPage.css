@@ -30,18 +30,13 @@
   gap: 14px;
 }
 
-.ch-take-survey__error-banner {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #fdf2f2;
-  border: 1px solid #f8b4b4;
-  color: #9b1c1c;
-  padding: 10px 14px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
+.ch-take-survey__error-text {
+  color: #dc2626;
+  font-size: 14px;
   font-weight: 500;
-  margin-bottom: 6px;
+  margin: 0 0 4px 0;
+  padding: 0;
+  line-height: 1.4;
 }
 
 .ch-take-survey__done-card {

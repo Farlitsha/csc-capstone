@@ -45,6 +45,7 @@ class UserOut(BaseModel):
     contact_email: Optional[str] = None
     struggles: Optional[List[str]] = None
     is_active: bool = True
+    researcher_downgraded_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -65,6 +66,7 @@ class PrivateProfileOut(BaseModel):
     phone: Optional[str] = None
     struggles: Optional[List[str]] = None
     is_active: bool = True
+    researcher_downgraded_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -107,4 +109,9 @@ class PhoneUpdate(BaseModel):
 class ReactivateRequest(BaseModel):
     username: str
     password: str
+
+
+class ResearcherApplicationRequest(BaseModel):
+    phone: Optional[str] = None
+
 

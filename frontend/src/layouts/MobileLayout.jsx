@@ -5,6 +5,7 @@ import { useAuth } from "../auth/AuthContext";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import Icon from "../components/Icon";
 import ResearcherMobileNoticeModal from "../components/ResearcherMobileNoticeModal";
+import { useUnreadNotifications } from "../lib/notifications";
 import "./MobileLayout.css";
 
 // Offline Prompt Session State
@@ -35,6 +36,7 @@ if (typeof window !== "undefined") {
 export default function MobileLayout({ title, children, hideNav = false, onBack }) {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { unreadCount } = useUnreadNotifications(user);
   const isAdmin = user?.role === "admin";
   const shouldHideNav = hideNav || isAdmin;
   const [showOfflineModal, setShowOfflineModal] = useState(
@@ -62,7 +64,6 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
     { to: "/services", label: t("nav.services"), icon: "briefcase" },
     { to: "/studies", label: t("nav.studies"), icon: "clipboard" },
     { to: "/workshops", label: t("nav.workshops") || "Workshops", icon: "calendar" },
-    { to: "/tutorials", label: t("tutorials.title") || "Tutorials", icon: "play" },
     user
       ? { to: "/profile", label: t("nav.profile"), icon: "user" }
       : { to: "/login", label: t("login.button") || "Log In", icon: "user" },
@@ -115,25 +116,24 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
           )}
 
           <div className="ch-mobile__topbar-right">
-            {!user ? (
+            {!user && (
               <Link to="/login" className="ch-mobile__guest-login">
                 {t("login.button") || "Log In"}
               </Link>
-            ) : isAdmin ? (
-              <span className="ch-mobile__user-badge">
-                <span className="ch-mobile__user-avatar" aria-hidden="true">
-                  {(user.username || "A").charAt(0).toUpperCase()}
-                </span>
-                <span className="ch-mobile__user-name">{user.username}</span>
-              </span>
-            ) : (
-              <Link to="/profile" className="ch-mobile__user-badge">
-                <span className="ch-mobile__user-avatar" aria-hidden="true">
-                  {(user.username || "U").charAt(0).toUpperCase()}
-                </span>
-                <span className="ch-mobile__user-name">{user.username}</span>
-              </Link>
             )}
+            <Link
+              to="/announcements"
+              className="ch-mobile__notif-btn"
+              title={unreadCount > 0 ? `${unreadCount} unread announcements` : "Announcements"}
+              aria-label={`Announcements (${unreadCount} unread)`}
+            >
+              <Icon name="bell" size={17} />
+              {unreadCount > 0 && (
+                <span className="ch-mobile__notif-badge">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
             <LanguageSwitcher />
           </div>
         </div>

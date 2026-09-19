@@ -7,12 +7,17 @@ import StatusChip from "../components/StatusChip";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
 import GuestAuthModal from "../components/GuestAuthModal";
+import ServiceCard from "../components/ServiceCard";
+import ReportServiceModal from "../components/ReportServiceModal";
 import { api } from "../lib/api";
+import { useUnreadNotifications, isAnnouncementNew } from "../lib/notifications";
+import { formatTimeAgo, formatPostedAgo } from "../lib/dateUtils";
 import "./CommunityHomePage.css";
 
 export default function CommunityHomePage() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { unreadCount, readIds } = useUnreadNotifications(user);
   const [services, setServices] = useState([]);
   const [workshops, setWorkshops] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
@@ -20,6 +25,15 @@ export default function CommunityHomePage() {
   const [loading, setLoading] = useState(true);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [guestModalAction, setGuestModalAction] = useState("");
+  const [reportingService, setReportingService] = useState(null);
+  const [revealedPhotos, setRevealedPhotos] = useState([]);
+  const [lowDataMode] = useState(() => {
+    try {
+      return localStorage.getItem("commhub_low_data") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     Promise.all([
@@ -31,9 +45,15 @@ export default function CommunityHomePage() {
       .then(([svc, wList, ann, cStats]) => {
         const isOwn = (s) => s.poster_id === user?.id || (user?.username && s.poster_username === user?.username);
         const otherServices = svc.filter((s) => !isOwn(s));
-        setServices(otherServices.slice(0, 3));
+        const sortedServices = [...otherServices].sort(
+          (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0)
+        );
+        const sortedAnnouncements = [...ann].sort(
+          (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0)
+        );
+        setServices(sortedServices.slice(0, 3));
         setWorkshops(wList.slice(0, 3));
-        setAnnouncements(ann);
+        setAnnouncements(sortedAnnouncements);
         if (cStats) setCensusStats(cStats);
       })
       .finally(() => setLoading(false));
@@ -51,7 +71,14 @@ export default function CommunityHomePage() {
   return (
     <MobileLayout>
       <section className="ch-greeting">
-        <h1>{t("home.greeting")}, {user?.username || "Guest"}</h1>
+        <div className="home-heading-row">
+          <h1>{t("home.greeting")}, {user?.username || "Guest"}</h1>
+
+          <Link to="/tutorials" className="home-tutorials-button">
+            <Icon name="play" size={18} aria-hidden="true" />
+            <span>Tutorials</span>
+          </Link>
+        </div>
         <p>{t("home.subtitle")}</p>
       </section>
 
@@ -95,21 +122,77 @@ export default function CommunityHomePage() {
         <section className="ch-announcement-section">
           <div className="ch-announcement-banner">
             <div className="ch-announcement-banner__head">
-              <span className="ch-announcement-badge">
-                <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
-                {t("home.announcementsBadge")}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span className="ch-announcement-badge">
+                  <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
+                  {t("home.announcementsBadge")}
+                </span>
+                {isAnnouncementNew(relevantAnnouncements[0], readIds) && (
+                  <span className="ch-new-indicator-tag">NEW</span>
+                )}
+              </div>
               <Link to="/announcements" className="ch-announcement-banner__link">
                 {t("home.viewAll")} ({relevantAnnouncements.length})
+                {unreadCount > 0 && (
+                  <span className="ch-home-unread-dot" title={`${unreadCount} unread`} />
+                )}
               </Link>
             </div>
             <p>{relevantAnnouncements[0].content}</p>
-            <span className="ch-announcement-banner__meta">
-              Broadcast by @{relevantAnnouncements[0].author_username} • {new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
+            <span className="ch-announcement-banner__meta" title={new Date(relevantAnnouncements[0].created_at).toLocaleString()}>
+              Broadcast by @{relevantAnnouncements[0].author_username} • {formatPostedAgo(relevantAnnouncements[0].created_at) || new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
             </span>
           </div>
         </section>
       )}
+
+      <section className="ch-section">
+        <div className="ch-section__head">
+          <h2>{t("home.servicesNearYou")}</h2>
+          <Link to="/services">{t("home.seeAll")}</Link>
+        </div>
+
+        {!loading && services.length === 0 && (
+          <div className="ch-empty-cta">
+            <p>{t("home.noServices")}</p>
+            {user ? (
+              <Link to="/services/new">
+                <Button variant="accent">{t("home.postFirst")}</Button>
+              </Link>
+            ) : (
+              <Button
+                variant="accent"
+                onClick={() => {
+                  setGuestModalAction("post a service or request");
+                  setGuestModalOpen(true);
+                }}
+              >
+                {t("home.postFirst")}
+              </Button>
+            )}
+          </div>
+        )}
+
+        <div className="ch-service-list">
+          {services.map((s) => (
+            <ServiceCard
+              key={s.id}
+              service={s}
+              user={user}
+              t={t}
+              isMine={s.poster_id === user?.id || (user?.username && s.poster_username === user?.username)}
+              onReport={(serviceToReport) => setReportingService(serviceToReport)}
+              onRequireAuth={(action) => {
+                setGuestModalAction(action);
+                setGuestModalOpen(true);
+              }}
+              lowDataMode={lowDataMode}
+              isPhotoRevealed={revealedPhotos.includes(s.id)}
+              onRevealPhoto={(id) => setRevealedPhotos((prev) => (prev.includes(id) ? prev : [...prev, id]))}
+            />
+          ))}
+        </div>
+      </section>
 
       {/* Community Insights & Census Card */}
       <section className="ch-insights-card-section">
@@ -154,57 +237,6 @@ export default function CommunityHomePage() {
               </Button>
             </Link>
           </div>
-
-        </div>
-      </section>
-
-
-      <section className="ch-section">
-        <div className="ch-section__head">
-          <h2>{t("home.servicesNearYou")}</h2>
-          <Link to="/services">{t("home.seeAll")}</Link>
-        </div>
-
-        {!loading && services.length === 0 && (
-          <div className="ch-empty-cta">
-            <p>{t("home.noServices")}</p>
-            {user ? (
-              <Link to="/services/new">
-                <Button variant="accent">{t("home.postFirst")}</Button>
-              </Link>
-            ) : (
-              <Button
-                variant="accent"
-                onClick={() => {
-                  setGuestModalAction("post a service or request");
-                  setGuestModalOpen(true);
-                }}
-              >
-                {t("home.postFirst")}
-              </Button>
-            )}
-          </div>
-        )}
-
-        <div className="ch-service-list">
-          {services.map((s) => (
-            <Link to="/services" key={s.id} style={{ textDecoration: "none", color: "inherit" }}>
-              <div className="ch-service-card">
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <StatusChip
-                    label={s.type === "request" ? t("services.requested") : t("services.offered")}
-                    tone={s.type === "request" ? "warning" : "positive"}
-                  />
-                  <span style={{ fontSize: "12px", color: "var(--color-sage)" }}>
-                    By @{s.poster_username}
-                  </span>
-                </div>
-                <h3>{s.title}</h3>
-                <p>{s.description}</p>
-                <span className="ch-service-card__price">{s.price || t("services.priceOnRequest")}</span>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
 
@@ -231,7 +263,10 @@ export default function CommunityHomePage() {
                   </div>
                   <div>
                     <p className="ch-event-title">{w.title}</p>
-                    <p className="ch-event-meta">{wDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {w.location}</p>
+                    <p className="ch-event-meta" title={w.created_at ? `Posted: ${new Date(w.created_at).toLocaleString()}` : undefined}>
+                      {wDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {w.location}
+                      {w.created_at ? ` · Posted ${formatTimeAgo(w.created_at)}` : ""}
+                    </p>
                   </div>
                 </div>
               </Link>
@@ -244,6 +279,11 @@ export default function CommunityHomePage() {
         isOpen={guestModalOpen}
         onClose={() => setGuestModalOpen(false)}
         actionName={guestModalAction}
+      />
+
+      <ReportServiceModal
+        service={reportingService}
+        onClose={() => setReportingService(null)}
       />
     </MobileLayout>
   );

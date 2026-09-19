@@ -2,7 +2,7 @@ from typing import List, Optional
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_, and_
 from .. import models, schemas, oauth2
 from ..database import get_db
 
@@ -78,6 +78,15 @@ async def list_workshops(
         )
         .join(models.User, models.Workshop.organizer_id == models.User.id)
         .outerjoin(models.WorkshopRegistration, models.Workshop.id == models.WorkshopRegistration.workshop_id)
+        .filter(
+            or_(
+                models.User.role == models.UserRole.ADMIN,
+                and_(
+                    models.User.role == models.UserRole.RESEARCHER,
+                    models.User.verification_status == models.VerificationStatus.VERIFIED,
+                ),
+            )
+        )
         .group_by(models.Workshop.id, models.User.username, models.User.display_name)
     )
 

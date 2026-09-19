@@ -87,6 +87,7 @@ async function request(path, {
       } else if (path.startsWith("/workshops")) cache.invalidatePattern("^/workshops");
       else if (path.startsWith("/community")) cache.invalidatePattern("^/community");
       else if (path.startsWith("/announcements")) cache.invalidatePattern("^/announcements");
+      else if (path.startsWith("/users")) cache.invalidatePattern("^/users");
     }
 
     return data;
@@ -160,6 +161,8 @@ export const api = {
   // Profile management
   getProfile: (userId) => request(`/users/${userId}`),
   updateProfile: (payload) => request("/users/me/profile", { method: "PATCH", body: payload }),
+  requestResearcherUpgrade: (payload) => request("/users/me/request-researcher", { method: "POST", body: payload }),
+  downgradeToCommunity: () => request("/users/me/downgrade", { method: "POST" }),
   uploadAvatar: async (file) => {
     const compressed = await compressImage(file, { maxWidth: 300, maxHeight: 300, quality: 0.6 }).catch(() => file);
     const token = localStorage.getItem("commhub_token");

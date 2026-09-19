@@ -70,7 +70,11 @@ async def list_studies(db: Session = Depends(get_db)):
     rows = (
         db.query(models.StudyListing, models.User.username, models.User.display_name, models.User.avatar_url)
         .join(models.User, models.StudyListing.researcher_id == models.User.id)
-        .filter(models.StudyListing.state == models.StudyState.LIVE)
+        .filter(
+            models.StudyListing.state == models.StudyState.LIVE,
+            models.User.role == models.UserRole.RESEARCHER,
+            models.User.verification_status == models.VerificationStatus.VERIFIED,
+        )
         .order_by(models.StudyListing.created_at.desc())
         .all()
     )

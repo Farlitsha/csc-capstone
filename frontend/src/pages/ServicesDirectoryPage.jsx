@@ -12,6 +12,9 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
 import GuestAuthModal from "../components/GuestAuthModal";
 import ConfirmModal from "../components/ConfirmModal";
+import ServiceCard from "../components/ServiceCard";
+import ReportServiceModal from "../components/ReportServiceModal";
+import { formatPostedAgo } from "../lib/dateUtils";
 import "./ServicesDirectoryPage.css";
 
 const CATEGORIES = ["All", "Home repair", "Tutoring", "Food", "Other"];
@@ -104,7 +107,12 @@ export default function ServicesDirectoryPage() {
     setLoading(true);
     api
       .listServices({ category, query })
-      .then(setServices)
+      .then((data) => {
+        const sorted = [...(data || [])].sort(
+          (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0)
+        );
+        setServices(sorted);
+      })
       .catch(() => setError("Could not load services from the server."))
       .finally(() => setLoading(false));
   }
@@ -115,48 +123,9 @@ export default function ServicesDirectoryPage() {
 
   // Reporting Modal State
   const [reportingService, setReportingService] = useState(null);
-  const [reportReason, setReportReason] = useState("Scam or fraudulent activity");
-  const [reportDetails, setReportDetails] = useState("");
-  const [reportSubmitting, setReportSubmitting] = useState(false);
-  const [reportSuccess, setReportSuccess] = useState(false);
-  const [reportError, setReportError] = useState("");
-
-  const REPORT_PRESETS = [
-    "Scam or fraudulent activity",
-    "Inaccurate or misleading description",
-    "Inappropriate or offensive content",
-    "Unavailable or unresponsive poster",
-    "Other concern",
-  ];
 
   function openReportModal(service) {
     setReportingService(service);
-    setReportReason("Scam or fraudulent activity");
-    setReportDetails("");
-    setReportSuccess(false);
-    setReportError("");
-  }
-
-  async function handleReportSubmit(e) {
-    e.preventDefault();
-    if (!reportingService) return;
-    setReportSubmitting(true);
-    setReportError("");
-    try {
-      const fullReason = reportDetails.trim()
-        ? `${reportReason}: ${reportDetails.trim()}`
-        : reportReason;
-      await api.reportService(reportingService.id, fullReason);
-      setReportSuccess(true);
-      setTimeout(() => {
-        setReportingService(null);
-        setReportSuccess(false);
-      }, 1800);
-    } catch (err) {
-      setReportError(err instanceof ApiError ? err.detail : "Could not submit report.");
-    } finally {
-      setReportSubmitting(false);
-    }
   }
 
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({
@@ -357,193 +326,25 @@ export default function ServicesDirectoryPage() {
           </div>
         )}
 
-        {displayedServices.map((s) => {
-          const hasImage = Boolean(s.image_url);
-          const isPhotoVisible = !lowDataMode || revealedPhotos.includes(s.id);
-          const isMine = isOwnService(s);
-
-          return (
-            <div className={`ch-service-full-card ${isMine ? "ch-service-full-card--mine" : ""}`} key={s.id}>
-              {hasImage && (
-                isPhotoVisible ? (
-                  <div className="ch-service-full-card__media ch-service-full-card__media--has-img">
-                    <img
-                      src={avatarSrc(s.image_url)}
-                      alt={s.title}
-                      className="ch-service-img"
-                      loading="lazy"
-                    />
-                  </div>
-                ) : (
-                  <div className="ch-service-full-card__media ch-service-full-card__media--low-data">
-                    <div className="ch-low-data-overlay">
-                      <Icon name="image" size={20} />
-                      {s.image_size && (
-                        <span className="ch-low-data-size">
-                          {s.image_size >= 1024 * 1024
-                            ? `${(s.image_size / (1024 * 1024)).toFixed(1)} MB`
-                            : `${Math.round(s.image_size / 1024)} KB`}
-                        </span>
-                      )}
-                      <span className="ch-low-data-notice">{t("services.photoHidden")}</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="ch-load-photo-btn"
-                      onClick={() => revealPhoto(s.id)}
-                    >
-                      {t("services.loadPhoto")}
-                    </button>
-                  </div>
-                )
-              )}
-
-              <div className="ch-service-card-top">
-                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <StatusChip
-                    label={s.type === "request" ? t("services.requested") : t("services.offered")}
-                    tone={s.type === "request" ? "warning" : "positive"}
-                  />
-                  {isMine && (
-                    <span className="ch-own-badge">
-                      Your Post
-                    </span>
-                  )}
-                </div>
-
-                {isMine ? (
-                  <div className="ch-own-actions">
-                    <button
-                      type="button"
-                      className="ch-edit-action-btn"
-                      title="Edit this listing"
-                      onClick={() => startEdit(s)}
-                    >
-                      <Icon name="edit" size={13} style={{ marginRight: 4 }} />
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      className="ch-delete-action-btn"
-                      title="Delete this listing"
-                      onClick={() => handleDelete(s)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className="ch-service-report-btn"
-                    title="Report listing"
-                    onClick={() => {
-                      if (!user) {
-                        setGuestModalAction("report a service listing");
-                        setGuestModalOpen(true);
-                      } else {
-                        openReportModal(s);
-                      }
-                    }}
-                  >
-                    <Icon name="flag" size={12} style={{ marginRight: 4 }} />
-                    Report
-                  </button>
-                )}
-              </div>
-
-              <h3>{s.title}</h3>
-              <div className="ch-poster-row">
-                {avatarSrc(s.poster_avatar_url) ? (
-                  <img
-                    className="ch-poster-avatar"
-                    src={avatarSrc(s.poster_avatar_url)}
-                    alt={s.poster_display_name || s.poster_username}
-                  />
-                ) : (
-                  <span className="ch-poster-avatar ch-poster-avatar--initials">
-                    {getInitials(s.poster_display_name, s.poster_username)}
-                  </span>
-                )}
-                <span className="ch-poster-name">
-                  {isMine ? `${s.poster_display_name || s.poster_username} (You)` : (s.poster_display_name || s.poster_username)}
-                </span>
-              </div>
-
-              <p>{s.description}</p>
-
-              <div className="ch-service-full-card__foot">
-                <span className="ch-service-price">{s.price || t("services.priceOnRequest")}</span>
-                {!isMine && (
-                  <div className="ch-service-actions">
-                    {s.poster_phone ? (
-                      user ? (
-                        <a
-                          href={formatWhatsAppUrl(s.poster_phone, s)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ch-contact-btn ch-contact-btn--whatsapp"
-                          title={`WhatsApp: ${s.poster_phone}`}
-                        >
-                          <Icon name="whatsapp" size={15} />
-                          <span>{t("services.whatsapp")}</span>
-                        </a>
-                      ) : (
-                        <button
-                          type="button"
-                          className="ch-contact-btn ch-contact-btn--whatsapp"
-                          title="Create an account to contact this provider"
-                          onClick={() => {
-                            setGuestModalAction("contact service providers or request services");
-                            setGuestModalOpen(true);
-                          }}
-                        >
-                          <Icon name="whatsapp" size={15} />
-                          <span>{t("services.whatsapp")}</span>
-                        </button>
-                      )
-                    ) : (
-                      <button
-                        type="button"
-                        className="ch-contact-btn ch-contact-btn--disabled"
-                        title={t("services.noPhoneHint")}
-                        onClick={() => alert(t("services.noPhoneHint"))}
-                      >
-                        <Icon name="whatsapp" size={15} />
-                        <span>{t("services.whatsapp")}</span>
-                      </button>
-                    )}
-
-                    {s.poster_email ? (
-                      user ? (
-                        <a
-                          href={formatEmailUrl(s.poster_email, s)}
-                          className="ch-contact-btn ch-contact-btn--email"
-                          title={`Email: ${s.poster_email}`}
-                        >
-                          <Icon name="mail" size={15} />
-                          <span>{t("services.email")}</span>
-                        </a>
-                      ) : (
-                        <button
-                          type="button"
-                          className="ch-contact-btn ch-contact-btn--email"
-                          title="Create an account to contact this provider"
-                          onClick={() => {
-                            setGuestModalAction("contact service providers via email");
-                            setGuestModalOpen(true);
-                          }}
-                        >
-                          <Icon name="mail" size={15} />
-                          <span>{t("services.email")}</span>
-                        </button>
-                      )
-                    ) : null}
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {displayedServices.map((s) => (
+          <ServiceCard
+            key={s.id}
+            service={s}
+            user={user}
+            t={t}
+            isMine={isOwnService(s)}
+            onEdit={startEdit}
+            onDelete={handleDelete}
+            onReport={openReportModal}
+            onRequireAuth={(action) => {
+              setGuestModalAction(action);
+              setGuestModalOpen(true);
+            }}
+            lowDataMode={lowDataMode}
+            isPhotoRevealed={revealedPhotos.includes(s.id)}
+            onRevealPhoto={revealPhoto}
+          />
+        ))}
       </div>
 
       {/* Edit Service Modal */}
@@ -679,90 +480,10 @@ export default function ServicesDirectoryPage() {
       )}
 
       {/* Report Service Modal */}
-      {reportingService && (
-        <div className="ch-edit-modal-overlay">
-          <div className="ch-edit-modal">
-            <div className="ch-edit-modal__head">
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <Icon name="flag" size={18} style={{ color: "#dc2626" }} />
-                <h3 style={{ margin: 0 }}>Report Listing</h3>
-              </div>
-              <button
-                type="button"
-                className="ch-edit-modal__close"
-                onClick={() => setReportingService(null)}
-              >
-                ✕
-              </button>
-            </div>
-
-            {reportSuccess ? (
-              <div className="ch-report-success-msg">
-                <Icon name="check" size={20} style={{ color: "#059669", marginBottom: "6px" }} />
-                <h4>Thank you for letting us know</h4>
-                <p>This listing has been flagged for administrator review to keep our community safe.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleReportSubmit} className="ch-edit-modal__form">
-                <p style={{ margin: "0 0 10px", fontSize: "13px", color: "var(--color-sage)" }}>
-                  Help keep CommHub safe. Why are you reporting <strong>"{reportingService.title}"</strong>?
-                </p>
-
-                {reportError && <div className="ch-edit-error">{reportError}</div>}
-
-                <div className="ch-field-block">
-                  <span className="ch-field-block__label">Reason</span>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {REPORT_PRESETS.map((preset) => (
-                      <label
-                        key={preset}
-                        className={`ch-report-option ${reportReason === preset ? "ch-report-option--selected" : ""}`}
-                        onClick={() => setReportReason(preset)}
-                      >
-                        <input
-                          type="radio"
-                          name="report_reason"
-                          checked={reportReason === preset}
-                          onChange={() => setReportReason(preset)}
-                          style={{ accentColor: "var(--color-teal-700)" }}
-                        />
-                        <span>{preset}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <Field
-                  label="Additional details (optional)"
-                  id="report_details"
-                  as="textarea"
-                  placeholder="Provide any extra context to help moderators evaluate this listing..."
-                  value={reportDetails}
-                  onChange={(e) => setReportDetails(e.target.value)}
-                />
-
-                <div className="ch-edit-modal__actions">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => setReportingService(null)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="accent"
-                    disabled={reportSubmitting}
-                    style={{ background: "#dc2626", borderColor: "#dc2626" }}
-                  >
-                    {reportSubmitting ? "Submitting…" : "Submit Report"}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <ReportServiceModal
+        service={reportingService}
+        onClose={() => setReportingService(null)}
+      />
 
       <GuestAuthModal
         isOpen={guestModalOpen}

@@ -14,7 +14,11 @@ const DEFAULT_ICONS = {
  * tone: "positive" | "warning" | "neutral" | "danger"
  */
 export default function StatusChip({ label, tone = "positive", icon }) {
-  const symbol = icon !== undefined ? icon : (DEFAULT_ICONS[tone] || "•");
+  const isNoIconLabel =
+    typeof label === "string" &&
+    ["live", "requesting", "offering", "requested", "offered"].includes(label.trim().toLowerCase());
+  const defaultIcon = isNoIconLabel ? "" : (DEFAULT_ICONS[tone] || "•");
+  const symbol = icon !== undefined ? icon : defaultIcon;
 
   return (
     <span className={`ch-status-chip ch-status-chip--${tone}`} role="status">

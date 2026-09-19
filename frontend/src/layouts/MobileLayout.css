@@ -115,43 +115,6 @@
   background: rgba(27, 75, 79, 0.08);
 }
 
-.ch-mobile__user-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  padding: 4px 8px;
-  border-radius: var(--radius-pill, 20px);
-  background: var(--color-sand, #f4eedf);
-  transition: background 0.15s ease;
-}
-
-.ch-mobile__user-badge:hover {
-  background: #ede5d2;
-}
-
-.ch-mobile__user-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--color-teal-700);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ch-mobile__user-name {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--color-ink);
-  max-width: 110px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 .ch-mobile__back {
   border: none;
@@ -461,6 +424,131 @@
 
 .ch-announcement-card__footer strong {
   color: var(--color-ink);
+}
+
+/* Notification Bell & Unread Badges */
+.ch-mobile__notif-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--color-ink);
+  text-decoration: none;
+  background: var(--color-sand, #f4eedf);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.ch-mobile__notif-btn:hover {
+  background: #ede5d2;
+  color: var(--color-teal-700);
+  border-color: rgba(27, 75, 79, 0.2);
+}
+
+.ch-mobile__notif-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #dc2626;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  border: 1.5px solid #ffffff;
+}
+
+/* NEW Indicator Tag on Recently Posted Messages */
+.ch-new-indicator-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #b45309;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ch-announcement-card--unread {
+  border-left: 4px solid #b45309;
+  background: #fffdfa;
+  cursor: pointer;
+}
+
+.ch-announcement-card--unread:hover {
+  background: #fefcf7;
+}
+
+.ch-mark-single-read-btn {
+  background: none;
+  border: 1px solid var(--color-line);
+  color: var(--color-teal-700);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ch-mark-single-read-btn:hover {
+  background: var(--color-sand);
+  border-color: var(--color-teal-700);
+}
+
+.ch-unread-badge-counter {
+  display: inline-flex;
+  align-items: center;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.ch-mark-all-read-btn {
+  background: none;
+  border: 1px solid var(--color-line);
+  color: var(--color-teal-700);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ch-mark-all-read-btn:hover {
+  background: var(--color-sand);
+  border-color: var(--color-teal-700);
+}
+
+.ch-home-unread-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #dc2626;
+  margin-left: 5px;
+  vertical-align: middle;
 }
 
 /* Tablet & Desktop media queries (>= 768px) */

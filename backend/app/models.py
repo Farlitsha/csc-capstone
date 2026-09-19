@@ -53,6 +53,10 @@ class User(Base):
     # Account status (active / deactivated)
     is_active = Column(Boolean, nullable=False, server_default=text("1"), default=True)
 
+    # When a verified researcher voluntarily downgrades, their research data is preserved for 6 months (180 days)
+    # but hidden from the public. Re-applying within 6 months auto-restores verified researcher status without admin review.
+    researcher_downgraded_at = Column(DateTime(timezone=True), nullable=True)
+
     studies = relationship("StudyListing", back_populates="researcher", cascade="all, delete")
     applications = relationship("Application", back_populates="applicant", cascade="all, delete")
     services = relationship("Service", back_populates="poster", cascade="all, delete")

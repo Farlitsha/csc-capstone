@@ -15,7 +15,7 @@ async def list_announcements(
     rows = (
         db.query(models.Announcement, models.User.username)
         .join(models.User, models.Announcement.author_id == models.User.id)
-        .order_by(models.Announcement.created_at.desc())
+        .order_by(models.Announcement.created_at.desc(), models.Announcement.id.desc())
         .limit(20)
         .all()
     )

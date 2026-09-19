@@ -67,7 +67,7 @@ async def list_services(
         q = q.filter(models.Service.category == category)
     if query:
         q = q.filter(models.Service.title.ilike(f"%{query}%"))
-    return q.order_by(models.Service.created_at.desc()).all()
+    return q.order_by(models.Service.created_at.desc(), models.Service.id.desc()).all()
 
 
 @router.post("/", response_model=schemas.ServiceOut, status_code=status.HTTP_201_CREATED)

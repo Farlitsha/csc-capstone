@@ -71,13 +71,18 @@ export default function TakeSurveyPage() {
     return value === undefined || value === null || value === "" || (Array.isArray(value) && value.length === 0);
   }
 
+  useEffect(() => {
+    if (submitError && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [submitError]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setSubmitError("");
 
     if (!consentGiven) {
       setSubmitError("Please review and agree to the informed consent preamble before submitting your survey.");
-      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
@@ -89,9 +94,6 @@ export default function TakeSurveyPage() {
     for (const q of survey.questions) {
       if (q.required && isEmpty(answers[q.id])) {
         setSubmitError(`"${q.prompt}" is required.`);
-        if (errorRef.current) {
-          errorRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
         return;
       }
     }
@@ -102,7 +104,7 @@ export default function TakeSurveyPage() {
 
     setSubmitting(true);
     try {
-      await api.submitSurveyResponse(studyId, payload);
+      await api.submitSurveyResponse(studyId, { answers: payload });
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -163,13 +165,6 @@ export default function TakeSurveyPage() {
               onConsentChange={setConsentGiven}
               requireExplicitConsent={true}
             />
-
-            {submitError && (
-              <div ref={errorRef} className="ch-take-survey__error-banner" role="alert">
-                <Icon name="alert-triangle" size={16} style={{ flexShrink: 0 }} />
-                <span>{submitError}</span>
-              </div>
-            )}
 
             {survey.questions.map((q, idx) => (
               <div className="ch-tq-card" key={q.id}>
@@ -263,14 +258,24 @@ export default function TakeSurveyPage() {
               </div>
             ))}
 
-            {submitError && (
-              <div className="ch-take-survey__error-banner" role="alert">
-                <Icon name="alert-triangle" size={16} style={{ flexShrink: 0 }} />
-                <span>{submitError}</span>
-              </div>
-            )}
-
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "10px" }}>
+              {submitError && (
+                <p
+                  ref={errorRef}
+                  role="alert"
+                  className="ch-take-survey__error-text"
+                  style={{
+                    color: "#dc2626",
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    margin: 0,
+                    padding: 0,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {submitError}
+                </p>
+              )}
               <Button type="submit" variant="accent" fullWidth disabled={submitting || unapplying}>
                 {submitting ? "Submitting…" : "Submit answers"}
               </Button>

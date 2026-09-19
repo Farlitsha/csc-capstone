@@ -62,6 +62,22 @@ export default function ProfilePage() {
   const [accountActionLoading, setAccountActionLoading] = useState(false);
   const [accountActionError, setAccountActionError] = useState("");
 
+  // Researcher application & downgrade states
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyPhone, setApplyPhone] = useState("");
+  const [applySubmitting, setApplySubmitting] = useState(false);
+  const [applyError, setApplyError] = useState("");
+
+  const [showDowngradeModal, setShowDowngradeModal] = useState(false);
+  const [downgradeSubmitting, setDowngradeSubmitting] = useState(false);
+  const [downgradeError, setDowngradeError] = useState("");
+
+  const isWithinGracePeriod = Boolean(
+    user?.role === "community_member" &&
+    user?.researcher_downgraded_at &&
+    (Date.now() - new Date(user.researcher_downgraded_at).getTime()) <= 180 * 24 * 60 * 60 * 1000
+  );
+
   useEffect(() => {
     if (user && !showEdit) {
       setForm({
@@ -191,6 +207,39 @@ export default function ProfilePage() {
     } catch (err) {
       setAccountActionError(err instanceof ApiError ? err.detail : "Could not delete account.");
       setAccountActionLoading(false);
+    }
+  }
+
+  async function handleApplyResearcher(e) {
+    e.preventDefault();
+    if (!applyPhone.trim()) {
+      setApplyError("Please enter your contact phone or WhatsApp number.");
+      return;
+    }
+    setApplySubmitting(true);
+    setApplyError("");
+    try {
+      await api.requestResearcherUpgrade({ phone: applyPhone.trim() });
+      await refreshUser();
+      setShowApplyModal(false);
+    } catch (err) {
+      setApplyError(err instanceof ApiError ? err.detail : "Could not submit researcher application.");
+    } finally {
+      setApplySubmitting(false);
+    }
+  }
+
+  async function handleDowngradeToCommunity() {
+    setDowngradeSubmitting(true);
+    setDowngradeError("");
+    try {
+      await api.downgradeToCommunity();
+      await refreshUser();
+      setShowDowngradeModal(false);
+    } catch (err) {
+      setDowngradeError(err instanceof ApiError ? err.detail : "Could not switch account role.");
+    } finally {
+      setDowngradeSubmitting(false);
     }
   }
 
@@ -370,6 +419,140 @@ export default function ProfilePage() {
           </div>
         </Card>
 
+        {/* Researcher Status or Application Card */}
+        {user?.role !== "admin" && (
+          <>
+            {user?.role === "researcher" ? (
+              user.verification_status === "verified" ? (
+                <Card title="Researcher Status">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <StatusChip label="Verified Researcher" tone="positive" />
+                      <span style={{ fontSize: "13px", color: "var(--color-ink, #475569)" }}>
+                        You have full researcher privileges to create studies, surveys, and schedule workshops.
+                      </span>
+                    </div>
+                    <div>
+                      <Button
+                        variant="secondary"
+                        className="ch-btn--warning"
+                        onClick={() => {
+                          setDowngradeError("");
+                          setShowDowngradeModal(true);
+                        }}
+                      >
+                        Switch Back to Community Member
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ) : user.verification_status === "rejected" ? (
+                <Card title="Researcher Application">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <StatusChip label="Application Not Approved" tone="danger" />
+                      <span style={{ fontSize: "13px", color: "var(--color-ink, #475569)" }}>
+                        An administrator reviewed your researcher request and could not approve it at this time.
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      <Button
+                        variant="accent"
+                        onClick={() => {
+                          setApplyPhone(user?.phone || user?.contact_phone || "");
+                          setApplyError("");
+                          setShowApplyModal(true);
+                        }}
+                      >
+                        Re-apply as Researcher
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setDowngradeError("");
+                          setShowDowngradeModal(true);
+                        }}
+                      >
+                        Return to Community Member
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ) : (
+                <Card title="Researcher Application">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <StatusChip label="Under Review (Pending Admin Verification)" tone="warning" />
+                      <span style={{ fontSize: "13px", color: "var(--color-ink, #475569)" }}>
+                        Your researcher application is awaiting review by a community administrator.
+                      </span>
+                    </div>
+                    <div>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setDowngradeError("");
+                          setShowDowngradeModal(true);
+                        }}
+                      >
+                        Cancel Application & Stay Community Member
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )
+            ) : user?.role === "community_member" ? (
+              isWithinGracePeriod ? (
+                <Card title="Researcher Account (Preserved)">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <StatusChip label="6-Month Grace Period Active" tone="positive" />
+                      <span style={{ fontSize: "13px", color: "var(--color-ink, #475569)", fontWeight: 600 }}>
+                        Quick Restoration Available
+                      </span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: "13px", color: "var(--color-ink, #334155)", lineHeight: 1.5 }}>
+                      Your studies, surveys, and researcher records have been preserved for 6 months (hidden from public view). Because you previously held verified researcher status, you can restore your account immediately without administrator re-verification.
+                    </p>
+                    <div>
+                      <Button
+                        variant="accent"
+                        onClick={() => {
+                          setApplyPhone(user?.phone || user?.contact_phone || "");
+                          setApplyError("");
+                          setShowApplyModal(true);
+                        }}
+                      >
+                        Re-activate Researcher Account
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ) : (
+                <Card title="Researcher Privileges">
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <p style={{ margin: 0, fontSize: "13px", color: "var(--color-ink, #334155)", lineHeight: 1.5 }}>
+                      Are you an academic or community researcher? Apply to create community studies and surveys, organize workshops, and gather local insights.
+                    </p>
+                    <div>
+                      <Button
+                        variant="accent"
+                        onClick={() => {
+                          setApplyPhone(user?.phone || user?.contact_phone || "");
+                          setApplyError("");
+                          setShowApplyModal(true);
+                        }}
+                      >
+                        Apply to be a Researcher
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              )
+            ) : null}
+          </>
+        )}
+
         {/* Activity card (community members & researchers only) */}
         {(isMember || isResearcher) && (
           <Card title={isResearcher ? "My Posted Studies" : "My Study Applications"}>
@@ -392,6 +575,7 @@ export default function ProfilePage() {
                       <StatusChip
                         label={item.state}
                         tone={item.state === "live" ? "positive" : "neutral"}
+                        icon={item.state === "live" ? "" : undefined}
                       />
                     </>
                   ) : (
@@ -566,6 +750,107 @@ export default function ProfilePage() {
                 disabled={accountActionLoading || deleteConfirmText.trim().toLowerCase() !== "delete"}
               >
                 {accountActionLoading ? "Deleting…" : "Permanently Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apply to be a Researcher Modal */}
+      {showApplyModal && (
+        <div className="ch-profile-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="apply-researcher-modal-title">
+          <div className="ch-profile-modal-card">
+            <h3 id="apply-researcher-modal-title" className="ch-profile-modal-title">
+              {isWithinGracePeriod ? "Re-activate Researcher Account" : "Apply to be a Researcher"}
+            </h3>
+            <p className="ch-profile-modal-text">
+              {isWithinGracePeriod
+                ? "Your researcher records and surveys are preserved. Because you are re-activating within 6 months of downgrading, your verified researcher privileges will be instantly restored—no administrator verification required."
+                : "Researcher accounts are reviewed and verified by an administrator before you can publish studies, surveys, and schedule workshops."}
+            </p>
+            <p className="ch-profile-modal-text" style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-teal-800, #115e59)" }}>
+              {isWithinGracePeriod
+                ? "Confirm your direct phone or WhatsApp contact number:"
+                : "Please provide your direct phone or WhatsApp number so an administrator can reach you if further verification is needed:"}
+            </p>
+
+            <form onSubmit={handleApplyResearcher}>
+              <label className="ch-profile__field" style={{ marginBottom: "14px" }}>
+                <span className="ch-profile__label">Phone / WhatsApp Number</span>
+                <input
+                  type="tel"
+                  className="ch-profile__input"
+                  placeholder="e.g. +27 82 123 4567"
+                  value={applyPhone}
+                  onChange={(e) => setApplyPhone(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </label>
+
+              {applyError && (
+                <p className="ch-profile__error" style={{ marginBottom: "12px" }} role="alert">
+                  {applyError}
+                </p>
+              )}
+
+              <div className="ch-profile-modal-actions">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowApplyModal(false)}
+                  disabled={applySubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="accent"
+                  disabled={applySubmitting || !applyPhone.trim()}
+                >
+                  {applySubmitting
+                    ? isWithinGracePeriod ? "Restoring…" : "Submitting…"
+                    : isWithinGracePeriod ? "Confirm & Re-activate" : "Submit Application"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Downgrade Confirmation Modal */}
+      {showDowngradeModal && (
+        <div className="ch-profile-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="downgrade-modal-title">
+          <div className="ch-profile-modal-card">
+            <h3 id="downgrade-modal-title" className="ch-profile-modal-title">
+              Switch Back to Community Member?
+            </h3>
+            <p className="ch-profile-modal-text">
+              You will return to a standard Community Member account. All your studies, surveys, and researcher data will be preserved for 6 months but hidden from public view.
+            </p>
+            <p className="ch-profile-modal-text" style={{ fontSize: "12.5px", color: "var(--color-teal-800, #115e59)", fontWeight: 600, background: "var(--color-surface, #f0fdfa)", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ccfbf1" }}>
+              💡 If you apply again within 6 months, you will not need admin re-verification—your account and data will be immediately restored!
+            </p>
+            {downgradeError && (
+              <p className="ch-profile__error" style={{ marginBottom: "12px" }} role="alert">
+                {downgradeError}
+              </p>
+            )}
+            <div className="ch-profile-modal-actions">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDowngradeModal(false)}
+                disabled={downgradeSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="secondary"
+                className="ch-btn--warning"
+                onClick={handleDowngradeToCommunity}
+                disabled={downgradeSubmitting}
+              >
+                {downgradeSubmitting ? "Switching…" : "Yes, Switch to Community Member"}
               </Button>
             </div>
           </div>

@@ -42,34 +42,6 @@ export default function CommunityStatsPage() {
             <h2>{t("stats.heading")}</h2>
             <p>{t("stats.subheading")}</p>
           </div>
-          {user ? (
-            <Link to="/community-census" className="ch-stats-cta-link">
-              <Button variant="accent">
-                {hasUserResponse ? (
-                  <>
-                    <Icon name="edit" size={14} style={{ marginRight: 6 }} />
-                    {t("stats.updateAnswers")}
-                  </>
-                ) : (
-                  <>
-                    <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-                    {t("stats.takeCensus")}
-                  </>
-                )}
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              variant="accent"
-              onClick={() => {
-                setGuestModalAction("participate in the community census survey");
-                setGuestModalOpen(true);
-              }}
-            >
-              <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-              {t("stats.takeCensus")}
-            </Button>
-          )}
         </div>
 
         {loading ? (

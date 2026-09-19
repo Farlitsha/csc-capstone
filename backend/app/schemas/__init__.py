@@ -25,6 +25,7 @@ from .user import (
     ProfileUpdate,
     RoleUpdate,
     PhoneUpdate,
+    ResearcherApplicationRequest,
 )
 from .studies import (
     StudyListingBase,
@@ -106,6 +107,7 @@ __all__ = [
     "ProfileUpdate",
     "RoleUpdate",
     "PhoneUpdate",
+    "ResearcherApplicationRequest",
     # Studies & Surveys
     "StudyListingBase",
     "SurveyQuestionIn",

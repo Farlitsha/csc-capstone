@@ -10,6 +10,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
 import GuestAuthModal from "../components/GuestAuthModal";
 import ConfirmModal from "../components/ConfirmModal";
+import { formatPostedAgo } from "../lib/dateUtils";
 import "./StudiesDirectoryPage.css";
 
 const STATE_TONE = { live: "positive", draft: "neutral", closed: "warning" };
@@ -188,9 +189,9 @@ export default function StudiesDirectoryPage() {
 
   function handleClearCompleted(studyId) {
     openConfirm({
-      title: t("studies.clearSurvey") || "Clear Completed Survey",
-      message: t("studies.clearConfirm") || "Are you sure you want to clear this completed survey and remove it from your history?",
-      confirmText: t("studies.clearSurvey") || "Yes, Clear Survey",
+      title: t("studies.deleteMyResponse") || "Delete my response",
+      message: t("studies.clearConfirm") || "Are you sure you want to delete your response and remove this study from your history?",
+      confirmText: t("studies.deleteMyResponse") || "Yes, Delete Response",
       variant: "danger",
       icon: "trash",
       onConfirm: () => performClearCompleted(studyId),
@@ -207,7 +208,7 @@ export default function StudiesDirectoryPage() {
       await api.clearSurveyResponse(studyId);
       loadMyApplications();
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not clear survey response.");
+      alert(err instanceof ApiError ? err.detail : "Could not delete survey response.");
       loadData();
     } finally {
       setActionLoadingId(null);
@@ -216,9 +217,9 @@ export default function StudiesDirectoryPage() {
 
   function handleClearAllCompleted() {
     openConfirm({
-      title: t("studies.clearAllCompleted") || "Clear All Completed Surveys",
-      message: t("studies.clearAllConfirm") || "Are you sure you want to clear all completed surveys from your history?",
-      confirmText: t("studies.clearAllCompleted") || "Yes, Clear All",
+      title: t("studies.deleteAllCompleted") || "Delete all completed responses",
+      message: t("studies.clearAllConfirm") || "Are you sure you want to delete all completed responses from your history?",
+      confirmText: t("studies.deleteAllCompleted") || "Yes, Delete All",
       variant: "danger",
       icon: "trash",
       onConfirm: performClearAllCompleted,
@@ -317,10 +318,10 @@ export default function StudiesDirectoryPage() {
             return (
               <div className="ch-study-card" key={s.id}>
                 <div className="ch-study-card__header-row">
-                  <StatusChip label={s.state} tone={STATE_TONE[s.state] || "neutral"} />
+                  <StatusChip label={s.state} tone={STATE_TONE[s.state] || "neutral"} icon="" />
                   {s.created_at && (
-                    <span className="ch-study-card__header-date">
-                      {new Date(s.created_at).toLocaleDateString()}
+                    <span className="ch-study-card__header-date" title={new Date(s.created_at).toLocaleString()}>
+                      {formatPostedAgo(s.created_at)}
                     </span>
                   )}
                 </div>
@@ -411,7 +412,7 @@ export default function StudiesDirectoryPage() {
                     onClick={handleClearAllCompleted}
                   >
                     <Icon name="trash" size={13} style={{ marginRight: 4 }} />
-                    {clearingAll ? t("studies.clearing") : t("studies.clearAllCompleted")}
+                    {clearingAll ? (t("studies.deleting") || t("studies.clearing") || "Deleting…") : (t("studies.deleteAllCompleted") || t("studies.clearAllCompleted") || "Delete all completed responses")}
                   </button>
                 </div>
               )}
@@ -461,7 +462,7 @@ export default function StudiesDirectoryPage() {
                         onClick={() => handleClearCompleted(a.study_id)}
                       >
                         <Icon name="trash" size={14} style={{ marginRight: 6 }} />
-                        {actionLoadingId === a.study_id ? t("studies.clearing") : t("studies.clearSurvey")}
+                        {actionLoadingId === a.study_id ? (t("studies.deleting") || t("studies.clearing") || "Deleting…") : (t("studies.deleteMyResponse") || t("studies.clearSurvey") || "Delete my response")}
                       </Button>
                     )}
 

@@ -11,6 +11,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 import GuestAuthModal from "../components/GuestAuthModal";
 import ConfirmModal from "../components/ConfirmModal";
 import { api, ApiError } from "../lib/api";
+import { formatPostedAgo } from "../lib/dateUtils";
 import "./WorkshopsDirectoryPage.css";
 
 export default function WorkshopsDirectoryPage() {
@@ -175,6 +176,11 @@ export default function WorkshopsDirectoryPage() {
                       <h3 className="ch-workshops-card__title">{w.title}</h3>
                       <span className="ch-workshops-card__organizer">
                         {t("workshops.organizedBy")} {w.organizer_display_name || w.organizer_username || "Researcher"}
+                        {w.created_at && (
+                          <span title={new Date(w.created_at).toLocaleString()}>
+                            {` • ${formatPostedAgo(w.created_at)}`}
+                          </span>
+                        )}
                       </span>
                     </div>
                     {isRegistered && <StatusChip label={t("workshops.registered")} tone="positive" />}

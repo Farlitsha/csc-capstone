@@ -161,3 +161,20 @@
   cursor: pointer;
   accent-color: var(--color-teal-700, #0f766e);
 }
+
+.ch-terms-agreement {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-charcoal, #334155);
+  cursor: pointer;
+  margin: 4px 0 12px 0;
+}
+
+.ch-terms-agreement input[type="checkbox"] {
+  margin-top: 2px;
+  cursor: pointer;
+  accent-color: var(--color-teal-700, #0f766e);
+}
+

@@ -21,7 +21,7 @@ export default function SignupPage() {
     password: "",
     role: "community_member",
   });
-  const [popiaConsent, setPopiaConsent] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -47,8 +47,8 @@ export default function SignupPage() {
       return;
     }
 
-    if (!popiaConsent) {
-      setError("Please agree to the POPIA data privacy consent to create an account.");
+    if (!agreeTerms) {
+      setError("Please agree to the Terms & Conditions to create an account.");
       return;
     }
 
@@ -130,72 +130,35 @@ export default function SignupPage() {
             onChange={update("password")}
             required
           />
-          
-          <div className="ch-field" style={{ marginBottom: "12px" }}>
-            <label className="ch-field__label" htmlFor="role">I am joining as a:</label>
-            <select
-              id="role"
-              className="ch-field__input"
-              value={form.role}
-              onChange={update("role")}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "8px",
-                border: "1px solid var(--color-border, #ccc)",
-                background: "var(--color-surface, #fff)",
-                fontSize: "15px",
-              }}
-            >
-              <option value="community_member">Community Member (Access services, workshops & surveys)</option>
-              <option value="researcher">Researcher (Schedule workshops, post studies & surveys)</option>
-            </select>
-          </div>
 
-          {form.role === "researcher" && (
-            <p style={{ fontSize: "13px", color: "var(--color-warning-dark, #b45309)", background: "#fef3c7", padding: "8px 12px", borderRadius: "6px", margin: "0 0 14px 0", display: "flex", alignItems: "center", gap: "6px" }}>
-              <Icon name="info" size={15} />
-              <span>Researcher accounts are reviewed by an administrator before you can publish studies and schedule workshops.</span>
-            </p>
-          )}
-
-          {/* POPIA Data Privacy Notice */}
-          <div className="ch-popia-box">
-            <div className="ch-popia-box__header">
-              <Icon name="info" size={15} />
-              <span>{t("signup.popiaTitle") || "POPIA Data Privacy Notice"}</span>
-            </div>
-            <p className="ch-popia-box__text">
-              {t("signup.popiaText") ||
-                "In accordance with South Africa's Protection of Personal Information Act (POPIA), CommHub collects and processes your details solely to connect you with local community services, workshops, and verified research. Your personal data is strictly kept secure and will never be shared or sold to third parties. Participation in community census surveys and research studies is entirely voluntary — you are never forced to take census or surveys, and they are purely optional. You can update or delete your information at any time."}
-            </p>
-            <label className="ch-popia-box__label">
-              <input
-                type="checkbox"
-                checked={popiaConsent}
-                onChange={(e) => setPopiaConsent(e.target.checked)}
-                required
-              />
-              <span>
-                I agree to the{" "}
-                <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-teal-700)", fontWeight: 700, textDecoration: "underline" }}>
-                  Terms & Conditions
-                </a>{" "}
-                and{" "}
-                <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: "var(--color-teal-700)", fontWeight: 700, textDecoration: "underline" }}>
-                  Privacy Policy
-                </a>{" "}
-                under POPIA. I understand that participating in any census or survey is purely optional and voluntary.
-              </span>
-            </label>
-          </div>
+          {/* Terms & Conditions Agreement */}
+          <label className="ch-terms-agreement">
+            <input
+              type="checkbox"
+              checked={agreeTerms}
+              onChange={(e) => setAgreeTerms(e.target.checked)}
+              required
+            />
+            <span>
+              I agree to the{" "}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--color-teal-700, #0f766e)", fontWeight: 600, textDecoration: "underline" }}
+              >
+                Terms & Conditions
+              </a>
+              .
+            </span>
+          </label>
 
           {error && (
             <p className="ch-login__error" role="alert" aria-live="assertive">
               {error}
             </p>
           )}
-          <Button type="submit" fullWidth disabled={submitting}>
+          <Button type="submit" fullWidth disabled={submitting || !agreeTerms}>
             {submitting ? t("signup.creating") : t("signup.button")}
           </Button>
         </form>
@@ -204,10 +167,8 @@ export default function SignupPage() {
           <a href="/login">{t("signup.loginLink")}</a>
         </div>
 
-        <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--color-line, #e2e8f0)", textAlign: "center", fontSize: "11.5px", color: "var(--color-sage, #64748b)", display: "flex", justifyContent: "center", gap: "12px" }}>
+        <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--color-line, #e2e8f0)", textAlign: "center", fontSize: "11.5px", color: "var(--color-sage, #64748b)" }}>
           <a href="/terms" style={{ color: "inherit", textDecoration: "underline" }}>Terms & Conditions</a>
-          <span>•</span>
-          <a href="/privacy" style={{ color: "inherit", textDecoration: "underline" }}>Privacy Policy</a>
         </div>
       </div>
     </div>
