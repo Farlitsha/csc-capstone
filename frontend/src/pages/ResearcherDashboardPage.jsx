@@ -359,6 +359,17 @@ export default function ResearcherDashboardPage() {
               <p className="ch-row__meta">
                 {s.participant_limit ? `Limit ${s.participant_limit}` : "No participant limit"}
                 {s.honorarium ? ` · ${s.honorarium}` : ""}
+                {s.response_count !== undefined && (
+                  s.response_count > 0 ? (
+                    <span style={{ marginLeft: 8, color: "#991b1b", fontWeight: 600 }}>
+                      · {s.response_count} response{s.response_count === 1 ? "" : "s"} (Questions locked)
+                    </span>
+                  ) : (
+                    <span style={{ marginLeft: 8, color: "#047857", fontWeight: 600 }}>
+                      · 0 responses (Questions editable)
+                    </span>
+                  )
+                )}
               </p>
             </div>
             <div className="ch-study-row-actions" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
@@ -368,7 +379,7 @@ export default function ResearcherDashboardPage() {
               <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/responses`)}>
                 Survey Responses
               </Button>
-              <Button variant="secondary" onClick={() => startEditStudy(s)}>
+              <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/edit`)}>
                 <Icon name="edit" size={13} style={{ marginRight: 4 }} />
                 Edit
               </Button>

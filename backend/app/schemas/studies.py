@@ -20,7 +20,7 @@ class SurveyQuestionIn(BaseModel):
 
 
 class StudyListingCreate(StudyListingBase):
-    questions: List[SurveyQuestionIn] = []
+    questions: Optional[List[SurveyQuestionIn]] = None
 
 
 class StudyListingOut(StudyListingBase):
@@ -31,6 +31,8 @@ class StudyListingOut(StudyListingBase):
     researcher_username: Optional[str] = None
     researcher_display_name: Optional[str] = None
     researcher_avatar_url: Optional[str] = None
+    response_count: int = 0
+    can_edit_questions: bool = True
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,6 +53,8 @@ class SurveyOut(BaseModel):
     id: int
     study_id: int
     questions: List[SurveyQuestionOut]
+    response_count: int = 0
+    can_edit_questions: bool = True
 
     model_config = ConfigDict(from_attributes=True)
 

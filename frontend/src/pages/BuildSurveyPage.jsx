@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import DesktopLayout from "../layouts/DesktopLayout";
 import Field from "../components/Field";
 import Button from "../components/Button";
 import Card from "../components/Card";
+import Icon from "../components/Icon";
+import Spinner from "../components/Spinner";
 import { api, ApiError } from "../lib/api";
 import "./BuildSurveyPage.css";
 
@@ -34,6 +36,9 @@ function makeQuestion() {
 
 export default function BuildSurveyPage() {
   const navigate = useNavigate();
+  const { studyId } = useParams();
+  const isEditMode = Boolean(studyId);
+
   const [requireConsent, setRequireConsent] = useState(true);
   const [form, setForm] = useState({
     title: "",
@@ -45,20 +50,69 @@ export default function BuildSurveyPage() {
   const [questions, setQuestions] = useState([]);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [loadingStudy, setLoadingStudy] = useState(isEditMode);
+  const [responseCount, setResponseCount] = useState(0);
+  const [canEditQuestions, setCanEditQuestions] = useState(true);
+
+  useEffect(() => {
+    if (!studyId) return;
+    setLoadingStudy(true);
+    setError("");
+
+    Promise.all([
+      api.getStudy(studyId),
+      api.getStudySurvey(studyId).catch(() => null),
+      api.getStudySurveyResponses(studyId).catch(() => ({ responses: [] })),
+    ])
+      .then(([studyData, surveyData, responsesData]) => {
+        setForm({
+          title: studyData.title || "",
+          description: studyData.description || "",
+          honorarium: studyData.honorarium || "",
+          participant_limit: studyData.participant_limit ? String(studyData.participant_limit) : "",
+          closing_date: studyData.closing_date ? studyData.closing_date.slice(0, 10) : "",
+        });
+
+        const respCount = responsesData?.responses?.length || surveyData?.response_count || 0;
+        setResponseCount(respCount);
+        const editable = respCount === 0;
+        setCanEditQuestions(editable);
+
+        if (surveyData?.questions && surveyData.questions.length > 0) {
+          setQuestions(
+            surveyData.questions.map((q, idx) => ({
+              key: idx + 1,
+              id: q.id,
+              type: q.type,
+              prompt: q.prompt,
+              required: q.required !== false,
+              options: q.options && q.options.length ? q.options : ["", ""],
+            }))
+          );
+        }
+      })
+      .catch((err) => {
+        setError(err instanceof ApiError ? err.detail : "Could not load study details.");
+      })
+      .finally(() => setLoadingStudy(false));
+  }, [studyId]);
 
   function update(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
   }
 
   function addQuestion() {
+    if (!canEditQuestions) return;
     setQuestions((qs) => [...qs, makeQuestion()]);
   }
 
   function updateQuestion(key, patch) {
+    if (!canEditQuestions) return;
     setQuestions((qs) => qs.map((q) => (q.key === key ? { ...q, ...patch } : q)));
   }
 
   function changeType(key, type) {
+    if (!canEditQuestions) return;
     setQuestions((qs) =>
       qs.map((q) => {
         if (q.key !== key) return q;
@@ -69,10 +123,12 @@ export default function BuildSurveyPage() {
   }
 
   function removeQuestion(key) {
+    if (!canEditQuestions) return;
     setQuestions((qs) => qs.filter((q) => q.key !== key));
   }
 
   function moveQuestion(key, direction) {
+    if (!canEditQuestions) return;
     setQuestions((qs) => {
       const idx = qs.findIndex((q) => q.key === key);
       const swapWith = idx + direction;
@@ -84,16 +140,19 @@ export default function BuildSurveyPage() {
   }
 
   function updateOption(key, optIdx, value) {
+    if (!canEditQuestions) return;
     setQuestions((qs) =>
       qs.map((q) => (q.key === key ? { ...q, options: q.options.map((o, i) => (i === optIdx ? value : o)) } : q))
     );
   }
 
   function addOption(key) {
+    if (!canEditQuestions) return;
     setQuestions((qs) => qs.map((q) => (q.key === key ? { ...q, options: [...q.options, ""] } : q)));
   }
 
   function removeOption(key, optIdx) {
+    if (!canEditQuestions) return;
     setQuestions((qs) =>
       qs.map((q) => (q.key === key ? { ...q, options: q.options.filter((_, i) => i !== optIdx) } : q))
     );
@@ -114,28 +173,43 @@ export default function BuildSurveyPage() {
     e.preventDefault();
     setError("");
 
-    const questionError = validateQuestions();
-    if (questionError) {
-      setError(questionError);
+    if (!form.title.trim() || !form.description.trim()) {
+      setError("Title and description are required.");
       return;
+    }
+
+    if (canEditQuestions) {
+      const questionError = validateQuestions();
+      if (questionError) {
+        setError(questionError);
+        return;
+      }
     }
 
     setSubmitting(true);
     try {
       const payload = {
-        title: form.title,
-        description: form.description,
-        honorarium: form.honorarium || undefined,
+        title: form.title.trim(),
+        description: form.description.trim(),
+        honorarium: form.honorarium?.trim() || undefined,
         participant_limit: form.participant_limit ? Number(form.participant_limit) : undefined,
         closing_date: form.closing_date ? new Date(form.closing_date).toISOString() : undefined,
-        questions: questions.map((q) => ({
+      };
+
+      if (canEditQuestions) {
+        payload.questions = questions.map((q) => ({
           type: q.type,
           prompt: q.prompt.trim(),
           required: q.required,
           options: HAS_OPTIONS.has(q.type) ? q.options.map((o) => o.trim()).filter(Boolean) : undefined,
-        })),
-      };
-      await api.createStudy(payload);
+        }));
+      }
+
+      if (isEditMode) {
+        await api.updateStudy(studyId, payload);
+      } else {
+        await api.createStudy(payload);
+      }
       navigate("/researcher");
     } catch (err) {
       setError(err instanceof ApiError ? err.detail : "Could not save this study.");
@@ -144,16 +218,27 @@ export default function BuildSurveyPage() {
     }
   }
 
+  if (loadingStudy) {
+    return (
+      <DesktopLayout eyebrow="STUDY & SURVEY BUILDER">
+        <div style={{ textAlign: "center", padding: "60px 20px" }}>
+          <Spinner />
+          <p style={{ marginTop: "12px", color: "var(--color-sage)" }}>Loading study details…</p>
+        </div>
+      </DesktopLayout>
+    );
+  }
+
   return (
     <DesktopLayout
-      eyebrow="BUILD A SURVEY"
+      eyebrow={isEditMode ? "EDIT STUDY & SURVEY" : "BUILD A SURVEY"}
       rightSlot={
         <>
           <Button variant="secondary" onClick={() => navigate("/researcher")}>
             Cancel
           </Button>
           <Button variant="accent" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? "Publishing…" : "Publish study"}
+            {submitting ? (isEditMode ? "Saving…" : "Publishing…") : (isEditMode ? "Save changes" : "Publish study")}
           </Button>
         </>
       }
@@ -198,42 +283,88 @@ export default function BuildSurveyPage() {
             <span className="ch-questions-hint">{questions.length} question{questions.length === 1 ? "" : "s"}</span>
           </div>
 
+          {isEditMode && !canEditQuestions && (
+            <div style={{
+              background: "#fef2f2",
+              border: "1px solid #f87171",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+              color: "#991b1b",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+            }}>
+              <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 2, color: "#dc2626" }} />
+              <div>
+                <strong style={{ fontSize: "14px" }}>Questions Locked</strong>
+                <p style={{ margin: "3px 0 0", fontSize: "13px", color: "#b91c1c", lineHeight: 1.4 }}>
+                  {responseCount === 1 ? "1 participant has" : `${responseCount} participants have`} already taken this survey. Survey questions cannot be changed or deleted once responses exist to protect research data integrity. (You can still update the study title, description, and settings.)
+                </p>
+              </div>
+            </div>
+          )}
+
+          {isEditMode && canEditQuestions && (
+            <div style={{
+              background: "#ecfdf5",
+              border: "1px solid #6ee7b7",
+              borderRadius: "8px",
+              padding: "12px 16px",
+              marginBottom: "16px",
+              color: "#065f46",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "10px",
+            }}>
+              <Icon name="info" size={20} style={{ flexShrink: 0, marginTop: 2, color: "#059669" }} />
+              <div>
+                <strong style={{ fontSize: "14px" }}>Questions Editable</strong>
+                <p style={{ margin: "3px 0 0", fontSize: "13px", color: "#047857", lineHeight: 1.4 }}>
+                  No participants have taken this survey yet. You can freely edit, reorder, add, or remove questions.
+                </p>
+              </div>
+            </div>
+          )}
+
           {questions.length === 0 && (
             <p className="ch-questions-empty">No questions yet — add one below to start building your survey.</p>
           )}
 
           {questions.map((q, idx) => (
-            <div className="ch-question-card ch-question-card--editable" key={q.key}>
+            <div className={`ch-question-card ${canEditQuestions ? "ch-question-card--editable" : ""}`} key={q.key}>
               <div className="ch-question-card__head">
                 <span>Q{idx + 1}</span>
-                <div className="ch-question-card__head-actions">
-                  <button
-                    type="button"
-                    className="ch-icon-btn"
-                    onClick={() => moveQuestion(q.key, -1)}
-                    disabled={idx === 0}
-                    aria-label="Move question up"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    className="ch-icon-btn"
-                    onClick={() => moveQuestion(q.key, 1)}
-                    disabled={idx === questions.length - 1}
-                    aria-label="Move question down"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    className="ch-icon-btn ch-icon-btn--danger"
-                    onClick={() => removeQuestion(q.key)}
-                    aria-label="Remove question"
-                  >
-                    ✕
-                  </button>
-                </div>
+                {canEditQuestions && (
+                  <div className="ch-question-card__head-actions">
+                    <button
+                      type="button"
+                      className="ch-icon-btn"
+                      onClick={() => moveQuestion(q.key, -1)}
+                      disabled={idx === 0}
+                      aria-label="Move question up"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      className="ch-icon-btn"
+                      onClick={() => moveQuestion(q.key, 1)}
+                      disabled={idx === questions.length - 1}
+                      aria-label="Move question down"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      className="ch-icon-btn ch-icon-btn--danger"
+                      onClick={() => removeQuestion(q.key)}
+                      aria-label="Remove question"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </div>
 
               <Field
@@ -241,6 +372,7 @@ export default function BuildSurveyPage() {
                 id={`q-${q.key}-prompt`}
                 placeholder="e.g. How would you rate your connection speed?"
                 value={q.prompt}
+                disabled={!canEditQuestions}
                 onChange={(e) => updateQuestion(q.key, { prompt: e.target.value })}
               />
 
@@ -250,6 +382,7 @@ export default function BuildSurveyPage() {
                   id={`q-${q.key}-type`}
                   as="select"
                   value={q.type}
+                  disabled={!canEditQuestions}
                   onChange={(e) => changeType(q.key, e.target.value)}
                 >
                   {QUESTION_TYPES.map((t) => (
@@ -259,10 +392,11 @@ export default function BuildSurveyPage() {
                   ))}
                 </Field>
 
-                <label className="ch-question-card__required">
+                <label className="ch-question-card__required" style={!canEditQuestions ? { opacity: 0.7, cursor: "not-allowed" } : {}}>
                   <input
                     type="checkbox"
                     checked={q.required}
+                    disabled={!canEditQuestions}
                     onChange={(e) => updateQuestion(q.key, { required: e.target.checked })}
                   />
                   Required
@@ -277,23 +411,28 @@ export default function BuildSurveyPage() {
                       <input
                         className="ch-options-editor__input"
                         value={opt}
+                        disabled={!canEditQuestions}
                         placeholder={`Option ${optIdx + 1}`}
                         onChange={(e) => updateOption(q.key, optIdx, e.target.value)}
                       />
-                      <button
-                        type="button"
-                        className="ch-icon-btn ch-icon-btn--danger"
-                        onClick={() => removeOption(q.key, optIdx)}
-                        disabled={q.options.length <= 2}
-                        aria-label="Remove option"
-                      >
-                        ✕
-                      </button>
+                      {canEditQuestions && (
+                        <button
+                          type="button"
+                          className="ch-icon-btn ch-icon-btn--danger"
+                          onClick={() => removeOption(q.key, optIdx)}
+                          disabled={q.options.length <= 2}
+                          aria-label="Remove option"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   ))}
-                  <button type="button" className="ch-options-editor__add" onClick={() => addOption(q.key)}>
-                    + Add option
-                  </button>
+                  {canEditQuestions && (
+                    <button type="button" className="ch-options-editor__add" onClick={() => addOption(q.key)}>
+                      + Add option
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -302,9 +441,11 @@ export default function BuildSurveyPage() {
             </div>
           ))}
 
-          <Button type="button" variant="secondary" onClick={addQuestion}>
-            + Add question
-          </Button>
+          {canEditQuestions && (
+            <Button type="button" variant="secondary" onClick={addQuestion}>
+              + Add question
+            </Button>
+          )}
 
           {error && <p className="ch-survey-error">{error}</p>}
         </form>

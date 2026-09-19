@@ -258,11 +258,17 @@ export default function StudiesDirectoryPage() {
   const liveStudies = [...studies]
     .filter((s) => s.state === "live")
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  // Studies that the logged-in member has not applied to yet
+  const openStudies = user
+    ? liveStudies.filter((s) => !appliedIds.includes(s.id))
+    : liveStudies;
+
   const completedCount = myApplications.filter((a) => a.has_submitted_survey).length;
 
   return (
     <MobileLayout title={t("studies.title")} onBack={() => navigate(-1)}>
-      {/* Top Main Tabs: Open Studies vs My Applications vs Workshops */}
+      {/* Top Main Tabs: Open Studies vs My Studies vs Workshops */}
       <div className="ch-service-tabs-row" role="tablist" aria-label="Studies navigation views">
         <button
           type="button"
@@ -272,7 +278,7 @@ export default function StudiesDirectoryPage() {
           onClick={() => setTab("open")}
         >
           <Icon name="clipboard" size={14} style={{ marginRight: 6 }} />
-          {t("studies.openTab")} ({liveStudies.length})
+          {t("studies.openTab")} ({openStudies.length})
         </button>
         <button
           type="button"
@@ -299,7 +305,7 @@ export default function StudiesDirectoryPage() {
       {/* Screen-reader live region announcing tab and study count updates */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {tab === "open"
-          ? (!studiesLoading && !studiesError && `${liveStudies.length} open research ${liveStudies.length === 1 ? "study" : "studies"} available`)
+          ? (!studiesLoading && !studiesError && `${openStudies.length} open research ${openStudies.length === 1 ? "study" : "studies"} available`)
           : (!myAppsLoading && !myAppsError && `${myApplications.length} active ${myApplications.length === 1 ? "application" : "applications"}`)}
       </div>
 
@@ -307,13 +313,11 @@ export default function StudiesDirectoryPage() {
         <div className="ch-studies-list">
           {studiesLoading && <Spinner />}
           {studiesError && <p className="ch-studies-empty ch-studies-empty--error" role="alert">{studiesError}</p>}
-          {!studiesLoading && !studiesError && liveStudies.length === 0 && (
+          {!studiesLoading && !studiesError && openStudies.length === 0 && (
             <p className="ch-studies-empty">{t("studies.noOpen")}</p>
           )}
 
-          {liveStudies.map((s) => {
-            const applied = appliedIds.includes(s.id);
-
+          {openStudies.map((s) => {
             return (
               <div className="ch-study-card" key={s.id}>
                 <div className="ch-study-card__header-row">
@@ -348,32 +352,14 @@ export default function StudiesDirectoryPage() {
                   {s.closing_date && <span>{t("studies.closes")} {new Date(s.closing_date).toLocaleDateString()}</span>}
                 </div>
 
-                {applied ? (
-                  <div className="ch-study-card__applied-box">
-                    <span className="ch-study-card__applied-label">
-                      <Icon name="check" size={14} style={{ marginRight: 4 }} />
-                      {t("studies.applied")}
-                    </span>
-                    <Button
-                      variant="danger-outline"
-                      className="ch-study-card__unapply-btn"
-                      disabled={actionLoadingId === s.id}
-                      onClick={() => handleUnapply(s.id)}
-                    >
-                      <Icon name="x" size={13} style={{ marginRight: 4 }} />
-                      {actionLoadingId === s.id ? t("studies.unapplying") : t("studies.unapply")}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="accent"
-                    fullWidth
-                    disabled={applyingId === s.id}
-                    onClick={() => handleApply(s.id)}
-                  >
-                    {applyingId === s.id ? t("studies.applying") : t("studies.applyButton")}
-                  </Button>
-                )}
+                <Button
+                  variant="accent"
+                  fullWidth
+                  disabled={applyingId === s.id}
+                  onClick={() => handleApply(s.id)}
+                >
+                  {applyingId === s.id ? t("studies.applying") : t("studies.applyButton")}
+                </Button>
               </div>
             );
           })}

@@ -48,6 +48,11 @@ export default function WorkshopsDirectoryPage() {
 
   const registeredWorkshopIds = new Set(myRegistrations.map((r) => r.workshop_id));
 
+  // Workshops that the logged-in member has not registered for yet
+  const openWorkshops = user
+    ? workshops.filter((w) => !registeredWorkshopIds.has(w.id))
+    : workshops;
+
   async function handleRegister(workshopId) {
     if (!user) {
       setGuestModalAction("register for workshops");
@@ -58,8 +63,24 @@ export default function WorkshopsDirectoryPage() {
     setError("");
     setFeedback("");
     try {
-      await api.registerForWorkshop(workshopId);
+      const res = await api.registerForWorkshop(workshopId);
       setFeedback("Registered successfully!");
+      const target = workshops.find((w) => w.id === workshopId);
+      if (target) {
+        setMyRegistrations((prev) => [
+          ...prev,
+          {
+            id: res?.id || Date.now(),
+            workshop_id: workshopId,
+            registered_at: new Date().toISOString(),
+            workshop_title: target.title,
+            workshop_description: target.description,
+            workshop_location: target.location,
+            workshop_date_time: target.date_time,
+            workshop_status: target.status,
+          },
+        ]);
+      }
       loadData();
       setTimeout(() => setFeedback(""), 4000);
     } catch (err) {
@@ -87,6 +108,7 @@ export default function WorkshopsDirectoryPage() {
     try {
       await api.cancelWorkshopRegistration(workshopId);
       setFeedback(t("workshops.cancelledFeedback"));
+      setMyRegistrations((prev) => prev.filter((r) => r.workshop_id !== workshopId));
       loadData();
       setTimeout(() => setFeedback(""), 4000);
     } catch (err) {
@@ -110,7 +132,7 @@ export default function WorkshopsDirectoryPage() {
           onClick={() => setTab("all")}
         >
           <Icon name="calendar" size={14} style={{ marginRight: 6 }} />
-          {t("workshops.upcomingTab")} ({workshops.length})
+          {t("workshops.upcomingTab")} ({openWorkshops.length})
         </button>
         <button
           type="button"
@@ -120,7 +142,7 @@ export default function WorkshopsDirectoryPage() {
           onClick={() => setTab("mine")}
         >
           <Icon name="user-check" size={14} style={{ marginRight: 6 }} />
-          {t("workshops.myBookingsTab")} ({myRegistrations.length})
+          {t("workshops.myBookingsTab")} ({user ? myRegistrations.length : 0})
         </button>
         <button
           type="button"
@@ -139,7 +161,7 @@ export default function WorkshopsDirectoryPage() {
         {/* Screen-reader live region announcing active count */}
         <div className="sr-only" aria-live="polite" aria-atomic="true">
           {tab === "all"
-            ? (!loading && !error && `${workshops.length} upcoming ${workshops.length === 1 ? "workshop" : "workshops"} scheduled`)
+            ? (!loading && !error && `${openWorkshops.length} upcoming ${openWorkshops.length === 1 ? "workshop" : "workshops"} scheduled`)
             : (!loading && !error && `${myRegistrations.length} active ${myRegistrations.length === 1 ? "booking" : "bookings"}`)}
         </div>
 
@@ -159,11 +181,10 @@ export default function WorkshopsDirectoryPage() {
         {/* Tab 1: All Upcoming Workshops */}
         {tab === "all" && !loading && (
           <>
-            {workshops.length === 0 && (
+            {openWorkshops.length === 0 && (
               <p className="ch-dash-empty">{t("workshops.noWorkshops")}</p>
             )}
-            {workshops.map((w) => {
-              const isRegistered = registeredWorkshopIds.has(w.id);
+            {openWorkshops.map((w) => {
               const isFull = (w.registered_count || 0) >= w.max_participants;
               const wDate = new Date(w.date_time);
               const spotsLeft = Math.max(0, w.max_participants - (w.registered_count || 0));
@@ -177,7 +198,6 @@ export default function WorkshopsDirectoryPage() {
                         {t("workshops.organizedBy")} {w.organizer_display_name || w.organizer_username || "Researcher"}
                       </span>
                     </div>
-                    {isRegistered && <StatusChip label={t("workshops.registered")} tone="positive" />}
                   </div>
 
                   <p className="ch-workshops-card__desc">{w.description}</p>
@@ -198,24 +218,13 @@ export default function WorkshopsDirectoryPage() {
                       {isFull ? t("workshops.fullyBooked") : `${spotsLeft} ${t("workshops.of")} ${w.max_participants} ${t("workshops.spotsRemaining")}`}
                     </span>
 
-                    {isRegistered ? (
-                      <Button
-                        variant="secondary"
-                        className="ch-btn-danger"
-                        disabled={actionId === w.id}
-                        onClick={() => handleCancelRegistration(w.id)}
-                      >
-                        {actionId === w.id ? t("workshops.cancelling") : t("workshops.cancelBooking")}
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="accent"
-                        disabled={isFull || actionId === w.id}
-                        onClick={() => handleRegister(w.id)}
-                      >
-                        {actionId === w.id ? t("workshops.registering") : isFull ? t("workshops.full") : t("workshops.register")}
-                      </Button>
-                    )}
+                    <Button
+                      variant="accent"
+                      disabled={isFull || actionId === w.id}
+                      onClick={() => handleRegister(w.id)}
+                    >
+                      {actionId === w.id ? t("workshops.registering") : isFull ? t("workshops.full") : t("workshops.register")}
+                    </Button>
                   </div>
                 </div>
               );

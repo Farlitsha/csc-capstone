@@ -174,7 +174,7 @@ export const translations = {
     "studies": {
       "title": "Research Studies",
       "openTab": "Open studies",
-      "myAppsTab": "My applications",
+      "myAppsTab": "My studies",
       "noOpen": "No studies are open right now — check back soon.",
       "applyButton": "Apply to participate",
       "applied": "Applied",
@@ -535,7 +535,7 @@ export const translations = {
     "studies": {
       "title": "Navorsingstudies",
       "openTab": "Oop studies",
-      "myAppsTab": "My aansoeke",
+      "myAppsTab": "My studies",
       "noOpen": "Geen studies is tans oop nie — kom kyk gou weer.",
       "applyButton": "Doen aansoek om deel te neem",
       "applied": "Aansoek gedoen",
@@ -896,7 +896,7 @@ export const translations = {
     "studies": {
       "title": "Uphando Lwezifundo",
       "openTab": "Uphando oluvulekileyo",
-      "myAppsTab": "Izicelo zam",
+      "myAppsTab": "Izifundo zam",
       "noOpen": "Akukho phando luvulekileyo ngoku - phinda ujonge kamva.",
       "applyButton": "Faka isicelo sokubamba iqhaza",
       "applied": "Isicelo sifakiwe",
@@ -1257,7 +1257,7 @@ export const translations = {
     "studies": {
       "title": "Ucwaningo Lwezifundo",
       "openTab": "Ucwaningo oluvulekile",
-      "myAppsTab": "Izicelo zami",
+      "myAppsTab": "Izifundo zami",
       "noOpen": "Alukho ucwaningo oluvulekile njengamanje - hlola futhi maduze.",
       "applyButton": "Faka isicelo sokubamba iqhaza",
       "applied": "Isicelo sifakiwe",

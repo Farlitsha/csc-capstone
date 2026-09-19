@@ -1,5 +1,6 @@
 from typing import List, Union
 from fastapi import APIRouter, Depends, status, HTTPException, Body
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from .. import models, audit, oauth2
 from ..database import get_db
@@ -61,7 +62,14 @@ async def create_study(
             ))
         db.commit()
 
-    return db_study
+    return study_schemas.StudyListingOut(
+        **{c.key: getattr(db_study, c.key) for c in models.StudyListing.__table__.columns},
+        researcher_username=current_user.username,
+        researcher_display_name=current_user.display_name,
+        researcher_avatar_url=current_user.avatar_url,
+        response_count=0,
+        can_edit_questions=True,
+    )
 
 
 @router.get("/studies/", response_model=List[study_schemas.StudyListingOut])
@@ -74,16 +82,25 @@ async def list_studies(db: Session = Depends(get_db)):
         .order_by(models.StudyListing.created_at.desc())
         .all()
     )
+
+    survey_counts = dict(
+        db.query(models.Survey.study_id, func.count(models.SurveyResponse.id))
+        .join(models.SurveyResponse, models.Survey.id == models.SurveyResponse.survey_id)
+        .group_by(models.Survey.study_id)
+        .all()
+    )
+
     return [
         study_schemas.StudyListingOut(
             **{c.key: getattr(study, c.key) for c in models.StudyListing.__table__.columns},
             researcher_username=username,
             researcher_display_name=display_name,
             researcher_avatar_url=avatar_url,
+            response_count=survey_counts.get(study.id, 0),
+            can_edit_questions=bool(survey_counts.get(study.id, 0) == 0),
         )
         for study, username, display_name, avatar_url in rows
     ]
-
 
 
 @router.get("/studies/{study_id}", response_model=study_schemas.StudyListingOut)
@@ -97,11 +114,23 @@ async def get_study(study_id: int, db: Session = Depends(get_db)):
     if not row:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Study {study_id} not found")
     study, username, display_name, avatar_url = row
+
+    survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    resp_count = (
+        db.query(func.count(models.SurveyResponse.id))
+        .filter(models.SurveyResponse.survey_id == survey.id)
+        .scalar()
+        if survey
+        else 0
+    ) or 0
+
     return study_schemas.StudyListingOut(
         **{c.key: getattr(study, c.key) for c in models.StudyListing.__table__.columns},
         researcher_username=username,
         researcher_display_name=display_name,
         researcher_avatar_url=avatar_url,
+        response_count=resp_count,
+        can_edit_questions=bool(resp_count == 0),
     )
 
 
@@ -155,14 +184,25 @@ async def update_study(
     study.participant_limit = payload.get("participant_limit", study.participant_limit)
     study.closing_date = payload.get("closing_date", study.closing_date)
 
+    db_survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
+    resp_count = (
+        db.query(models.SurveyResponse).filter(models.SurveyResponse.survey_id == db_survey.id).count()
+        if db_survey
+        else 0
+    )
+
     if questions is not None:
-        db_survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
-        if not db_survey:
+        if db_survey:
+            if resp_count > 0:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot modify questions because participants have already taken this survey",
+                )
+            db.query(models.SurveyQuestion).filter(models.SurveyQuestion.survey_id == db_survey.id).delete()
+        else:
             db_survey = models.Survey(study_id=study.id)
             db.add(db_survey)
             db.flush()
-        else:
-            db.query(models.SurveyQuestion).filter(models.SurveyQuestion.survey_id == db_survey.id).delete()
 
         for i, q in enumerate(questions):
             db.add(models.SurveyQuestion(
@@ -184,7 +224,15 @@ async def update_study(
     )
     db.commit()
     db.refresh(study)
-    return study
+
+    return study_schemas.StudyListingOut(
+        **{c.key: getattr(study, c.key) for c in models.StudyListing.__table__.columns},
+        researcher_username=current_user.username if study.researcher_id == current_user.id else None,
+        researcher_display_name=current_user.display_name if study.researcher_id == current_user.id else None,
+        researcher_avatar_url=current_user.avatar_url if study.researcher_id == current_user.id else None,
+        response_count=resp_count,
+        can_edit_questions=bool(resp_count == 0),
+    )
 
 
 @router.delete("/studies/{study_id}", status_code=status.HTTP_200_OK)
@@ -225,6 +273,12 @@ async def upsert_study_survey(
 
     db_survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
     if db_survey:
+        resp_count = db.query(models.SurveyResponse).filter(models.SurveyResponse.survey_id == db_survey.id).count()
+        if resp_count > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot modify questions because participants have already taken this survey",
+            )
         db.query(models.SurveyQuestion).filter(models.SurveyQuestion.survey_id == db_survey.id).delete()
     else:
         db_survey = models.Survey(study_id=study_id)
@@ -242,7 +296,13 @@ async def upsert_study_survey(
         ))
     db.commit()
     db.refresh(db_survey)
-    return db_survey
+    return study_schemas.SurveyOut(
+        id=db_survey.id,
+        study_id=db_survey.study_id,
+        questions=db_survey.questions,
+        response_count=0,
+        can_edit_questions=True,
+    )
 
 
 @router.get("/studies/{study_id}/survey", response_model=study_schemas.SurveyOut)
@@ -251,7 +311,14 @@ async def get_study_survey(study_id: int, db: Session = Depends(get_db)):
     survey = db.query(models.Survey).filter(models.Survey.study_id == study_id).first()
     if not survey:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="This study has no survey yet")
-    return survey
+    resp_count = db.query(models.SurveyResponse).filter(models.SurveyResponse.survey_id == survey.id).count()
+    return study_schemas.SurveyOut(
+        id=survey.id,
+        study_id=survey.study_id,
+        questions=survey.questions,
+        response_count=resp_count,
+        can_edit_questions=bool(resp_count == 0),
+    )
 
 
 @router.post("/studies/{study_id}/survey/responses", response_model=study_schemas.SurveyResponseOut, status_code=status.HTTP_201_CREATED)
