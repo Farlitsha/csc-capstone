@@ -77,7 +77,7 @@ export const translations = {
       "bannerText": "You are exploring CommHub without an account. You can browse services, studies, and workshops freely. To post listings, apply to studies, or join workshops, create a free account."
     },
     "home": {
-      "greeting": "Molo",
+      "greeting": "Hello",
       "subtitle": "Ocean View Community Hub",
       "openServices": "OPEN SERVICES",
       "activeStudies": "ACTIVE STUDIES",
