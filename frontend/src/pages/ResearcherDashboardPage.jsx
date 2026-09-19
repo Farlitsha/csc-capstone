@@ -10,13 +10,16 @@ import Icon from "../components/Icon";
 import ConfirmModal from "../components/ConfirmModal";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
+import { useLanguage } from "../i18n/LanguageContext";
 import "./ResearcherDashboardPage.css";
 
 const STATE_TONE = { live: "positive", draft: "neutral", closed: "warning", scheduled: "positive", cancelled: "warning", completed: "neutral" };
 
 export default function ResearcherDashboardPage() {
   const { user } = useAuth();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
+  const locale = { en: "en-ZA", af: "af-ZA", xh: "xh-ZA", zu: "zu-ZA" }[lang] || "en-ZA";
   const [profile, setProfile] = useState(null);
   const [studies, setStudies] = useState([]);
   const [workshops, setWorkshops] = useState([]);
@@ -52,7 +55,7 @@ export default function ResearcherDashboardPage() {
         setStudies(studiesData);
         setWorkshops(workshopsData);
       })
-      .catch(() => setError("Could not load dashboard data from the server."))
+      .catch(() => setError(t("researcherDashboard.loadError")))
       .finally(() => setLoading(false));
   }
 
@@ -69,12 +72,12 @@ export default function ResearcherDashboardPage() {
     e.preventDefault();
     setWorkshopError("");
     if (!workshopForm.date_time) {
-      setWorkshopError("Please select a date and time.");
+      setWorkshopError(t("researcherDashboard.selectDateTime"));
       return;
     }
     const chosenDate = new Date(workshopForm.date_time);
     if (chosenDate <= new Date()) {
-      setWorkshopError("Workshop date and time must be in the future.");
+      setWorkshopError(t("researcherDashboard.futureDateTime"));
       return;
     }
     setWorkshopSubmitting(true);
@@ -88,7 +91,7 @@ export default function ResearcherDashboardPage() {
       setWorkshopForm({ title: "", description: "", location: "", date_time: "", max_participants: 15 });
       loadData();
     } catch (err) {
-      setWorkshopError(err instanceof ApiError ? err.detail : "Could not create workshop.");
+      setWorkshopError(err instanceof ApiError ? err.detail : t("researcherDashboard.createWorkshopError"));
     } finally {
       setWorkshopSubmitting(false);
     }
@@ -101,7 +104,7 @@ export default function ResearcherDashboardPage() {
       const data = await api.getWorkshopRegistrations(workshop.id);
       setAttendees(data);
     } catch (err) {
-      alert("Could not load attendee list.");
+      alert(t("researcherDashboard.attendeesError"));
     } finally {
       setAttendeesLoading(false);
     }
@@ -111,8 +114,8 @@ export default function ResearcherDashboardPage() {
     isOpen: false,
     title: "",
     message: "",
-    confirmText: "Confirm",
-    cancelText: "Cancel",
+    confirmText: t("adminDashboard.confirm"),
+    cancelText: t("common.cancel"),
     variant: "danger",
     icon: "alert-triangle",
     loading: false,
@@ -122,10 +125,10 @@ export default function ResearcherDashboardPage() {
   function openConfirm(config) {
     setConfirmModal({
       isOpen: true,
-      title: config.title || "Are you sure?",
+      title: config.title || t("researcherDashboard.areYouSure"),
       message: config.message || "",
-      confirmText: config.confirmText || "Confirm",
-      cancelText: config.cancelText || "Cancel",
+      confirmText: config.confirmText || t("adminDashboard.confirm"),
+      cancelText: config.cancelText || t("common.cancel"),
       variant: config.variant || "danger",
       icon: config.icon || "alert-triangle",
       loading: false,
@@ -139,9 +142,9 @@ export default function ResearcherDashboardPage() {
 
   function handleCancelWorkshop(workshopId) {
     openConfirm({
-      title: "Cancel Workshop?",
-      message: "Are you sure you want to cancel this workshop? Registered members will be notified.",
-      confirmText: "Yes, Cancel Workshop",
+      title: t("researcherDashboard.cancelWorkshopTitle"),
+      message: t("researcherDashboard.cancelWorkshopConfirm"),
+      confirmText: t("researcherDashboard.cancelWorkshopButton"),
       variant: "warning",
       icon: "calendar",
       onConfirm: async () => {
@@ -150,7 +153,7 @@ export default function ResearcherDashboardPage() {
           await api.cancelWorkshop(workshopId);
           loadData();
         } catch (err) {
-          alert(err instanceof ApiError ? err.detail : "Could not cancel workshop.");
+          alert(err instanceof ApiError ? err.detail : t("researcherDashboard.cancelWorkshopError"));
         }
       },
     });
@@ -158,9 +161,9 @@ export default function ResearcherDashboardPage() {
 
   function handleDeleteWorkshop(workshopId) {
     openConfirm({
-      title: "Permanently Delete Workshop?",
-      message: "Are you sure you want to permanently delete this workshop?",
-      confirmText: "Yes, Delete",
+      title: t("researcherDashboard.deleteWorkshopTitle"),
+      message: t("researcherDashboard.deleteWorkshopConfirm"),
+      confirmText: t("researcherDashboard.deleteButton"),
       variant: "danger",
       icon: "trash",
       onConfirm: async () => {
@@ -169,7 +172,7 @@ export default function ResearcherDashboardPage() {
           await api.deleteWorkshop(workshopId);
           setWorkshops((prev) => prev.filter((w) => w.id !== workshopId));
         } catch (err) {
-          alert(err instanceof ApiError ? err.detail : "Could not delete workshop.");
+          alert(err instanceof ApiError ? err.detail : t("researcherDashboard.deleteWorkshopError"));
         }
       },
     });
@@ -195,7 +198,7 @@ export default function ResearcherDashboardPage() {
   async function handleSaveEditStudy(e) {
     e.preventDefault();
     if (!editStudyForm.title.trim() || !editStudyForm.description.trim()) {
-      setEditStudyError("Title and description are required.");
+      setEditStudyError(t("researcherDashboard.titleDescriptionRequired"));
       return;
     }
     setEditStudySaving(true);
@@ -210,7 +213,7 @@ export default function ResearcherDashboardPage() {
       setStudies((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
       setEditingStudy(null);
     } catch (err) {
-      setEditStudyError(err instanceof ApiError ? err.detail : "Could not update study.");
+      setEditStudyError(err instanceof ApiError ? err.detail : t("researcherDashboard.updateStudyError"));
     } finally {
       setEditStudySaving(false);
     }
@@ -218,9 +221,9 @@ export default function ResearcherDashboardPage() {
 
   function handleDeleteStudy(study) {
     openConfirm({
-      title: "Permanently Delete Study?",
-      message: `Are you sure you want to permanently delete the study "${study.title}"? All applicant data and survey responses will be removed.`,
-      confirmText: "Yes, Delete Study",
+      title: t("researcherDashboard.deleteStudyTitle"),
+      message: `${t("researcherDashboard.deleteStudyConfirmStart")} "${study.title}"? ${t("researcherDashboard.deleteStudyConfirmEnd")}`,
+      confirmText: t("researcherDashboard.deleteStudyButton"),
       variant: "danger",
       icon: "trash",
       onConfirm: async () => {
@@ -229,7 +232,7 @@ export default function ResearcherDashboardPage() {
           await api.deleteStudy(study.id);
           setStudies((prev) => prev.filter((s) => s.id !== study.id));
         } catch (err) {
-          alert(err instanceof ApiError ? err.detail : "Could not delete study.");
+          alert(err instanceof ApiError ? err.detail : t("researcherDashboard.deleteStudyError"));
         }
       },
     });
@@ -239,7 +242,7 @@ export default function ResearcherDashboardPage() {
 
   return (
     <DesktopLayout
-      eyebrow="RESEARCHER WORKSPACE"
+      eyebrow={t("researcherDashboard.workspace")}
       rightSlot={
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
@@ -247,20 +250,20 @@ export default function ResearcherDashboardPage() {
             disabled={!isVerified}
             onClick={() => setShowScheduleModal(true)}
           >
-            + Schedule workshop
+            + {t("researcherDashboard.scheduleWorkshop")}
           </Button>
           <Button
             variant="secondary"
             disabled={!isVerified}
             onClick={() => navigate("/researcher/studies/new")}
           >
-            + New study
+            + {t("researcherDashboard.newStudy")}
           </Button>
         </div>
       }
     >
       <div className="ch-desktop__heading">
-        <h1>Good afternoon, {profile?.display_name || user?.username || "Researcher"}</h1>
+        <h1>{t("researcherDashboard.greeting")}, {profile?.display_name || user?.username || t("researcherDashboard.researcher")}</h1>
       </div>
 
       {isPendingVerification && (
@@ -277,9 +280,9 @@ export default function ResearcherDashboardPage() {
         }}>
           <Icon name="hourglass" size={24} />
           <div>
-            <strong>Account Pending Verification</strong>
+            <strong>{t("researcherDashboard.pendingTitle")}</strong>
             <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
-              Your researcher account is currently awaiting review by a platform administrator. Study creation and workshop scheduling will unlock once your account is verified.
+              {t("researcherDashboard.pendingText")}
             </p>
           </div>
         </div>
@@ -294,24 +297,24 @@ export default function ResearcherDashboardPage() {
           borderRadius: "8px",
           marginBottom: "20px",
         }}>
-          <strong>Account Verification Rejected</strong>
+          <strong>{t("researcherDashboard.rejectedTitle")}</strong>
           <p style={{ margin: "4px 0 0 0", fontSize: "14px" }}>
-            Your researcher registration was not approved. Please contact an administrator if you believe this is an error.
+            {t("researcherDashboard.rejectedText")}
           </p>
         </div>
       )}
 
       <div className="ch-stats-row">
-        <StatCard label="LIVE STUDIES" value={String(liveCount)} />
-        <StatCard label="SCHEDULED WORKSHOPS" value={String(activeWorkshops.length)} />
-        <StatCard label="TOTAL WORKSHOP ATTENDEES" value={String(workshops.reduce((acc, w) => acc + (w.registered_count || 0), 0))} />
-        <StatCard label="VERIFICATION" value={profile?.verification_status?.toUpperCase() || "PENDING"} />
+        <StatCard label={t("researcherDashboard.liveStudies")} value={String(liveCount)} />
+        <StatCard label={t("researcherDashboard.scheduledWorkshops")} value={String(activeWorkshops.length)} />
+        <StatCard label={t("researcherDashboard.totalAttendees")} value={String(workshops.reduce((acc, w) => acc + (w.registered_count || 0), 0))} />
+        <StatCard label={t("researcherDashboard.verification")} value={t(`researcherDashboard.status.${profile?.verification_status || "pending"}`)} />
       </div>
 
-      <Card title="Scheduled workshops & interviews">
-        {loading && <p className="ch-dash-empty">Loading workshops…</p>}
+      <Card title={t("researcherDashboard.workshopsTitle")}>
+        {loading && <p className="ch-dash-empty">{t("researcherDashboard.loadingWorkshops")}</p>}
         {!loading && workshops.length === 0 && (
-          <p className="ch-dash-empty">No workshops scheduled yet. Click "+ Schedule workshop" above to create one.</p>
+          <p className="ch-dash-empty">{t("researcherDashboard.noWorkshops")}</p>
         )}
         {workshops.map((w) => {
           const wDate = new Date(w.date_time);
@@ -320,62 +323,62 @@ export default function ResearcherDashboardPage() {
               <div>
                 <p className="ch-row__title">{w.title}</p>
                 <p className="ch-row__meta" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", margin: "4px 0 0 0" }}>
-                  <span><Icon name="calendar" size={13} style={{ marginRight: 4 }} />{wDate.toLocaleDateString()} at {wDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span><Icon name="calendar" size={13} style={{ marginRight: 4 }} />{wDate.toLocaleDateString(locale)} {t("researcherDashboard.at")} {wDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</span>
                   <span>•</span>
                   <span><Icon name="location" size={13} style={{ marginRight: 4 }} />{w.location}</span>
                   <span>•</span>
-                  <span><Icon name="users" size={13} style={{ marginRight: 4 }} />{w.registered_count} / {w.max_participants} booked</span>
+                  <span><Icon name="users" size={13} style={{ marginRight: 4 }} />{w.registered_count} / {w.max_participants} {t("researcherDashboard.booked")}</span>
                 </p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Button variant="secondary" onClick={() => handleViewAttendees(w)}>
-                  Attendees ({w.registered_count || 0})
+                  {t("researcherDashboard.attendees")} ({w.registered_count || 0})
                 </Button>
                 {w.status === "scheduled" && (
                   <Button variant="secondary" className="ch-btn-danger" onClick={() => handleCancelWorkshop(w.id)}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                 )}
                 <Button variant="secondary" className="ch-btn-danger" onClick={() => handleDeleteWorkshop(w.id)}>
-                  Delete
+                  {t("common.delete")}
                 </Button>
-                <StatusChip label={w.status} tone={STATE_TONE[w.status] || "neutral"} />
+                <StatusChip label={t(`researcherDashboard.status.${w.status}`)} tone={STATE_TONE[w.status] || "neutral"} />
               </div>
             </div>
           );
         })}
       </Card>
 
-      <Card title="Your surveys & studies">
-        {loading && <p className="ch-dash-empty">Loading…</p>}
+      <Card title={t("researcherDashboard.studiesTitle")}>
+        {loading && <p className="ch-dash-empty">{t("common.loading")}</p>}
         {error && <p className="ch-dash-empty ch-dash-empty--error">{error}</p>}
         {!loading && !error && studies.length === 0 && (
-          <p className="ch-dash-empty">No studies yet — create one to get started.</p>
+          <p className="ch-dash-empty">{t("researcherDashboard.noStudies")}</p>
         )}
         {studies.map((s) => (
           <div className="ch-row" key={s.id}>
             <div>
               <p className="ch-row__title">{s.title}</p>
               <p className="ch-row__meta">
-                {s.participant_limit ? `Limit ${s.participant_limit}` : "No participant limit"}
+                {s.participant_limit ? `${t("researcherDashboard.limit")} ${s.participant_limit}` : t("researcherDashboard.noLimit")}
                 {s.honorarium ? ` · ${s.honorarium}` : ""}
               </p>
             </div>
             <div className="ch-study-row-actions" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/applicants`)}>
-                Applicants
+                {t("researcherDashboard.applicants")}
               </Button>
               <Button variant="secondary" onClick={() => navigate(`/researcher/studies/${s.id}/responses`)}>
-                Survey Responses
+                {t("researcherDashboard.surveyResponses")}
               </Button>
               <Button variant="secondary" onClick={() => startEditStudy(s)}>
                 <Icon name="edit" size={13} style={{ marginRight: 4 }} />
-                Edit
+                {t("common.edit")}
               </Button>
               <Button variant="secondary" className="ch-btn-danger" onClick={() => handleDeleteStudy(s)}>
-                Delete
+                {t("common.delete")}
               </Button>
-              <StatusChip label={s.state} tone={STATE_TONE[s.state] || "neutral"} />
+              <StatusChip label={t(`researcherDashboard.status.${s.state}`)} tone={STATE_TONE[s.state] || "neutral"} />
             </div>
           </div>
         ))}
@@ -405,17 +408,17 @@ export default function ResearcherDashboardPage() {
             padding: "24px",
             boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
           }}>
-            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>Schedule a New Workshop / Interview</h2>
+            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>{t("researcherDashboard.scheduleModalTitle")}</h2>
             <form onSubmit={handleCreateWorkshop}>
               <Field
-                label="Workshop Title"
+                label={t("researcherDashboard.workshopTitle")}
                 id="w_title"
                 value={workshopForm.title}
                 onChange={(e) => setWorkshopForm((f) => ({ ...f, title: e.target.value }))}
                 required
               />
               <Field
-                label="Description & Agenda"
+                label={t("researcherDashboard.descriptionAgenda")}
                 id="w_desc"
                 as="textarea"
                 value={workshopForm.description}
@@ -423,7 +426,7 @@ export default function ResearcherDashboardPage() {
                 required
               />
               <Field
-                label="Location (e.g. Community Hall Room 3, or Online link)"
+                label={t("researcherDashboard.location")}
                 id="w_loc"
                 value={workshopForm.location}
                 onChange={(e) => setWorkshopForm((f) => ({ ...f, location: e.target.value }))}
@@ -431,7 +434,7 @@ export default function ResearcherDashboardPage() {
               />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
                 <div>
-                  <label className="ch-field__label" htmlFor="w_dt">Date & Time</label>
+                  <label className="ch-field__label" htmlFor="w_dt">{t("researcherDashboard.dateTime")}</label>
                   <input
                     id="w_dt"
                     type="datetime-local"
@@ -443,7 +446,7 @@ export default function ResearcherDashboardPage() {
                   />
                 </div>
                 <div>
-                  <label className="ch-field__label" htmlFor="w_max">Max Participants</label>
+                  <label className="ch-field__label" htmlFor="w_max">{t("researcherDashboard.maxParticipants")}</label>
                   <input
                     id="w_max"
                     type="number"
@@ -461,10 +464,10 @@ export default function ResearcherDashboardPage() {
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
                 <Button variant="secondary" onClick={() => setShowScheduleModal(false)}>
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button type="submit" variant="accent" disabled={workshopSubmitting}>
-                  {workshopSubmitting ? "Scheduling…" : "Confirm & Schedule"}
+                  {workshopSubmitting ? t("researcherDashboard.scheduling") : t("researcherDashboard.confirmSchedule")}
                 </Button>
               </div>
             </form>
@@ -496,27 +499,27 @@ export default function ResearcherDashboardPage() {
             maxHeight: "80vh",
             overflowY: "auto",
           }}>
-            <h2 style={{ marginTop: 0, marginBottom: "8px" }}>Registered Attendees</h2>
+            <h2 style={{ marginTop: 0, marginBottom: "8px" }}>{t("researcherDashboard.registeredAttendees")}</h2>
             <p style={{ color: "#666", marginBottom: "16px" }}>{selectedWorkshop.title}</p>
 
-            {attendeesLoading && <p>Loading participants…</p>}
+            {attendeesLoading && <p>{t("researcherDashboard.loadingParticipants")}</p>}
             {!attendeesLoading && attendees.length === 0 && (
-              <p className="ch-dash-empty">No community members have registered for this workshop yet.</p>
+              <p className="ch-dash-empty">{t("researcherDashboard.noAttendees")}</p>
             )}
 
             {!attendeesLoading && attendees.map((a) => (
               <div key={a.id} className="ch-row" style={{ padding: "10px 0", borderBottom: "1px solid #eee" }}>
                 <div>
                   <p className="ch-row__title">{a.participant_display_name || a.participant_username}</p>
-                  <p className="ch-row__meta">@{a.participant_username} • Registered {new Date(a.registered_at).toLocaleDateString()}</p>
+                  <p className="ch-row__meta">@{a.participant_username} • {t("researcherDashboard.registered")} {new Date(a.registered_at).toLocaleDateString(locale)}</p>
                 </div>
-                <StatusChip label="Registered" tone="positive" />
+                <StatusChip label={t("researcherDashboard.registered")} tone="positive" />
               </div>
             ))}
 
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
               <Button variant="secondary" onClick={() => setSelectedWorkshop(null)}>
-                Close
+                {t("common.close")}
               </Button>
             </div>
           </div>
@@ -546,18 +549,18 @@ export default function ResearcherDashboardPage() {
             padding: "24px",
             boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
           }}>
-            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>Edit Study Listing</h2>
+            <h2 style={{ marginTop: 0, marginBottom: "16px" }}>{t("researcherDashboard.editStudyTitle")}</h2>
             <form onSubmit={handleSaveEditStudy}>
               {editStudyError && <p style={{ color: "#dc2626", marginBottom: "12px" }}>{editStudyError}</p>}
               <Field
-                label="Study Title"
+                label={t("researcherDashboard.studyTitle")}
                 id="edit_study_title"
                 value={editStudyForm.title}
                 onChange={(e) => setEditStudyForm((f) => ({ ...f, title: e.target.value }))}
                 required
               />
               <Field
-                label="Study Description"
+                label={t("researcherDashboard.studyDescription")}
                 id="edit_study_desc"
                 as="textarea"
                 value={editStudyForm.description}
@@ -566,13 +569,13 @@ export default function ResearcherDashboardPage() {
               />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <Field
-                  label="Honorarium (e.g. R50)"
+                  label={t("researcherDashboard.honorarium")}
                   id="edit_study_hon"
                   value={editStudyForm.honorarium}
                   onChange={(e) => setEditStudyForm((f) => ({ ...f, honorarium: e.target.value }))}
                 />
                 <Field
-                  label="Participant Limit"
+                  label={t("researcherDashboard.participantLimit")}
                   id="edit_study_limit"
                   type="number"
                   min="1"
@@ -583,10 +586,10 @@ export default function ResearcherDashboardPage() {
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
                 <Button variant="secondary" onClick={() => setEditingStudy(null)}>
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button type="submit" variant="accent" disabled={editStudySaving}>
-                  {editStudySaving ? "Saving…" : "Save Changes"}
+                  {editStudySaving ? t("researcherDashboard.saving") : t("researcherDashboard.saveChanges")}
                 </Button>
               </div>
             </form>

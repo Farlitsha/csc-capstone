@@ -37,7 +37,8 @@ function getInitials(displayName, username) {
 export default function StudiesDirectoryPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const locale = { en: "en-ZA", af: "af-ZA", xh: "xh-ZA", zu: "zu-ZA" }[lang] || "en-ZA";
   const [tab, setTab] = useState("open");
 
   const [studies, setStudies] = useState([]);
@@ -82,7 +83,7 @@ export default function StudiesDirectoryPage() {
           setAppliedIds([]);
         }
       })
-      .catch(() => setStudiesError("Could not load studies from the server."))
+      .catch(() => setStudiesError(t("studies.loadError")))
       .finally(() => {
         setStudiesLoading(false);
         setMyAppsLoading(false);
@@ -109,13 +110,13 @@ export default function StudiesDirectoryPage() {
           setAppliedIds([]);
         }
       })
-      .catch(() => setMyAppsError("Could not load your applications."))
+      .catch(() => setMyAppsError(t("studies.appsLoadError")))
       .finally(() => setMyAppsLoading(false));
   }
 
   async function handleApply(studyId) {
     if (!user) {
-      setGuestModalAction("apply to participate in research studies");
+      setGuestModalAction(t("studies.guestApplyAction"));
       setGuestModalOpen(true);
       return;
     }
@@ -125,7 +126,7 @@ export default function StudiesDirectoryPage() {
       setAppliedIds((prev) => [...prev, studyId]);
       loadMyApplications();
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not apply to this study.");
+      alert(err instanceof ApiError ? err.detail : t("studies.applyError"));
     } finally {
       setApplyingId(null);
     }
@@ -135,8 +136,8 @@ export default function StudiesDirectoryPage() {
     isOpen: false,
     title: "",
     message: "",
-    confirmText: "Confirm",
-    cancelText: "Cancel",
+    confirmText: t("adminDashboard.confirm"),
+    cancelText: t("common.cancel"),
     variant: "danger",
     icon: "alert-triangle",
     onConfirm: null,
@@ -145,10 +146,10 @@ export default function StudiesDirectoryPage() {
   function openConfirm(config) {
     setConfirmModal({
       isOpen: true,
-      title: config.title || "Are you sure?",
+      title: config.title || t("studies.areYouSure"),
       message: config.message || "",
-      confirmText: config.confirmText || "Confirm",
-      cancelText: config.cancelText || "Cancel",
+      confirmText: config.confirmText || t("adminDashboard.confirm"),
+      cancelText: config.cancelText || t("common.cancel"),
       variant: config.variant || "danger",
       icon: config.icon || "alert-triangle",
       onConfirm: config.onConfirm,
@@ -180,7 +181,7 @@ export default function StudiesDirectoryPage() {
       await api.unapplyFromStudy(studyId);
       loadMyApplications();
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not withdraw application.");
+      alert(err instanceof ApiError ? err.detail : t("studies.unapplyError"));
       loadData();
     } finally {
       setActionLoadingId(null);
@@ -208,7 +209,7 @@ export default function StudiesDirectoryPage() {
       await api.clearSurveyResponse(studyId);
       loadMyApplications();
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not delete survey response.");
+      alert(err instanceof ApiError ? err.detail : t("studies.deleteResponseError"));
       loadData();
     } finally {
       setActionLoadingId(null);
@@ -233,7 +234,7 @@ export default function StudiesDirectoryPage() {
       await api.clearAllCompletedSurveys();
       loadData();
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not clear completed surveys.");
+      alert(err instanceof ApiError ? err.detail : t("studies.clearCompletedError"));
     } finally {
       setClearingAll(false);
     }
@@ -250,7 +251,7 @@ export default function StudiesDirectoryPage() {
       setMyApplications((prev) => prev.filter((a) => a.id !== appId));
       loadMyApplications();
     } catch (err) {
-      alert(err instanceof ApiError ? err.detail : "Could not remove application.");
+      alert(err instanceof ApiError ? err.detail : t("studies.removeApplicationError"));
     } finally {
       setActionLoadingId(null);
     }
@@ -264,7 +265,7 @@ export default function StudiesDirectoryPage() {
   return (
     <MobileLayout title={t("studies.title")} onBack={() => navigate(-1)}>
       {/* Top Main Tabs: Open Studies vs My Applications vs Workshops */}
-      <div className="ch-service-tabs-row" role="tablist" aria-label="Studies navigation views">
+      <div className="ch-service-tabs-row" role="tablist" aria-label={t("studies.navigationLabel")}>
         <button
           type="button"
           role="tab"
@@ -293,15 +294,15 @@ export default function StudiesDirectoryPage() {
           onClick={() => navigate("/workshops")}
         >
           <Icon name="calendar" size={14} style={{ marginRight: 6 }} />
-          Workshops
+          {t("nav.workshops")}
         </button>
       </div>
 
       {/* Screen-reader live region announcing tab and study count updates */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {tab === "open"
-          ? (!studiesLoading && !studiesError && `${liveStudies.length} open research ${liveStudies.length === 1 ? "study" : "studies"} available`)
-          : (!myAppsLoading && !myAppsError && `${myApplications.length} active ${myApplications.length === 1 ? "application" : "applications"}`)}
+          ? (!studiesLoading && !studiesError && `${liveStudies.length} ${t("studies.openStudiesAvailable")}`)
+          : (!myAppsLoading && !myAppsError && `${myApplications.length} ${t("studies.activeApplications")}`)}
       </div>
 
       {tab === "open" && (
@@ -318,10 +319,10 @@ export default function StudiesDirectoryPage() {
             return (
               <div className="ch-study-card" key={s.id}>
                 <div className="ch-study-card__header-row">
-                  <StatusChip label={s.state} tone={STATE_TONE[s.state] || "neutral"} icon="" />
+                  <StatusChip label={t(`studies.state.${s.state}`)} tone={STATE_TONE[s.state] || "neutral"} icon="" />
                   {s.created_at && (
                     <span className="ch-study-card__header-date" title={new Date(s.created_at).toLocaleString()}>
-                      {formatPostedAgo(s.created_at)}
+                      {formatPostedAgo(s.created_at, lang, t("studies.posted"))}
                     </span>
                   )}
                 </div>
@@ -346,7 +347,7 @@ export default function StudiesDirectoryPage() {
                 <div className="ch-study-card__meta">
                   {s.honorarium && <span>{s.honorarium}</span>}
                   {s.participant_limit && <span>{t("studies.limit")} {s.participant_limit} {t("studies.participants")}</span>}
-                  {s.closing_date && <span>{t("studies.closes")} {new Date(s.closing_date).toLocaleDateString()}</span>}
+                  {s.closing_date && <span>{t("studies.closes")} {new Date(s.closing_date).toLocaleDateString(locale)}</span>}
                 </div>
 
                 {applied ? (
@@ -386,14 +387,14 @@ export default function StudiesDirectoryPage() {
           {!user ? (
             <div style={{ textAlign: "center", padding: "32px 16px" }}>
               <p style={{ color: "var(--color-sage)", fontSize: "14px", marginBottom: "14px" }}>
-                You are browsing as a guest. Create an account or log in to track your study applications.
+                {t("studies.guestPrompt")}
               </p>
               <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
                 <Button variant="accent" onClick={() => navigate("/signup")}>
-                  Create Free Account
+                  {t("common.createFreeAccount")}
                 </Button>
                 <Button variant="secondary" onClick={() => navigate("/login")}>
-                  Log In
+                  {t("login.button")}
                 </Button>
               </div>
             </div>
@@ -403,7 +404,7 @@ export default function StudiesDirectoryPage() {
                 <div className="ch-studies-batch-bar">
                   <span className="ch-studies-batch-text">
                     <Icon name="check-circle" size={15} style={{ marginRight: 6, color: "var(--color-positive)" }} />
-                    <strong>{completedCount}</strong> completed surveys
+                    <strong>{completedCount}</strong> {t("studies.completedSurveys")}
                   </span>
                   <button
                     type="button"
@@ -435,7 +436,7 @@ export default function StudiesDirectoryPage() {
                         tone={APPLICATION_TONE[statusKey] || "neutral"}
                       />
                       <span className="ch-study-card__header-date">
-                        {new Date(a.applied_at).toLocaleDateString()}
+                        {new Date(a.applied_at).toLocaleDateString(locale)}
                       </span>
                     </div>
 
@@ -450,7 +451,7 @@ export default function StudiesDirectoryPage() {
 
                     <div className="ch-study-card__meta">
                       {a.study_honorarium && <span>{a.study_honorarium}</span>}
-                      <span>{t("studies.appliedOn")} {new Date(a.applied_at).toLocaleDateString()}</span>
+                      <span>{t("studies.appliedOn")} {new Date(a.applied_at).toLocaleDateString(locale)}</span>
                     </div>
 
                     {/* Action buttons depending on application status & completion */}
