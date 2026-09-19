@@ -19,6 +19,12 @@ import os
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # Ensure backend root is on sys.path
 backend_dir = Path(__file__).resolve().parent
 if str(backend_dir) not in sys.path:
@@ -31,7 +37,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
-from app.database import Base
+from app.database import Base, sync_db_schema
 from app import models, utils
 
 def get_engine():
@@ -61,8 +67,8 @@ def seed_database():
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = Session()
 
-    print("Ensuring all database tables exist...")
-    Base.metadata.create_all(bind=engine)
+    print("Ensuring all database tables and schema exist...")
+    sync_db_schema(engine)
 
     print("Clearing old seed data...")
     with engine.connect() as conn:
@@ -258,6 +264,38 @@ def seed_database():
     db.add_all([app1, app2])
     db.commit()
 
+    print("Seeding Peer Service Ratings & Reviews...")
+    r1 = models.ServiceRating(
+        service_id=s1.id,
+        user_id=sipho.id,
+        score=5,
+        comment="Fast emergency response and fixed the pipe properly. Very reliable local plumber!",
+        created_at=now - timedelta(days=2),
+    )
+    r2 = models.ServiceRating(
+        service_id=s1.id,
+        user_id=thabo.id,
+        score=5,
+        comment="Lungile helped unblock our community centre drain. Excellent workmanship.",
+        created_at=now - timedelta(days=1),
+    )
+    r3 = models.ServiceRating(
+        service_id=s2.id,
+        user_id=ayanda.id,
+        score=5,
+        comment="Patient and clear math tutor. My nephew's test score improved noticeably!",
+        created_at=now - timedelta(days=1),
+    )
+    r4 = models.ServiceRating(
+        service_id=s3.id,
+        user_id=sipho.id,
+        score=4,
+        comment="Delicious traditional stew for our gathering. Everyone enjoyed the meal.",
+        created_at=now - timedelta(hours=18),
+    )
+    db.add_all([r1, r2, r3, r4])
+    db.commit()
+
     print("Seeding Research Studies & In-House Survey Engine...")
     study1 = models.StudyListing(
         researcher_id=dr_nomvula.id,
@@ -438,7 +476,13 @@ def seed_database():
         content="Quarter 4 Community Research Ethics Submissions are now open. Please review the updated community consent guidelines.",
         created_at=now - timedelta(days=5),
     )
-    db.add_all([ann1, ann2])
+    ann3 = models.Announcement(
+        author_id=admin.id,
+        audience="Community Members",
+        content="Free community Wi-Fi voucher renewals and digital literacy assistance are available at the library tech desk this Saturday.",
+        created_at=now - timedelta(hours=6),
+    )
+    db.add_all([ann1, ann2, ann3])
     db.commit()
 
     print("Seeding Moderation Reports & Audit Trail...")
@@ -483,16 +527,16 @@ def seed_database():
 
     db.close()
     print("========================================================")
-    print("✅ SUCCESS! CommHub database has been populated with mock data!")
+    print("[SUCCESS] CommHub database has been populated with mock data!")
     print("========================================================")
     print("Sample Login Accounts (PIN: 12345 for all):")
-    print("  • Admin:              chief_admin   / 12345")
-    print("  • Verified Researcher: dr_nomvula    / 12345")
-    print("  • Pending Researcher:  prof_khalid   / 12345")
-    print("  • Community Member:    sipho_member  / 12345")
-    print("  • Community Member:    ayanda_m      / 12345")
-    print("  • Community Member:    thabo_k       / 12345")
-    print("  • Community Member:    lungile_d     / 12345")
+    print("  - Admin:               chief_admin   / 12345")
+    print("  - Verified Researcher: dr_nomvula    / 12345")
+    print("  - Pending Researcher:  prof_khalid   / 12345")
+    print("  - Community Member:    sipho_member  / 12345")
+    print("  - Community Member:    ayanda_m      / 12345")
+    print("  - Community Member:    thabo_k       / 12345")
+    print("  - Community Member:    lungile_d     / 12345")
     print("========================================================")
 
 

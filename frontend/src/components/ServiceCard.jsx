@@ -55,6 +55,7 @@ export default function ServiceCard({
   onEdit,
   onDelete,
   onReport,
+  onRate,
   onRequireAuth,
   lowDataMode = false,
   isPhotoRevealed = false,
@@ -85,7 +86,7 @@ export default function ServiceCard({
   return (
     <div className={`ch-service-full-card ${isMine ? "ch-service-full-card--mine" : ""}`} key={service.id}>
       <div className="ch-service-card-top">
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
           <StatusChip
             label={service.type === "request" ? requestedLabel : offeredLabel}
             tone={service.type === "request" ? "warning" : "positive"}
@@ -96,6 +97,18 @@ export default function ServiceCard({
               Your Post
             </span>
           )}
+          <button
+            type="button"
+            className="ch-service-rating-badge"
+            title={t ? (t("ratings.modalTitle") || "View reviews and ratings") : "View reviews and ratings"}
+            onClick={() => onRate && onRate(service)}
+          >
+            <Icon name="star-fill" size={12} style={{ color: "#f59e0b" }} />
+            <span>{service.average_rating ? service.average_rating.toFixed(1) : (t ? (t("services.newListing") || "New") : "New")}</span>
+            {service.rating_count > 0 && (
+              <span className="ch-service-rating-count">({service.rating_count})</span>
+            )}
+          </button>
         </div>
 
         {isMine ? (
@@ -225,75 +238,87 @@ export default function ServiceCard({
 
       <div className="ch-service-full-card__foot">
         <span className="ch-service-price">{priceLabel}</span>
-        {!isMine && (
-          <div className="ch-service-actions">
-            {service.poster_phone ? (
-              user ? (
-                <a
-                  href={formatWhatsAppUrl(service.poster_phone, service)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ch-contact-btn ch-contact-btn--whatsapp"
-                  title={`WhatsApp: ${service.poster_phone}`}
-                >
-                  <Icon name="whatsapp" size={15} />
-                  <span>{whatsappLabel}</span>
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  className="ch-contact-btn ch-contact-btn--whatsapp"
-                  title="Create an account to contact this provider"
-                  onClick={() => {
-                    if (onRequireAuth) {
-                      onRequireAuth("contact service providers or request services");
-                    }
-                  }}
-                >
-                  <Icon name="whatsapp" size={15} />
-                  <span>{whatsappLabel}</span>
-                </button>
-              )
-            ) : (
-              <button
-                type="button"
-                className="ch-contact-btn ch-contact-btn--disabled"
-                title={noPhoneHint}
-                onClick={() => alert(noPhoneHint)}
-              >
-                <Icon name="whatsapp" size={15} />
-                <span>{whatsappLabel}</span>
-              </button>
-            )}
+        <div className="ch-service-actions">
+          <button
+            type="button"
+            className="ch-contact-btn ch-contact-btn--reviews"
+            title={isMine ? (t ? (t("ratings.communityFeedback") || "Peer reviews") : "Peer reviews") : (t ? (t("services.rateService") || "Rate & Review") : "Rate & Review")}
+            onClick={() => onRate && onRate(service)}
+          >
+            <Icon name="star" size={14} />
+            <span>{service.rating_count > 0 ? `${service.rating_count} ${t ? (t("services.reviews") || "Reviews") : "Reviews"}` : (isMine ? `0 ${t ? (t("services.reviews") || "Reviews") : "Reviews"}` : (t ? (t("services.rate") || "Rate") : "Rate"))}</span>
+          </button>
 
-            {service.poster_email ? (
-              user ? (
-                <a
-                  href={formatEmailUrl(service.poster_email, service)}
-                  className="ch-contact-btn ch-contact-btn--email"
-                  title={`Email: ${service.poster_email}`}
-                >
-                  <Icon name="mail" size={15} />
-                  <span>{emailLabel}</span>
-                </a>
+          {!isMine && (
+            <>
+              {service.poster_phone ? (
+                user ? (
+                  <a
+                    href={formatWhatsAppUrl(service.poster_phone, service)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ch-contact-btn ch-contact-btn--whatsapp"
+                    title={`WhatsApp: ${service.poster_phone}`}
+                  >
+                    <Icon name="whatsapp" size={15} />
+                    <span>{whatsappLabel}</span>
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    className="ch-contact-btn ch-contact-btn--whatsapp"
+                    title="Create an account to contact this provider"
+                    onClick={() => {
+                      if (onRequireAuth) {
+                        onRequireAuth("contact service providers or request services");
+                      }
+                    }}
+                  >
+                    <Icon name="whatsapp" size={15} />
+                    <span>{whatsappLabel}</span>
+                  </button>
+                )
               ) : (
                 <button
                   type="button"
-                  className="ch-contact-btn ch-contact-btn--email"
-                  title="Create an account to contact this provider"
-                  onClick={() => {
-                    if (onRequireAuth) {
-                      onRequireAuth("contact service providers via email");
-                    }
-                  }}
+                  className="ch-contact-btn ch-contact-btn--disabled"
+                  title={noPhoneHint}
+                  onClick={() => alert(noPhoneHint)}
                 >
-                  <Icon name="mail" size={15} />
-                  <span>{emailLabel}</span>
+                  <Icon name="whatsapp" size={15} />
+                  <span>{whatsappLabel}</span>
                 </button>
-              )
-            ) : null}
-          </div>
-        )}
+              )}
+
+              {service.poster_email ? (
+                user ? (
+                  <a
+                    href={formatEmailUrl(service.poster_email, service)}
+                    className="ch-contact-btn ch-contact-btn--email"
+                    title={`Email: ${service.poster_email}`}
+                  >
+                    <Icon name="mail" size={15} />
+                    <span>{emailLabel}</span>
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    className="ch-contact-btn ch-contact-btn--email"
+                    title="Create an account to contact this provider"
+                    onClick={() => {
+                      if (onRequireAuth) {
+                        onRequireAuth("contact service providers via email");
+                      }
+                    }}
+                  >
+                    <Icon name="mail" size={15} />
+                    <span>{emailLabel}</span>
+                  </button>
+                )
+              ) : null}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

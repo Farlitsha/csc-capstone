@@ -14,6 +14,7 @@ import GuestAuthModal from "../components/GuestAuthModal";
 import ConfirmModal from "../components/ConfirmModal";
 import ServiceCard from "../components/ServiceCard";
 import ReportServiceModal from "../components/ReportServiceModal";
+import ServiceRatingModal from "../components/ServiceRatingModal";
 import { formatPostedAgo } from "../lib/dateUtils";
 import "./ServicesDirectoryPage.css";
 
@@ -81,6 +82,18 @@ export default function ServicesDirectoryPage() {
   const [revealedPhotos, setRevealedPhotos] = useState([]);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [guestModalAction, setGuestModalAction] = useState("");
+  const [ratingModalService, setRatingModalService] = useState(null);
+
+  function handleRatingSubmitted(serviceId, { average_rating, rating_count }) {
+    setServices((prev) =>
+      prev.map((s) =>
+        s.id === serviceId ? { ...s, average_rating, rating_count } : s
+      )
+    );
+    if (ratingModalService && ratingModalService.id === serviceId) {
+      setRatingModalService((prev) => prev ? { ...prev, average_rating, rating_count } : null);
+    }
+  }
 
   // Editing state
   const [editingService, setEditingService] = useState(null);
@@ -336,6 +349,7 @@ export default function ServicesDirectoryPage() {
             onEdit={startEdit}
             onDelete={handleDelete}
             onReport={openReportModal}
+            onRate={(serviceToRate) => setRatingModalService(serviceToRate)}
             onRequireAuth={(action) => {
               setGuestModalAction(action);
               setGuestModalOpen(true);
@@ -502,6 +516,17 @@ export default function ServicesDirectoryPage() {
         variant="danger"
         icon="trash"
         loading={deleteConfirmModal.loading}
+      />
+
+      <ServiceRatingModal
+        service={ratingModalService}
+        isOpen={Boolean(ratingModalService)}
+        onClose={() => setRatingModalService(null)}
+        onRatingSubmitted={handleRatingSubmitted}
+        onOpenGuestModal={(action) => {
+          setGuestModalAction(action);
+          setGuestModalOpen(true);
+        }}
       />
     </MobileLayout>
   );

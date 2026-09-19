@@ -258,3 +258,109 @@ def test_clear_all_completed_surveys(client, study_with_survey, community_user, 
     my_apps_after = client.get("/applications/me", headers=community_user_auth_headers).json()
     assert len(my_apps_after) == 0
 
+
+def test_researcher_can_modify_questions_before_responses(client, study_with_survey, verified_researcher_auth_headers):
+    """Researcher can change questions if nobody has submitted responses yet."""
+    study, survey, _ = study_with_survey
+    payload = {
+        "title": "Updated Title Before Any Responses",
+        "description": "Updated Description",
+        "questions": [
+            {"type": "short_text", "prompt": "Brand new question 1?", "required": True},
+            {"type": "rating", "prompt": "Brand new rating question?", "required": False},
+        ],
+    }
+    resp = client.put(f"/studies/{study.id}", json=payload, headers=verified_researcher_auth_headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["can_edit_questions"] is True
+    assert data["response_count"] == 0
+
+    # Also verify get_study_survey shows updated questions and can_edit_questions=True
+    survey_resp = client.get(f"/studies/{study.id}/survey")
+    assert survey_resp.status_code == 200
+    survey_data = survey_resp.json()
+    assert survey_data["can_edit_questions"] is True
+    assert len(survey_data["questions"]) == 2
+    assert survey_data["questions"][0]["prompt"] == "Brand new question 1?"
+
+
+def test_researcher_cannot_modify_questions_after_responses(client, study_with_survey, community_user, community_user_auth_headers, verified_researcher_auth_headers, db_session):
+    """Researcher CANNOT change questions if at least one participant has taken the survey."""
+    study, survey, questions = study_with_survey
+    app_record = models.Application(
+        study_id=study.id, user_id=community_user.id, status=models.ApplicationStatus.ACCEPTED
+    )
+    db_session.add(app_record)
+    db_session.commit()
+
+    # Participant takes the survey
+    payload = {
+        "answers": [
+            {"question_id": questions[0].id, "value": "Train"},
+            {"question_id": questions[1].id, "value": "3"},
+        ]
+    }
+    client.post(f"/studies/{study.id}/survey/responses", json=payload, headers=community_user_auth_headers)
+
+    # Verify survey indicates can_edit_questions=False
+    survey_resp = client.get(f"/studies/{study.id}/survey")
+    assert survey_resp.status_code == 200
+    assert survey_resp.json()["can_edit_questions"] is False
+    assert survey_resp.json()["response_count"] == 1
+
+    # Attempt to change questions via PUT /studies/{id}/survey should be rejected with 400
+    new_questions = {
+        "questions": [
+            {"type": "yes_no", "prompt": "Trying to modify question?", "required": True}
+        ]
+    }
+    err_resp = client.put(f"/studies/{study.id}/survey", json=new_questions, headers=verified_researcher_auth_headers)
+    assert err_resp.status_code == 400
+    assert "Cannot modify questions" in err_resp.json()["detail"]
+
+    # Attempt to change questions via PUT /studies/{id} should also be rejected with 400
+    update_study_payload = {
+        "title": study.title,
+        "description": study.description,
+        "questions": [
+            {"type": "yes_no", "prompt": "Trying to modify question via update_study?", "required": True}
+        ]
+    }
+    err_resp2 = client.put(f"/studies/{study.id}", json=update_study_payload, headers=verified_researcher_auth_headers)
+    assert err_resp2.status_code == 400
+    assert "Cannot modify questions" in err_resp2.json()["detail"]
+
+
+def test_researcher_can_update_study_metadata_even_after_responses(client, study_with_survey, community_user, community_user_auth_headers, verified_researcher_auth_headers, db_session):
+    """Researcher CAN still update study details (title, honorarium, etc.) without altering questions even if responses exist."""
+    study, survey, questions = study_with_survey
+    app_record = models.Application(
+        study_id=study.id, user_id=community_user.id, status=models.ApplicationStatus.ACCEPTED
+    )
+    db_session.add(app_record)
+    db_session.commit()
+
+    # Participant takes the survey
+    payload = {
+        "answers": [
+            {"question_id": questions[0].id, "value": "Train"},
+            {"question_id": questions[1].id, "value": "3"},
+        ]
+    }
+    client.post(f"/studies/{study.id}/survey/responses", json=payload, headers=community_user_auth_headers)
+
+    # Update metadata without questions payload
+    meta_payload = {
+        "title": "Renamed Study Title After Responses",
+        "description": "Updated research description explaining extension.",
+        "honorarium": "R100 airtime",
+    }
+    resp = client.put(f"/studies/{study.id}", json=meta_payload, headers=verified_researcher_auth_headers)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["title"] == "Renamed Study Title After Responses"
+    assert data["can_edit_questions"] is False
+    assert data["response_count"] == 1
+
+

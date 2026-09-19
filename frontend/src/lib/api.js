@@ -138,6 +138,9 @@ export const api = {
   applyToService: (id, message) => request(`/services/${id}/apply`, { method: "POST", body: { message } }),
   closeService: (id) => request(`/services/${id}/close`, { method: "PATCH" }),
   deleteService: (id) => request(`/services/${id}`, { method: "DELETE" }),
+  rateService: (serviceId, payload) => request(`/services/${serviceId}/ratings`, { method: "POST", body: payload }),
+  getServiceRatings: (serviceId) => request(`/services/${serviceId}/ratings`, { auth: false }),
+  deleteMyServiceRating: (serviceId) => request(`/services/${serviceId}/ratings/mine`, { method: "DELETE" }),
 
   reportService: (serviceId, reason) => request(`/services/${serviceId}/report`, { method: "POST", body: { reason } }),
   listReports: (statusFilter = null) =>

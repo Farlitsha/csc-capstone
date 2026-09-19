@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import MobileLayout from "../layouts/MobileLayout";
@@ -9,15 +9,17 @@ import Icon from "../components/Icon";
 import GuestAuthModal from "../components/GuestAuthModal";
 import ServiceCard from "../components/ServiceCard";
 import ReportServiceModal from "../components/ReportServiceModal";
+import ServiceRatingModal from "../components/ServiceRatingModal";
 import { api } from "../lib/api";
-import { useUnreadNotifications, isAnnouncementNew } from "../lib/notifications";
+import { useUnreadNotifications } from "../lib/notifications";
 import { formatTimeAgo, formatPostedAgo } from "../lib/dateUtils";
 import "./CommunityHomePage.css";
 
 export default function CommunityHomePage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { unreadCount, readIds } = useUnreadNotifications(user);
+  const { unreadCount } = useUnreadNotifications(user);
   const [services, setServices] = useState([]);
   const [workshops, setWorkshops] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
@@ -26,7 +28,9 @@ export default function CommunityHomePage() {
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [guestModalAction, setGuestModalAction] = useState("");
   const [reportingService, setReportingService] = useState(null);
+  const [ratingModalService, setRatingModalService] = useState(null);
   const [revealedPhotos, setRevealedPhotos] = useState([]);
+  const [newCount, setNewCount] = useState(0);
   const [lowDataMode] = useState(() => {
     try {
       return localStorage.getItem("commhub_low_data") === "true";
@@ -59,14 +63,29 @@ export default function CommunityHomePage() {
       .finally(() => setLoading(false));
   }, [user]);
 
-
-
   const relevantAnnouncements = announcements.filter((a) => {
     if (!a.audience || a.audience === "All members") return true;
+    if ((!user || user?.role === "community_member") && a.audience === "Community Members") return true;
     if (user?.role === "researcher" && a.audience === "Researchers") return true;
     if (user?.role === "admin") return true;
     return false;
   });
+
+  useEffect(() => {
+    if (relevantAnnouncements.length === 0) {
+      setNewCount(0);
+      return;
+    }
+    const lastSeenId = parseInt(localStorage.getItem("commhub_last_seen_announcement_id") || "0", 10);
+    if (lastSeenId > 0) {
+      const unread = relevantAnnouncements.filter((a) => a.id > lastSeenId).length;
+      setNewCount(unread);
+    } else {
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const recent = relevantAnnouncements.filter((a) => new Date(a.created_at).getTime() > sevenDaysAgo).length;
+      setNewCount(recent > 0 ? recent : 1);
+    }
+  }, [relevantAnnouncements]);
 
   return (
     <MobileLayout>
@@ -83,26 +102,14 @@ export default function CommunityHomePage() {
       </section>
 
       {!user && (
-        <section className="ch-guest-banner-section" style={{ margin: "0 0 16px 0" }}>
-          <div style={{
-            background: "linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%)",
-            border: "1px solid #bae6fd",
-            borderRadius: "12px",
-            padding: "14px 16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <section className="ch-guest-banner-section">
+          <div className="ch-guest-banner">
+            <div className="ch-guest-banner__head">
               <Icon name="eye" size={16} style={{ color: "#0284c7" }} />
-              <span style={{ fontWeight: 600, fontSize: "14px", color: "#0369a1" }}>
-                {t("guest.bannerTitle")}
-              </span>
+              <span>{t("guest.bannerTitle")}</span>
             </div>
-            <p style={{ margin: 0, fontSize: "13px", lineHeight: "1.45", color: "#334155" }}>
-              {t("guest.bannerText")}
-            </p>
-            <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
+            <p>{t("guest.bannerText")}</p>
+            <div className="ch-guest-banner__actions">
               <Link to="/signup" style={{ textDecoration: "none" }}>
                 <Button variant="accent" style={{ fontSize: "12px", padding: "6px 14px" }}>
                   {t("guest.createAccount")}
@@ -120,27 +127,42 @@ export default function CommunityHomePage() {
 
       {relevantAnnouncements.length > 0 && (
         <section className="ch-announcement-section">
-          <div className="ch-announcement-banner">
+          <div
+            className="ch-announcement-banner"
+            onClick={() => navigate("/announcements")}
+            style={{ cursor: "pointer" }}
+            role="region"
+            aria-label="Platform announcement"
+          >
             <div className="ch-announcement-banner__head">
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span className="ch-announcement-badge">
                   <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
                   {t("home.announcementsBadge")}
                 </span>
-                {isAnnouncementNew(relevantAnnouncements[0], readIds) && (
-                  <span className="ch-new-indicator-tag">NEW</span>
+                {unreadCount > 0 ? (
+                  <span className="ch-announcement-new-badge">
+                    {unreadCount === 1 ? (t("announcements.oneNew") || "1 New") : `${unreadCount} ${t("announcements.newCount") || "New"}`}
+                  </span>
+                ) : (
+                  newCount > 0 && (
+                    <span className="ch-announcement-new-badge">
+                      {newCount === 1 ? (t("announcements.oneNew") || "1 New") : `${newCount} ${t("announcements.newCount") || "New"}`}
+                    </span>
+                  )
                 )}
               </div>
-              <Link to="/announcements" className="ch-announcement-banner__link">
-                {t("home.viewAll")} ({relevantAnnouncements.length})
-                {unreadCount > 0 && (
-                  <span className="ch-home-unread-dot" title={`${unreadCount} unread`} />
-                )}
+              <Link
+                to="/announcements"
+                className="ch-announcement-banner__link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {t("home.viewAll")}
               </Link>
             </div>
             <p>{relevantAnnouncements[0].content}</p>
             <span className="ch-announcement-banner__meta" title={new Date(relevantAnnouncements[0].created_at).toLocaleString()}>
-              Broadcast by @{relevantAnnouncements[0].author_username} • {formatPostedAgo(relevantAnnouncements[0].created_at) || new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
+              {t("announcements.broadcastBy")} @{relevantAnnouncements[0].author_username} • {formatPostedAgo(relevantAnnouncements[0].created_at) || new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
             </span>
           </div>
         </section>
@@ -182,6 +204,7 @@ export default function CommunityHomePage() {
               t={t}
               isMine={s.poster_id === user?.id || (user?.username && s.poster_username === user?.username)}
               onReport={(serviceToReport) => setReportingService(serviceToReport)}
+              onRate={(serviceToRate) => setRatingModalService(serviceToRate)}
               onRequireAuth={(action) => {
                 setGuestModalAction(action);
                 setGuestModalOpen(true);
@@ -240,7 +263,6 @@ export default function CommunityHomePage() {
         </div>
       </section>
 
-
       <section className="ch-section">
         <div className="ch-section__head">
           <h2>{t("home.upcoming") || "Upcoming workshops & events"}</h2>
@@ -284,6 +306,20 @@ export default function CommunityHomePage() {
       <ReportServiceModal
         service={reportingService}
         onClose={() => setReportingService(null)}
+      />
+
+      <ServiceRatingModal
+        service={ratingModalService}
+        isOpen={Boolean(ratingModalService)}
+        onClose={() => setRatingModalService(null)}
+        onRatingSubmitted={(updatedSvc) => {
+          setServices((prev) => prev.map((s) => (s.id === updatedSvc.id ? { ...s, ...updatedSvc } : s)));
+          setRatingModalService(null);
+        }}
+        onOpenGuestModal={(action) => {
+          setGuestModalAction(action);
+          setGuestModalOpen(true);
+        }}
       />
     </MobileLayout>
   );

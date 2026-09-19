@@ -1,6 +1,3 @@
-// Mirrors the four languages already supported on the backend/PyQt side
-// (see backend/app/translations/*.json) - kept as a separate dictionary here
-// because the React UI's copy differs from the old Jinja templates it replaced.
 export const LANGUAGES = ["en", "af", "xh", "zu"];
 
 export const translations = {
@@ -80,7 +77,7 @@ export const translations = {
       "bannerText": "You are exploring CommHub without an account. You can browse services, studies, and workshops freely. To post listings, apply to studies, or join workshops, create a free account."
     },
     "home": {
-      "greeting": "Hello",
+      "greeting": "Molo",
       "subtitle": "Ocean View Community Hub",
       "openServices": "OPEN SERVICES",
       "activeStudies": "ACTIVE STUDIES",
@@ -101,8 +98,8 @@ export const translations = {
       "title": "Services",
       "search": "Search services…",
       "postButton": "+ Post a service",
-      "offered": "Offering",
-      "requested": "Requesting",
+      "offered": "Offered",
+      "requested": "Requested",
       "whatsapp": "WhatsApp",
       "email": "Email",
       "noPhone": "No phone number",
@@ -116,7 +113,12 @@ export const translations = {
       "guestPrompt": "You are browsing as a guest. Create an account or log in to post, edit, and manage your personal listings.",
       "noServicesExplore": "No services posted by other community members found in this category.",
       "noServicesMine": "You haven't posted any services yet. Click above to post your first service!",
-      "reportListing": "Report listing"
+      "reportListing": "Report listing",
+      "rateService": "Rate & Review",
+      "reviews": "Reviews",
+      "noReviews": "No reviews yet",
+      "rate": "Rate",
+      "newListing": "New"
     },
     "postService": {
       "title": "Post a Service",
@@ -137,7 +139,7 @@ export const translations = {
     "studies": {
       "title": "Research Studies",
       "openTab": "Open studies",
-      "myAppsTab": "My applications",
+      "myAppsTab": "My studies",
       "noOpen": "No studies are open right now — check back soon.",
       "applyButton": "Apply to participate",
       "applied": "Applied",
@@ -157,14 +159,14 @@ export const translations = {
       "unapply": "Unapply",
       "unapplying": "Unapplying…",
       "unapplyConfirm": "Are you sure you want to unapply from this study?",
-      "clearSurvey": "Delete my response",
+      "clearSurvey": "Clear Completed Survey",
       "deleteMyResponse": "Delete my response",
-      "clearing": "Deleting…",
+      "clearing": "Clearing…",
       "deleting": "Deleting…",
-      "clearConfirm": "Are you sure you want to delete your response and remove this study from your history?",
-      "clearAllCompleted": "Delete all completed responses",
+      "clearConfirm": "Are you sure you want to clear this completed survey and remove it from your history?",
+      "clearAllCompleted": "Clear all completed surveys",
       "deleteAllCompleted": "Delete all completed responses",
-      "clearAllConfirm": "Are you sure you want to delete all completed responses from your history?",
+      "clearAllConfirm": "Are you sure you want to clear all completed surveys from your history?",
       "dismiss": "Dismiss",
       "posted": "Posted",
       "completedSurveys": "completed surveys",
@@ -180,7 +182,11 @@ export const translations = {
       "clearCompletedError": "Could not clear completed surveys.",
       "removeApplicationError": "Could not remove application.",
       "areYouSure": "Are you sure?",
-      "state": { "live": "Live", "draft": "Draft", "closed": "Closed" }
+      "state": {
+        "live": "Live",
+        "draft": "Draft",
+        "closed": "Closed"
+      }
     },
     "workshops": {
       "title": "Workshops",
@@ -233,10 +239,14 @@ export const translations = {
       "heading": "Community Announcements",
       "loading": "Loading announcements…",
       "emptyTitle": "No announcements yet",
-      "emptyDesc": "Admin broadcasts and platform updates will appear here.",
+      "emptyDesc": "Check back later for official platform and community notices.",
       "broadcastBy": "Broadcast by",
       "viewAll": "View all",
-      "badge": "Announcement"
+      "badge": "Announcement",
+      "oneNew": "1 New",
+      "newCount": "New",
+      "latest": "Latest",
+      "allMembers": "All members"
     },
     "profile": {
       "heading": "My Profile",
@@ -465,7 +475,12 @@ export const translations = {
       "takeDownError": "Could not complete take down.",
       "item": "Item",
       "targetId": "Target ID",
-      "targets": { "service": "Service", "study": "Study", "user": "User", "listing": "Listing" }
+      "targets": {
+        "service": "Service",
+        "study": "Study",
+        "user": "User",
+        "listing": "Listing"
+      }
     },
     "researcherDashboard": {
       "workspace": "RESEARCHER WORKSPACE",
@@ -544,6 +559,40 @@ export const translations = {
         "verified": "VERIFIED",
         "rejected": "REJECTED"
       }
+    },
+    "ratings": {
+      "modalTitle": "Peer Reviews & Ratings",
+      "by": "by",
+      "averageRating": "Average rating",
+      "noRatingsYet": "No reviews yet",
+      "oneReview": "1 peer review",
+      "reviewsCount": "peer reviews",
+      "selfNotice": "You posted this service. Service authors cannot rate their own listings.",
+      "guestNotice": "Sign in with your account to rate this service and share feedback.",
+      "signInBtn": "Sign In",
+      "yourRatingTitle": "Your Rating & Review",
+      "rateTitle": "Rate this Service",
+      "starSelect": "Select star rating",
+      "star1": "Poor",
+      "star2": "Fair",
+      "star3": "Good",
+      "star4": "Very Good",
+      "star5": "Excellent!",
+      "commentPlaceholder": "Share your experience with this service... (optional)",
+      "deleteRating": "Delete Rating",
+      "deleting": "Deleting…",
+      "updateRating": "Update Rating",
+      "submitRating": "Submit Rating",
+      "saving": "Saving…",
+      "communityFeedback": "Community Feedback",
+      "noReviewsEmpty": "No peer reviews yet. Be the first to share your experience with this provider!",
+      "ratingSuccess": "Thank you for your rating!",
+      "ratingUpdated": "Rating updated successfully!",
+      "ratingRemoved": "Rating removed.",
+      "loadError": "Could not load reviews for this service.",
+      "selfRateError": "You cannot rate your own service listing.",
+      "submitError": "Could not submit rating.",
+      "deleteError": "Could not delete rating."
     }
   },
   "af": {
@@ -658,7 +707,12 @@ export const translations = {
       "guestPrompt": "Jy blaai tans as 'n gas. Skep 'n rekening of teken in om jou persoonlike dienste te plaas, te wysig en te bestuur.",
       "noServicesExplore": "Geen dienste deur ander gemeenskapslede in hierdie kategorie gevind nie.",
       "noServicesMine": "Jy het nog geen dienste geplaas nie. Klik hierbo om jou eerste diens te plaas!",
-      "reportListing": "Rapporteer advertensie"
+      "reportListing": "Rapporteer advertensie",
+      "rateService": "Gradeer & Resenseer",
+      "reviews": "Resensies",
+      "noReviews": "Nog geen resensies nie",
+      "rate": "Gradeer",
+      "newListing": "Nuut"
     },
     "postService": {
       "title": "Plaas 'n Diens",
@@ -679,7 +733,7 @@ export const translations = {
     "studies": {
       "title": "Navorsingstudies",
       "openTab": "Oop studies",
-      "myAppsTab": "My aansoeke",
+      "myAppsTab": "My studies",
       "noOpen": "Geen studies is tans oop nie — kom kyk gou weer.",
       "applyButton": "Doen aansoek om deel te neem",
       "applied": "Aansoek gedoen",
@@ -699,14 +753,14 @@ export const translations = {
       "unapply": "Onttrek aansoek",
       "unapplying": "Onttrek tans…",
       "unapplyConfirm": "Is jy seker jy wil jou aansoek vir hierdie studie onttrek?",
-      "clearSurvey": "Skrap my antwoord",
+      "clearSurvey": "Vee voltooide opname uit",
       "deleteMyResponse": "Skrap my antwoord",
-      "clearing": "Skrap tans…",
+      "clearing": "Vee tans uit…",
       "deleting": "Skrap tans…",
-      "clearConfirm": "Is jy seker jy wil jou antwoord uitvee en hierdie studie van jou geskiedenis verwyder?",
-      "clearAllCompleted": "Skrap alle voltooide antwoorde",
+      "clearConfirm": "Is jy seker jy wil hierdie voltooide opname uitvee en van jou geskiedenis verwyder?",
+      "clearAllCompleted": "Vee alle voltooide opnames uit",
       "deleteAllCompleted": "Skrap alle voltooide antwoorde",
-      "clearAllConfirm": "Is jy seker jy wil alle voltooide antwoorde van jou geskiedenis uitvee?",
+      "clearAllConfirm": "Is jy seker jy wil alle voltooide opnames van jou geskiedenis uitvee?",
       "dismiss": "Verwerp",
       "posted": "Geplaas",
       "completedSurveys": "voltooide opnames",
@@ -722,7 +776,11 @@ export const translations = {
       "clearCompletedError": "Kon nie voltooide opnames uitvee nie.",
       "removeApplicationError": "Kon nie die aansoek verwyder nie.",
       "areYouSure": "Is jy seker?",
-      "state": { "live": "Aktief", "draft": "Konsep", "closed": "Gesluit" }
+      "state": {
+        "live": "Aktief",
+        "draft": "Konsep",
+        "closed": "Gesluit"
+      }
     },
     "workshops": {
       "title": "Werkswinkels",
@@ -773,12 +831,16 @@ export const translations = {
     "announcements": {
       "title": "Aankondigings",
       "heading": "Gemeenskapsaankondigings",
-      "loading": "Laai tans aankondigings…",
+      "loading": "Laai aankondigings tans…",
       "emptyTitle": "Nog geen aankondigings nie",
-      "emptyDesc": "Admin-uitsendings en platformopdaterings sal hier verskyn.",
+      "emptyDesc": "Kyk later weer vir amptelike platform- en gemeenskapskennisgewings.",
       "broadcastBy": "Uitgesaai deur",
       "viewAll": "Sien almal",
-      "badge": "Aankondiging"
+      "badge": "Aankondiging",
+      "oneNew": "1 Nuut",
+      "newCount": "Nuut",
+      "latest": "Nuutste",
+      "allMembers": "Alle lede"
     },
     "profile": {
       "heading": "My Profiel",
@@ -1007,7 +1069,12 @@ export const translations = {
       "takeDownError": "Kon nie die verwydering voltooi nie.",
       "item": "Item",
       "targetId": "Teiken-ID",
-      "targets": { "service": "Diens", "study": "Studie", "user": "Gebruiker", "listing": "Inskrywing" }
+      "targets": {
+        "service": "Diens",
+        "study": "Studie",
+        "user": "Gebruiker",
+        "listing": "Inskrywing"
+      }
     },
     "researcherDashboard": {
       "workspace": "NAVORSERWERKSPASIE",
@@ -1086,6 +1153,40 @@ export const translations = {
         "verified": "GEVERIFIEER",
         "rejected": "AFGEKEUR"
       }
+    },
+    "ratings": {
+      "modalTitle": "Eweknie-resensies & Graderings",
+      "by": "deur",
+      "averageRating": "Gemiddelde gradering",
+      "noRatingsYet": "Nog geen resensies nie",
+      "oneReview": "1 eweknie-resensie",
+      "reviewsCount": "eweknie-resensies",
+      "selfNotice": "Jy het hierdie diens geplaas. Diensverskaffers kan nie hul eie advertensies gradeer nie.",
+      "guestNotice": "Teken in met jou rekening om hierdie diens te gradeer en terugvoer te gee.",
+      "signInBtn": "Teken In",
+      "yourRatingTitle": "Jou Gradering & Resensie",
+      "rateTitle": "Gradeer hierdie Diens",
+      "starSelect": "Kies stergradering",
+      "star1": "Swak",
+      "star2": "Redelik",
+      "star3": "Goed",
+      "star4": "Baie Goed",
+      "star5": "Uitstekend!",
+      "commentPlaceholder": "Deel jou ondervinding met hierdie diens... (opsioneel)",
+      "deleteRating": "Verwyder Gradering",
+      "deleting": "Verwyder tans…",
+      "updateRating": "Dateer Gradering Op",
+      "submitRating": "Dien Gradering In",
+      "saving": "Stoor tans…",
+      "communityFeedback": "Gemeenskapsterugvoer",
+      "noReviewsEmpty": "Nog geen resensies nie. Wees die eerste om jou ervaring met hierdie verskaffer te deel!",
+      "ratingSuccess": "Dankie vir jou gradering!",
+      "ratingUpdated": "Gradering suksesvol opgedateer!",
+      "ratingRemoved": "Gradering verwyder.",
+      "loadError": "Kon nie resensies vir hierdie diens laai nie.",
+      "selfRateError": "Jy kan nie jou eie diensadvertensie gradeer nie.",
+      "submitError": "Kon nie gradering indien nie.",
+      "deleteError": "Kon nie gradering verwyder nie."
     }
   },
   "xh": {
@@ -1200,7 +1301,12 @@ export const translations = {
       "guestPrompt": "Ubrawuza njengomndwendwe. Yenza iakhawunti okanye ungene ukuze uthumele, uhlele, kwaye ulawule iinkonzo zakho.",
       "noServicesExplore": "Akukho nkonzo ithunyelwe ngamanye amalungu oluntu efumanekileyo kolu didi.",
       "noServicesMine": "Awukathumeli nkonzo okwangoku. Cofa apha ngasentla ukuthumela inkonzo yakho yokuqala!",
-      "reportListing": "Bika inkonzo"
+      "reportListing": "Bika inkonzo",
+      "rateService": "Linganisela kwaye Uhlole",
+      "reviews": "Uhlaziyo",
+      "noReviews": "Akukho luhlaziyo okwangoku",
+      "rate": "Linganisela",
+      "newListing": "Entsha"
     },
     "postService": {
       "title": "Bhengeza Inkonzo",
@@ -1221,7 +1327,7 @@ export const translations = {
     "studies": {
       "title": "Uphando Lwezifundo",
       "openTab": "Uphando oluvulekileyo",
-      "myAppsTab": "Izicelo zam",
+      "myAppsTab": "Izifundo zam",
       "noOpen": "Akukho phando luvulekileyo ngoku - phinda ujonge kamva.",
       "applyButton": "Faka isicelo sokubamba iqhaza",
       "applied": "Isicelo sifakiwe",
@@ -1241,14 +1347,14 @@ export const translations = {
       "unapply": "Rhoxisa isicelo",
       "unapplying": "Kuyarhoxiswa…",
       "unapplyConfirm": "Uqinisekile ufuna ukurhoxisa isicelo sakho kule fomu?",
-      "clearSurvey": "Cima impendulo yam",
+      "clearSurvey": "Cima uvavanyo olugqityiweyo",
       "deleteMyResponse": "Cima impendulo yam",
-      "clearing": "Iyacinywa…",
+      "clearing": "Kuyacinywa…",
       "deleting": "Iyacinywa…",
-      "clearConfirm": "Uqinisekile ufuna ukucima impendulo yakho kwaye ususe olu phononongo kwimbali yakho?",
-      "clearAllCompleted": "Cima zonke iimpendulo ezigqityiweyo",
+      "clearConfirm": "Uqinisekile ufuna ukucima olu vavanyo lugqityiweyo kwaye ulususe kwimbali yakho?",
+      "clearAllCompleted": "Cima lonke uvavanyo olugqityiweyo",
       "deleteAllCompleted": "Cima zonke iimpendulo ezigqityiweyo",
-      "clearAllConfirm": "Uqinisekile ufuna ukucima zonke iimpendulo ezigqityiweyo kwimbali yakho?",
+      "clearAllConfirm": "Uqinisekile ufuna ukucima lonke uvavanyo olugqityiweyo kwimbali yakho?",
       "dismiss": "Gxotha",
       "posted": "Ithunyelwe",
       "completedSurveys": "iisaveyi ezigqityiweyo",
@@ -1264,7 +1370,11 @@ export const translations = {
       "clearCompletedError": "Iisaveyi ezigqityiweyo azikwazanga ukucinywa.",
       "removeApplicationError": "Isicelo asikwazanga ukususwa.",
       "areYouSure": "Uqinisekile?",
-      "state": { "live": "Luyasebenza", "draft": "Uyilo", "closed": "Luvaliwe" }
+      "state": {
+        "live": "Luyasebenza",
+        "draft": "Uyilo",
+        "closed": "Luvaliwe"
+      }
     },
     "workshops": {
       "title": "Iindibano zocweyo",
@@ -1315,12 +1425,16 @@ export const translations = {
     "announcements": {
       "title": "Izaziso",
       "heading": "Izaziso zoLuntu",
-      "loading": "Kulayishwa izaziso…",
+      "loading": "Ilayisha izaziso…",
       "emptyTitle": "Akukho zaziso okwangoku",
-      "emptyDesc": "Ukusasazwa ngabalawuli kunye nohlaziyo lweqonga kuya kubonakala apha.",
-      "broadcastBy": "Isasazwe ngu-",
+      "emptyDesc": "Jonga kwakhona kamva ngezaziso ezisemthethweni.",
+      "broadcastBy": "Isasazwe ngu",
       "viewAll": "Bona zonke",
-      "badge": "Isaziso"
+      "badge": "Isaziso",
+      "oneNew": "1 Entsha",
+      "newCount": "Entsha",
+      "latest": "Kutsha nje",
+      "allMembers": "Amalungu onke"
     },
     "profile": {
       "heading": "Iprofayile Yam",
@@ -1549,7 +1663,12 @@ export const translations = {
       "takeDownError": "Ukususwa akukwazanga ukugqitywa.",
       "item": "Into",
       "targetId": "I-ID ekujoliswe kuyo",
-      "targets": { "service": "Inkonzo", "study": "Uphando", "user": "Umsebenzisi", "listing": "Uluhlu" }
+      "targets": {
+        "service": "Inkonzo",
+        "study": "Uphando",
+        "user": "Umsebenzisi",
+        "listing": "Uluhlu"
+      }
     },
     "researcherDashboard": {
       "workspace": "INDAWO YOKUSEBENZA YOMPHANDI",
@@ -1628,6 +1747,40 @@ export const translations = {
         "verified": "IQINISEKISIWE",
         "rejected": "YALIWE"
       }
+    },
+    "ratings": {
+      "modalTitle": "Uphononongo loLuntu noHlelo",
+      "by": "ngu",
+      "averageRating": "Umyinge woxabiso",
+      "noRatingsYet": "Akukho luhlaziyo okwangoku",
+      "oneReview": "Uphononongo olu-1 loluntu",
+      "reviewsCount": "uphononongo loluntu",
+      "selfNotice": "Uyiposile le nkonzo. Ababhali beenkonzo abakwazi ukuzilinganisela.",
+      "guestNotice": "Ngena nge-akhawunti yakho ukuze ulinganise le nkonzo kwaye wabelane ngempendulo.",
+      "signInBtn": "Ngena",
+      "yourRatingTitle": "Isilinganiso sakho noHlaziyo",
+      "rateTitle": "Linganisela le Nkonzo",
+      "starSelect": "Khetha inani leenkwenkwezi",
+      "star1": "Kubi",
+      "star2": "Kulungile",
+      "star3": "Kuhle",
+      "star4": "Kuhle Kakhulu",
+      "star5": "Gqwesileyo!",
+      "commentPlaceholder": "Yabelana ngamava akho ngale nkonzo... (ayinyanzelekanga)",
+      "deleteRating": "Cima Isilinganiso",
+      "deleting": "Iyacinywa…",
+      "updateRating": "Hlaziya Isilinganiso",
+      "submitRating": "Thumela Isilinganiso",
+      "saving": "Iyagcinwa…",
+      "communityFeedback": "Ingxelo yoLuntu",
+      "noReviewsEmpty": "Akukho ngxelo okwangoku. Yiba ngowokuqala ukwabelana ngamava akho nalo mntu!",
+      "ratingSuccess": "Enkosi ngesilinganiso sakho!",
+      "ratingUpdated": "Isilinganiso sihlaziywe ngempumelelo!",
+      "ratingRemoved": "Isilinganiso sicinyiwe.",
+      "loadError": "Ayikwazanga ukulayisha uphononongo lwale nkonzo.",
+      "selfRateError": "Awukwazi ukulinganisela inkonzo yakho.",
+      "submitError": "Ayikwazanga ukuthumela isilinganiso.",
+      "deleteError": "Ayikwazanga ukucima isilinganiso."
     }
   },
   "zu": {
@@ -1740,7 +1893,12 @@ export const translations = {
       "guestPrompt": "Ubuka njengesivakashi. Dala i-akhawunti noma ungene ukuze ubhale, uhlele, futhi uphathe izinsizakalo zakho.",
       "noServicesExplore": "Azikho izinsizakalo ezithunyelwe ngamanye amalungu omphakathi ezitholakale kulo mkhakha.",
       "noServicesMine": "Awukathumeli zinsizakalo okwamanje. Chofoza ngenhla ukuze uthumele insizakalo yakho yokuqala!",
-      "reportListing": "Bika isikhangiso"
+      "reportListing": "Bika isikhangiso",
+      "rateService": "Linganisa uphinde Ubukeze",
+      "reviews": "Ukubuyekezwa",
+      "noReviews": "Akukho ukubuyekezwa okwamanje",
+      "rate": "Linganisa",
+      "newListing": "Entsha"
     },
     "postService": {
       "title": "Khangisa Inkonzo",
@@ -1761,7 +1919,7 @@ export const translations = {
     "studies": {
       "title": "Ucwaningo Lwezifundo",
       "openTab": "Ucwaningo oluvulekile",
-      "myAppsTab": "Izicelo zami",
+      "myAppsTab": "Izifundo zami",
       "noOpen": "Alukho ucwaningo oluvulekile njengamanje - hlola futhi maduze.",
       "applyButton": "Faka isicelo sokubamba iqhaza",
       "applied": "Isicelo sifakiwe",
@@ -1804,7 +1962,11 @@ export const translations = {
       "clearCompletedError": "Izinhlolovo eziqediwe azikwazanga ukususwa.",
       "removeApplicationError": "Isicelo asikwazanga ukususwa.",
       "areYouSure": "Uqinisekile?",
-      "state": { "live": "Luyasebenza", "draft": "Okusalungiswa", "closed": "Luvaliwe" }
+      "state": {
+        "live": "Luyasebenza",
+        "draft": "Okusalungiswa",
+        "closed": "Luvaliwe"
+      }
     },
     "workshops": {
       "title": "Ama-workshop",
@@ -1855,12 +2017,16 @@ export const translations = {
     "announcements": {
       "title": "Izaziso",
       "heading": "Izaziso Zomphakathi",
-      "loading": "Kulayishwa izaziso…",
+      "loading": "Ilayisha izaziso…",
       "emptyTitle": "Azikho izaziso okwamanje",
-      "emptyDesc": "Ukusakazwa komlawuli nokubuyekezwa kwepulatifomu kuzovela lapha.",
-      "broadcastBy": "Isakazwe ngu-",
+      "emptyDesc": "Hlola futhi kamuva ukuthola izaziso ezisemthethweni.",
+      "broadcastBy": "Kusakazwe ngu",
       "viewAll": "Buka konke",
-      "badge": "Isaziso"
+      "badge": "Isaziso",
+      "oneNew": "1 Entsha",
+      "newCount": "Entsha",
+      "latest": "Okwakamuva",
+      "allMembers": "Wonke amalungu"
     },
     "profile": {
       "heading": "Iphrofayela Yami",
@@ -1953,7 +2119,7 @@ export const translations = {
       "title": "Kudingeka Isikrini Esikhudlwana Sasebhodini Lomcwaningi",
       "message": "Ukuze usebenzise amalungelo omcwaningi (ukuphatha ucwaningo, ukwakha izinhlolovo, nokuhlela ama-workshop), sicela usebenzise idivayisi enkulu njenge-tablet, iPad, i-laptop noma ikhompyutha.",
       "currentModeTitle": "Imodi Yelungu Lomphakathi:",
-      "currentModeDesc": "Kule foni ephathwayo, i-CommHub iboniswa njengomphakathi ukuze ukwazi ukuhlola izinsizakalo, ucwaningo nezaziso zendawo.",
+      "currentModeDesc": "Kule foni, iCommHub iboniswa kumodi Yelungu Lomphakathi ukuze ukwazi ukuhlola izinsizakalo, ucwaningo, nemisebenzi yomphakathi.",
       "actionBtn": "Qhubeka njengeLungu lomPhakathi"
     },
     "adminDashboard": {
@@ -2089,7 +2255,12 @@ export const translations = {
       "takeDownError": "Ukususwa akukwazanga ukuqedwa.",
       "item": "Into",
       "targetId": "I-ID eqondiwe",
-      "targets": { "service": "Insizakalo", "study": "Ucwaningo", "user": "Umsebenzisi", "listing": "Uhlu" }
+      "targets": {
+        "service": "Insizakalo",
+        "study": "Ucwaningo",
+        "user": "Umsebenzisi",
+        "listing": "Uhlu"
+      }
     },
     "researcherDashboard": {
       "workspace": "INDAWO YOKUSEBENZA YOMCWANINGI",
@@ -2168,11 +2339,44 @@ export const translations = {
         "verified": "KUQINISEKISIWE",
         "rejected": "KUNQATSHIWE"
       }
+    },
+    "ratings": {
+      "modalTitle": "Ukubuyekezwa Kwamalungu Nokukala",
+      "by": "ngu",
+      "averageRating": "Isilinganiso esiphezulu",
+      "noRatingsYet": "Akukho ukubuyekezwa okwamanje",
+      "oneReview": "Isibuyekezo esingu-1 somphakathi",
+      "reviewsCount": "izibuyekezo zomphakathi",
+      "selfNotice": "Ubhalise le nsizakalo. Ababhali bezinsizakalo abakwazi ukukala izikhangiso zabo.",
+      "guestNotice": "Ngena nge-akhawunti yakho ukuze ukale le nsizakalo futhi wabelane ngemibono.",
+      "signInBtn": "Ngena",
+      "yourRatingTitle": "Isilinganiso sakho Nokubuyekeza",
+      "rateTitle": "Linganisa le Nsizakalo",
+      "starSelect": "Khetha isilinganiso sezinkanyezi",
+      "star1": "Kubi",
+      "star2": "Kulungile",
+      "star3": "Kuhle",
+      "star4": "Kuhle Kakhulu",
+      "star5": "Kuhle Kakhulu!",
+      "commentPlaceholder": "Yabelana ngolwazi lwakho ngale nsizakalo... (uma uthanda)",
+      "deleteRating": "Susa Isilinganiso",
+      "deleting": "Iyasuswa…",
+      "updateRating": "Vuselela Isilinganiso",
+      "submitRating": "Thumela Isilinganiso",
+      "saving": "Iyalondolozwa…",
+      "communityFeedback": "Imibono Yomphakathi",
+      "noReviewsEmpty": "Azikho izibuyekezo okwamanje. Yiba ngowokuqala ukwabelana ngolwazi lwakho nalo mhlinzeki!",
+      "ratingSuccess": "Ngiyabonga ngesilinganiso sakho!",
+      "ratingUpdated": "Isilinganiso sibuyekezwe ngempumelelo!",
+      "ratingRemoved": "Isilinganiso sisusiwe.",
+      "loadError": "Ayikwazanga ukulayisha ukubuyekezwa kwale nsizakalo.",
+      "selfRateError": "Awukwazi ukukala isikhangiso sakho.",
+      "submitError": "Ayikwazanga ukuthumela isilinganiso.",
+      "deleteError": "Ayikwazanga ukususa isilinganiso."
     }
   }
 };
 
-/** Resolve a dotted key like "nav.home" against a language's translation tree. */
 export function resolve(lang, key) {
   const parts = key.split(".");
   let node = translations[lang] || translations.en;
@@ -2186,3 +2390,4 @@ export function resolve(lang, key) {
   for (const part of parts) node = node?.[part];
   return node ?? key;
 }
+

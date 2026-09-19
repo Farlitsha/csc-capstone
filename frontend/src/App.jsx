@@ -73,6 +73,14 @@ export default function App() {
               }
             />
             <Route
+              path="/researcher/studies/:studyId/edit"
+              element={
+                <ProtectedRoute roles={["researcher"]}>
+                  <BuildSurveyPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/studies/:studyId/survey"
               element={<ProtectedRoute><TakeSurveyPage /></ProtectedRoute>}
             />

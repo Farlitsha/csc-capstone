@@ -51,6 +51,9 @@ from .services import (
     ServiceOut,
     ServiceApplicationCreate,
     ServiceApplicationOut,
+    ServiceRatingCreate,
+    ServiceRatingOut,
+    ServiceRatingsSummaryOut,
 )
 from .workshops import (
     WorkshopBase,
@@ -131,6 +134,9 @@ __all__ = [
     "ServiceOut",
     "ServiceApplicationCreate",
     "ServiceApplicationOut",
+    "ServiceRatingCreate",
+    "ServiceRatingOut",
+    "ServiceRatingsSummaryOut",
     # Workshops
     "WorkshopBase",
     "WorkshopCreate",

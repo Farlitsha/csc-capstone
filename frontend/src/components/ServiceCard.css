@@ -317,3 +317,42 @@
   opacity: 0.6;
 }
 
+.ch-contact-btn--reviews {
+  background: #fefce8;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.ch-contact-btn--reviews:hover {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.ch-service-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #92400e;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.ch-service-rating-badge:hover {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+
+.ch-service-rating-count {
+  font-weight: 500;
+  color: #b45309;
+}
+
+

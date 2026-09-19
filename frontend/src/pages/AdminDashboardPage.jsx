@@ -31,6 +31,7 @@ export default function AdminDashboardPage() {
   }[role] || role);
   const audienceLabel = (value) => ({
     "All members": t("adminDashboard.allMembers"),
+    "Community Members": t("adminDashboard.communityMembers") || "Community Members",
     Researchers: t("adminDashboard.researchersAudience"),
     "Admins only": t("adminDashboard.adminsOnly"),
   }[value] || value);
@@ -751,7 +752,7 @@ export default function AdminDashboardPage() {
               <form className="ch-announce" onSubmit={handleSendAnnouncement}>
                 <span className="ch-field-block__label">{t("adminDashboard.audience")}</span>
                 <div className="ch-announce__row">
-                  {["All members", "Researchers", "Admins only"].map((a) => (
+                  {["All members", "Community Members", "Researchers", "Admins only"].map((a) => (
                     <Chip key={a} label={audienceLabel(a)} active={audience === a} onClick={() => setAudience(a)} />
                   ))}
                 </div>

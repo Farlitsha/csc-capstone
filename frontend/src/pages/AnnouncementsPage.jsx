@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import MobileLayout from "../layouts/MobileLayout";
 import StatusChip from "../components/StatusChip";
 import { useLanguage } from "../i18n/LanguageContext";
-import { useAuth } from "../auth/AuthContext";
 import { useUnreadNotifications } from "../lib/notifications";
 import { formatTimeAgo } from "../lib/dateUtils";
 
@@ -28,7 +28,7 @@ export default function AnnouncementsPage() {
             <h2>{t("announcements.heading")}</h2>
             {unreadCount > 0 && (
               <span className="ch-unread-badge-counter">
-                {unreadCount} unread
+                {unreadCount} {t("announcements.newCount") || "unread"}
               </span>
             )}
           </div>
@@ -64,10 +64,10 @@ export default function AnnouncementsPage() {
               >
                 <div className="ch-announcement-card__top">
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <StatusChip label={`To: ${a.audience}`} tone="warning" />
+                    <StatusChip label={`To: ${a.audience}`} tone="neutral" />
                     {hasNewIndicator && (
                       <span className="ch-new-indicator-tag">
-                        NEW
+                        {t("announcements.badge") || "NEW"}
                       </span>
                     )}
                   </div>
@@ -105,5 +105,3 @@ export default function AnnouncementsPage() {
     </MobileLayout>
   );
 }
-
-

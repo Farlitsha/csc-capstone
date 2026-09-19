@@ -68,6 +68,7 @@ export function isAnnouncementNew(announcement, readIds = null) {
 export function filterRelevantAnnouncements(announcements = [], user = null) {
   return announcements.filter((a) => {
     if (!a.audience || a.audience === "All members") return true;
+    if ((!user || user?.role === "community_member") && a.audience === "Community Members") return true;
     if (user?.role === "researcher" && a.audience === "Researchers") return true;
     if (user?.role === "admin") return true;
     return false;

@@ -238,6 +238,18 @@ export default function Icon({ name, size = 16, className = "", style = {} }) {
           <polygon points="10 9 16 12 10 15" />
         </svg>
       );
+    case "star":
+      return (
+        <svg {...props}>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      );
+    case "star-fill":
+      return (
+        <svg {...props} fill="currentColor">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      );
 
     default:
       return null;
