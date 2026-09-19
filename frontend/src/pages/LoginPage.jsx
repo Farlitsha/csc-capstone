@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -13,6 +13,8 @@ export default function LoginPage() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const mountTimeRef = useRef(Date.now());
+  const [websiteHp, setWebsiteHp] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -43,6 +45,18 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    // Bot prevention: honeypot & timing heuristic
+    if (websiteHp) {
+      setError("Unable to sign in. Please try again.");
+      return;
+    }
+    const elapsed = Date.now() - mountTimeRef.current;
+    if (elapsed < 1000) {
+      setError("Submission too fast. Please try again.");
+      return;
+    }
+
     setSubmitting(true);
     const result = await login(username, password);
     setSubmitting(false);
@@ -82,6 +96,20 @@ export default function LoginPage() {
         )}
 
         <form className="ch-login__form" onSubmit={handleSubmit}>
+          {/* Honeypot field for bot detection: hidden from real users, automated bots fill it */}
+          <div style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, overflow: "hidden", pointerEvents: "none" }} aria-hidden="true">
+            <label htmlFor="website_hp">Leave this field blank</label>
+            <input
+              type="text"
+              id="website_hp"
+              name="website_hp"
+              tabIndex={-1}
+              autoComplete="off"
+              value={websiteHp}
+              onChange={(e) => setWebsiteHp(e.target.value)}
+            />
+          </div>
+
           <Field
             label={t("login.fullName") || "Full Name"}
             id="username"

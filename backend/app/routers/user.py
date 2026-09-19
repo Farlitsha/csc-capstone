@@ -4,7 +4,8 @@ import shutil
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from .. import models, schemas, utils, oauth2, audit
-from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
+from ..limiter import limiter
+from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from ..database import get_db
 from sqlalchemy.orm import Session
@@ -31,10 +32,17 @@ def _generate_username(display_name: str, db: Session) -> str:
 # User account management endpoints (registration, login, profile updates)
 
 @router.post("/account/create", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
-async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+async def create_user(request: Request, user: schemas.UserBase, db: Session = Depends(get_db)):
     """Register a new user account. Role can be selected (defaults to community_member).
     Researcher accounts are set to pending verification (Req 1.1, 1.5, 12).
     """
+    # Bot prevention: honeypot & timing heuristic
+    if user.website_hp:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Spam submission detected")
+    if user.submission_duration_ms is not None and user.submission_duration_ms < 1200:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Spam submission detected")
+
     chosen_role = user.role or models.UserRole.COMMUNITY_MEMBER
     verification_status = (
         models.VerificationStatus.PENDING
@@ -43,6 +51,8 @@ async def create_user(user: schemas.UserBase, db: Session = Depends(get_db)):
     )
 
     user_dict = user.dict()
+    user_dict.pop("website_hp", None)
+    user_dict.pop("submission_duration_ms", None)
     user_dict["password"] = utils.hash_password(user.password)
     user_dict["role"] = chosen_role
     user_dict["verification_status"] = verification_status
@@ -116,7 +126,8 @@ async def reactivate_account(credentials: OAuth2PasswordRequestForm = Depends(),
 
 
 @router.post("/login", response_model=schemas.Token)
-async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("15/minute")
+async def login(request: Request, credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Login with Full Name, username, or email + password. Returns a JWT."""
     user = db.query(models.User).filter(
         (models.User.username == credentials.username) |
@@ -145,7 +156,8 @@ async def login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session 
 
 @router.post("/admin/login", response_model=schemas.Token)
 @router.post("/admin-login", response_model=schemas.Token)
-async def admin_login(credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("15/minute")
+async def admin_login(request: Request, credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """Admin-specific login with username/email/name + password. Strictly requires ADMIN role."""
     user = db.query(models.User).filter(
         (models.User.username == credentials.username) |

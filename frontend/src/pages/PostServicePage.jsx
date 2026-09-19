@@ -18,6 +18,8 @@ export default function PostServicePage() {
   const fileInputRef = useRef(null);
   const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
+  const mountTimeRef = useRef(Date.now());
+  const [websiteHp, setWebsiteHp] = useState("");
   const TYPES = [
     { value: "offer", label: t("postService.offering") },
     { value: "request", label: t("postService.requesting") },
@@ -55,6 +57,18 @@ export default function PostServicePage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    // Bot prevention: honeypot & timing heuristic
+    if (websiteHp) {
+      setError("Unable to post service. Please try again.");
+      return;
+    }
+    const elapsed = Date.now() - mountTimeRef.current;
+    if (elapsed < 1200) {
+      setError("Please take a moment to review your listing before posting.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (form.phone && form.phone.trim() !== (user?.phone || user?.contact_phone || "")) {
@@ -78,6 +92,8 @@ export default function PostServicePage() {
         price: form.price || undefined,
         image_url: imageUrl,
         image_size: imageSize,
+        website_hp: websiteHp || undefined,
+        submission_duration_ms: elapsed,
       });
       navigate("/services");
     } catch (err) {
@@ -90,6 +106,20 @@ export default function PostServicePage() {
   return (
     <MobileLayout title={t("postService.title")} onBack={() => navigate(-1)} hideNav>
       <form className="ch-post-form" onSubmit={handleSubmit}>
+        {/* Honeypot field for bot detection: hidden from real users, automated bots fill it */}
+        <div style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, overflow: "hidden", pointerEvents: "none" }} aria-hidden="true">
+          <label htmlFor="website_hp">Leave this field blank</label>
+          <input
+            type="text"
+            id="website_hp"
+            name="website_hp"
+            tabIndex={-1}
+            autoComplete="off"
+            value={websiteHp}
+            onChange={(e) => setWebsiteHp(e.target.value)}
+          />
+        </div>
+
         <div className="ch-field-block">
           <div className="ch-post-categories">
             {TYPES.map((opt) => (

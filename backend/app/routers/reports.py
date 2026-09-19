@@ -1,7 +1,8 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session, joinedload
 from .. import models, schemas, oauth2, audit
+from ..limiter import limiter
 from ..database import get_db
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -14,7 +15,9 @@ def _require_admin(current_user: models.User = Depends(oauth2.get_current_user))
 
 
 @router.post("/", response_model=schemas.ReportOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
 async def create_report(
+    request: Request,
     report: schemas.ReportCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user),

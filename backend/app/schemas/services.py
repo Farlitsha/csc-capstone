@@ -15,7 +15,8 @@ class ServiceBase(BaseModel):
 
 
 class ServiceCreate(ServiceBase):
-    pass
+    website_hp: Optional[str] = None
+    submission_duration_ms: Optional[int] = None
 
 
 class ServiceOut(ServiceBase):

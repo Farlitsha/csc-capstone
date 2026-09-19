@@ -1,8 +1,9 @@
 from typing import List, Union
-from fastapi import APIRouter, Depends, status, HTTPException, Body
+from fastapi import APIRouter, Depends, status, HTTPException, Body, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from .. import models, audit, oauth2
+from ..limiter import limiter
 from ..database import get_db
 from ..schemas import studies as study_schemas
 
@@ -20,7 +21,9 @@ def _get_owned_study(study_id: int, db: Session, current_user: models.User) -> m
 
 
 @router.post("/studies/", response_model=study_schemas.StudyListingOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("15/minute")
 async def create_study(
+    request: Request,
     study: study_schemas.StudyListingCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user),
@@ -326,7 +329,9 @@ async def get_study_survey(study_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/studies/{study_id}/survey/responses", response_model=study_schemas.SurveyResponseOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("15/minute")
 async def submit_survey_response(
+    request: Request,
     study_id: int,
     response_in: study_schemas.SurveyResponseIn,
     db: Session = Depends(get_db),

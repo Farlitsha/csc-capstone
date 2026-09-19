@@ -2,6 +2,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.limiter import limiter
 from app.database import Base, engine, sync_db_schema
 from app.config import settings
 from .routers import (
@@ -17,6 +20,8 @@ from .routers import (
 )
 
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Ensure upload directories exist
 UPLOADS_DIR = Path("uploads/avatars")

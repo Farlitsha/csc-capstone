@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import Field from "../components/Field";
 import Button from "../components/Button";
@@ -13,6 +13,8 @@ export default function SignupPage() {
   const navigate = useNavigate();
   const { token, user, login } = useAuth();
   const { t } = useLanguage();
+  const mountTimeRef = useRef(Date.now());
+  const [websiteHp, setWebsiteHp] = useState("");
   const [form, setForm] = useState({
     display_name: "",
     username: "",
@@ -52,6 +54,17 @@ export default function SignupPage() {
       return;
     }
 
+    // Bot prevention: honeypot & timing heuristic
+    if (websiteHp) {
+      setError("Unable to process signup. Please try again.");
+      return;
+    }
+    const elapsed = Date.now() - mountTimeRef.current;
+    if (elapsed < 1200) {
+      setError("Please take a moment to review your details before submitting.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const payload = {
@@ -61,6 +74,8 @@ export default function SignupPage() {
         username: form.username.trim() || undefined,
         email: form.email.trim() || undefined,
         phone: form.phone.trim() || undefined,
+        website_hp: websiteHp || undefined,
+        submission_duration_ms: elapsed,
       };
 
       const userCreated = await api.createAccount(payload);
@@ -94,6 +109,20 @@ export default function SignupPage() {
       <div className="ch-login__card">
         <h1 className="ch-login__heading">{t("signup.heading")}</h1>
         <form className="ch-login__form" onSubmit={handleSubmit}>
+          {/* Honeypot field for bot detection: hidden from real users, automated bots fill it */}
+          <div style={{ position: "absolute", left: "-9999px", opacity: 0, height: 0, overflow: "hidden", pointerEvents: "none" }} aria-hidden="true">
+            <label htmlFor="website_hp">Leave this field blank</label>
+            <input
+              type="text"
+              id="website_hp"
+              name="website_hp"
+              tabIndex={-1}
+              autoComplete="off"
+              value={websiteHp}
+              onChange={(e) => setWebsiteHp(e.target.value)}
+            />
+          </div>
+
           <Field
             label={t("signup.fullName") || "Full Name"}
             id="display_name"

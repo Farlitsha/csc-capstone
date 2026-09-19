@@ -22,6 +22,8 @@ class UserBase(BaseModel):
     display_name: Optional[str] = None
     phone: Optional[str] = None
     struggles: Optional[List[str]] = None
+    website_hp: Optional[str] = None
+    submission_duration_ms: Optional[int] = None
 
     @field_validator("password")
     @classmethod

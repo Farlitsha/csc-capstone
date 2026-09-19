@@ -1,10 +1,11 @@
 import uuid
 from pathlib import Path
 from typing import List, Optional
-from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File
+from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File, Request
 from sqlalchemy.orm import Session, joinedload, selectinload
 from pydantic import BaseModel
 from .. import models, schemas, oauth2, audit
+from ..limiter import limiter
 from ..database import get_db
 
 router = APIRouter(prefix="/services", tags=["services"])
@@ -74,13 +75,22 @@ async def list_services(
 
 
 @router.post("/", response_model=schemas.ServiceOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("15/minute")
 async def create_service(
+    request: Request,
     service: schemas.ServiceCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user),
 ):
     """Any logged-in member posts a service (offer or request)."""
-    db_service = models.Service(**service.dict(), poster_id=current_user.id, status=models.ServiceStatus.OPEN)
+    # Bot prevention: honeypot & timing heuristic
+    if service.website_hp:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Spam submission detected")
+    if service.submission_duration_ms is not None and service.submission_duration_ms < 1200:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Spam submission detected")
+
+    service_dict = service.dict(exclude={"website_hp", "submission_duration_ms"})
+    db_service = models.Service(**service_dict, poster_id=current_user.id, status=models.ServiceStatus.OPEN)
     db.add(db_service)
     db.commit()
     db.refresh(db_service)
