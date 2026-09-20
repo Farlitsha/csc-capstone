@@ -1,98 +1,38 @@
-/* Service Card Component Styles */
+/* Service Card Component Styles - Unified CommHub Design System
+ * Matches Announcements and Workshop cards for seamless cellphone layout.
+ */
+
 .ch-service-full-card {
   background: var(--color-white);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
-  padding: 14px;
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  padding: 16px;
+  box-shadow: var(--shadow-card);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ch-service-full-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .ch-service-full-card--mine {
-  border-left: 3px solid var(--color-teal-600);
+  border-left: 4px solid var(--color-teal-600);
 }
 
-.ch-service-full-card__media {
-  width: 100%;
-  border-radius: var(--radius-md);
-  margin: 10px 0 14px;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.ch-service-full-card__media--has-img {
-  width: 100%;
-  background: #f8fafc;
-  border: 1px solid var(--color-line, #e2e8f0);
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-}
-
-.ch-service-img {
-  width: 100%;
-  height: auto;
-  max-height: 380px;
-  object-fit: contain;
-  border-radius: calc(var(--radius-md) - 3px);
-  display: block;
-}
-
-.ch-service-full-card__media--low-data {
-  background: #f8fafc;
-  border: 1px dashed var(--color-border-input, #cbd5e1);
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.ch-low-data-overlay {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-sage);
-}
-
-.ch-low-data-size {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--color-ink);
-  background: var(--color-border-input, #e2e8f0);
-  padding: 2px 7px;
-  border-radius: 10px;
-  letter-spacing: 0.01em;
-}
-
-.ch-low-data-notice {
-  font-size: 12px;
-  color: var(--color-sage);
-}
-
-.ch-load-photo-btn {
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 5px 10px;
-  background: var(--color-teal-700, #0f766e);
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.ch-load-photo-btn:hover {
-  opacity: 0.9;
-}
-
+/* Card Top Bar (Status, Rating, Edit/Delete/Report actions) */
 .ch-service-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 .ch-own-badge {
@@ -162,20 +102,51 @@
   color: #c53030;
 }
 
+.ch-service-rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #92400e;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.ch-service-rating-badge:hover {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+
+.ch-service-rating-count {
+  font-weight: 500;
+  color: #b45309;
+}
+
+/* Card Heading - matching Workshop and Announcement titles */
 .ch-service-full-card h3 {
-  margin: 0 0 8px;
-  font-size: 15px;
+  margin: 4px 0 8px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-ink);
   line-height: 1.35;
-  min-height: 20px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
+/* Poster identity row */
 .ch-poster-row {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .ch-poster-avatar {
@@ -194,12 +165,16 @@
   color: var(--color-teal-700);
   font-size: 11px;
   font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
 }
 
 .ch-poster-name {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--color-sage);
+  word-break: break-word;
 }
 
 .ch-card-time-ago {
@@ -208,6 +183,7 @@
   font-weight: 400;
 }
 
+/* Card Body & Description */
 .ch-service-body {
   flex: 1 0 auto;
   display: flex;
@@ -216,13 +192,13 @@
 
 .ch-service-desc,
 .ch-service-full-card p {
-  margin: 0 0 4px;
-  font-size: 12.5px;
+  margin: 0 0 10px;
+  font-size: 13px;
   color: var(--color-sage);
-  line-height: 1.45;
-  min-height: 36px;
+  line-height: 1.5;
   white-space: pre-line;
   word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .ch-service-desc--clamped {
@@ -250,6 +226,88 @@
   opacity: 0.85;
 }
 
+/* Media / Photo Display */
+.ch-service-full-card__media {
+  width: 100%;
+  border-radius: var(--radius-md);
+  margin: 6px 0 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.ch-service-full-card__media--has-img {
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid var(--color-line, #e2e8f0);
+  border-radius: var(--radius-md);
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.ch-service-img {
+  width: 100%;
+  height: 190px;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: calc(var(--radius-md) - 1px);
+  display: block;
+}
+
+.ch-service-full-card__media--low-data {
+  background: #f8fafc;
+  border: 1px dashed var(--color-border-input, #cbd5e1);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+.ch-low-data-overlay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-sage);
+}
+
+.ch-low-data-size {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-ink);
+  background: var(--color-border-input, #e2e8f0);
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.01em;
+}
+
+.ch-low-data-notice {
+  font-size: 12px;
+  color: var(--color-sage);
+}
+
+.ch-load-photo-btn {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  background: var(--color-teal-700, #0f766e);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.ch-load-photo-btn:hover {
+  opacity: 0.9;
+}
+
+/* Footer & Actions */
 .ch-service-full-card__foot {
   margin-top: auto;
   display: flex;
@@ -257,28 +315,33 @@
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  padding-top: 10px;
-  border-top: 1px solid var(--color-line, #f0f0f0);
+  padding-top: 12px;
+  border-top: 1px solid var(--color-sand);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .ch-service-price {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
   color: var(--color-ink);
+  white-space: nowrap;
 }
 
 .ch-service-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .ch-contact-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: var(--radius-md, 8px);
   font-size: 12.5px;
   font-weight: 600;
   text-decoration: none;
@@ -286,6 +349,8 @@
   cursor: pointer;
   line-height: 1.2;
   transition: all 0.15s ease;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .ch-contact-btn--whatsapp {
@@ -328,31 +393,95 @@
   border-color: #f59e0b;
 }
 
-.ch-service-rating-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: #fefce8;
-  border: 1px solid #fde68a;
-  border-radius: 20px;
-  padding: 2px 8px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #92400e;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  line-height: 1.2;
+/* =======================================================
+ * Cellphone Layout Optimization (< 480px)
+ * Matches Announcements and Workshop Cards sizing
+ * ======================================================= */
+@media (max-width: 480px) {
+  .ch-service-full-card {
+    padding: 14px;
+    border-radius: var(--radius-lg);
+  }
+
+  .ch-service-card-top {
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .ch-service-full-card h3 {
+    font-size: 15px;
+    margin: 2px 0 6px;
+  }
+
+  .ch-poster-row {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+
+  .ch-service-desc,
+  .ch-service-full-card p {
+    font-size: 12.5px;
+    line-height: 1.45;
+    margin: 0 0 8px;
+  }
+
+  .ch-service-img {
+    height: 165px;
+    max-height: 180px;
+  }
+
+  .ch-service-full-card__foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-top: 10px;
+  }
+
+  .ch-service-price {
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .ch-service-actions {
+    width: 100%;
+    display: flex;
+    gap: 6px;
+  }
+
+  .ch-service-actions .ch-contact-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .ch-service-actions .ch-contact-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
-.ch-service-rating-badge:hover {
-  background: #fef3c7;
-  border-color: #f59e0b;
-  transform: translateY(-1px);
-}
+/* Very narrow phones (<= 360px) */
+@media (max-width: 360px) {
+  .ch-service-full-card {
+    padding: 12px;
+  }
 
-.ch-service-rating-count {
-  font-weight: 500;
-  color: #b45309;
-}
+  .ch-service-actions .ch-contact-btn {
+    padding: 7px 4px;
+    font-size: 11px;
+    gap: 3px;
+  }
 
+  .ch-contact-btn svg,
+  .ch-contact-btn .ch-icon {
+    width: 13px;
+    height: 13px;
+  }
+}
 

@@ -67,7 +67,6 @@ export default function AdminLoginPage() {
             label="Admin Username or Email"
             id="admin-username"
             type="text"
-            placeholder="e.g. chief_admin or admin@commhub.org"
             autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
