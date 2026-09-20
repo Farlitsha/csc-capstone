@@ -78,7 +78,6 @@ export default function AdminLoginPage() {
             label="Admin Security PIN / Password"
             id="admin-password"
             type="password"
-            placeholder="•••••"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

@@ -1,0 +1,122 @@
+.ch-help-centre {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ch-help-centre__desc {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-text-muted, #4b5563);
+}
+
+.ch-help-centre__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-surface-subtle, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px 14px;
+}
+
+.ch-help-centre__section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text, #1e293b);
+}
+
+.ch-help-centre__icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--color-primary-light, #e0f2fe);
+  color: var(--color-primary, #0284c7);
+  flex-shrink: 0;
+}
+
+.ch-help-centre__details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-text-secondary, #334155);
+}
+
+.ch-help-centre__address {
+  font-weight: 500;
+  color: var(--color-text, #0f172a);
+}
+
+.ch-help-centre__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted, #64748b);
+}
+
+.ch-help-centre__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ch-help-centre__link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid var(--color-border, #cbd5e1);
+  background: #ffffff;
+  color: var(--color-text, #1e293b);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ch-help-centre__link-btn:hover {
+  background: var(--color-surface-hover, #f1f5f9);
+}
+
+.ch-help-centre__link-btn--whatsapp {
+  background: #25d366;
+  border-color: #20ba5a;
+  color: #ffffff;
+}
+
+.ch-help-centre__link-btn--whatsapp:hover {
+  background: #20ba5a;
+  color: #ffffff;
+}
+
+.ch-help-centre__link-btn--call {
+  background: var(--color-primary, #0284c7);
+  border-color: var(--color-primary, #0284c7);
+  color: #ffffff;
+}
+
+.ch-help-centre__link-btn--call:hover {
+  background: #0369a1;
+  color: #ffffff;
+}
+
+.ch-help-centre__policy-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+

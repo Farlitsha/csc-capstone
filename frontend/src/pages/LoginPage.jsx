@@ -111,11 +111,11 @@ export default function LoginPage() {
           </div>
 
           <Field
-            label={t("login.fullName") || "Full Name"}
+            label={t("login.username") || "Username or Full Name"}
             id="username"
             type="text"
-            placeholder="e.g. Nomvula Khumalo"
-            autoComplete="name"
+            placeholder={t("login.usernamePlaceholder") || "e.g. nomvula_k"}
+            autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -127,7 +127,6 @@ export default function LoginPage() {
             inputMode="numeric"
             pattern="[0-9]{5}"
             maxLength={5}
-            placeholder="•••••"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

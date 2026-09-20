@@ -9,6 +9,7 @@ import Field from "../components/Field";
 import Icon from "../components/Icon";
 import ConfirmModal from "../components/ConfirmModal";
 import { api, ApiError } from "../lib/api";
+import { useCacheSync } from "../lib/cache";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./ResearcherDashboardPage.css";
@@ -45,21 +46,48 @@ export default function ResearcherDashboardPage() {
 
   function loadData() {
     setLoading(true);
-    Promise.all([
-      api.me().catch(() => null),
-      api.listStudies().catch(() => []),
-      api.listWorkshops(true).catch(() => []),
-    ])
-      .then(([meData, studiesData, workshopsData]) => {
+    api
+      .me()
+      .catch(() => null)
+      .then(async (meData) => {
         if (meData) setProfile(meData);
-        setStudies(studiesData);
-        setWorkshops(workshopsData);
+        const currentUserId = meData?.id || user?.id;
+
+        try {
+          const [studiesData, workshopsData] = await Promise.all([
+            api.listStudies(
+              currentUserId
+                ? { researcher_id: currentUserId, include_closed: true }
+                : { include_closed: true }
+            ).catch(() => []),
+            api.listWorkshops(true, currentUserId || null).catch(() => []),
+          ]);
+
+          // Strictly filter so researcher only sees their own work (defense-in-depth)
+          const myStudies = currentUserId
+            ? (studiesData || []).filter((s) => s.researcher_id === currentUserId)
+            : (studiesData || []);
+          const myWorkshops = currentUserId
+            ? (workshopsData || []).filter((w) => w.organizer_id === currentUserId)
+            : (workshopsData || []);
+
+          setStudies(myStudies);
+          setWorkshops(myWorkshops);
+        } catch {
+          setError(t("researcherDashboard.loadError"));
+        }
       })
       .catch(() => setError(t("researcherDashboard.loadError")))
       .finally(() => setLoading(false));
   }
 
-  useEffect(loadData, []);
+  useEffect(() => {
+    loadData();
+  }, [user?.id]);
+
+  useCacheSync("^/(studies|workshops)", () => {
+    loadData();
+  });
 
   const isPendingVerification = profile?.verification_status === "pending";
   const isRejected = profile?.verification_status === "rejected";

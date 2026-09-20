@@ -40,11 +40,15 @@ async function request(path, {
     if (cached) return cached.data;
   }
 
-  // 2. SWR Cached Copy for Offline Fallback
+  // 2. SWR Cached Copy for Offline Fallback & Conditional Requests
   const cachedEntry = isGet ? cache.get(cacheKey) : null;
 
   const finalHeaders = { ...headers };
   let payload = body;
+
+  if (isGet && cachedEntry?.etag) {
+    finalHeaders["If-None-Match"] = cachedEntry.etag;
+  }
 
   if (form) {
     payload = new URLSearchParams(form);
@@ -66,17 +70,30 @@ async function request(path, {
       body: payload,
     });
 
+    // 3. Conditional 304 Not Modified: 0B transferred, reuse cache instantly
+    if (res.status === 304 && cachedEntry) {
+      cache.set(cacheKey, cachedEntry.data, { ttl, etag: cachedEntry.etag });
+      return cachedEntry.data;
+    }
+
     const isJson = res.headers.get("content-type")?.includes("application/json");
     const data = isJson ? await res.json().catch(() => null) : null;
 
     if (!res.ok) {
+      if (res.status === 401 && auth) {
+        localStorage.removeItem("commhub_token");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("commhub:unauthorized"));
+        }
+      }
       const detail = data?.detail || res.statusText;
       throw new ApiError(typeof detail === "string" ? detail : "Request failed", res.status, detail);
     }
 
-    // Update cache on successful GET
+    // Update cache on successful GET with received ETag
     if (isGet && (cacheStrategy === "swr" || cacheStrategy === "cache-first")) {
-      cache.set(cacheKey, data, { ttl });
+      const etag = res.headers.get("etag") || res.headers.get("ETag");
+      cache.set(cacheKey, data, { ttl, etag });
     }
 
     // Invalidate related cache entries on successful mutations
@@ -92,7 +109,7 @@ async function request(path, {
 
     return data;
   } catch (err) {
-    // 3. Graceful Offline Fallback: If network fails and cached data exists, return it seamlessly
+    // 4. Graceful Offline Fallback: If network fails and cached data exists, return it seamlessly
     if (isGet && cachedEntry && cachedEntry.data) {
       return cachedEntry.data;
     }
@@ -101,13 +118,24 @@ async function request(path, {
 }
 
 export const api = {
+  getCached: (path) => {
+    const entry = cache.get(path);
+    return entry ? entry.data : null;
+  },
   login: (username, password) => request("/users/login", { method: "POST", form: { username, password }, auth: false }),
   adminLogin: (username, password) => request("/users/admin/login", { method: "POST", form: { username, password }, auth: false }),
   me: () => request("/users/me"),
+  changePin: (payload) => request("/users/me/change-pin", { method: "POST", body: payload }),
   createAccount: (payload) => request("/users/account/create", { method: "POST", body: payload, auth: false }),
   listUsers: (skip = 0, limit = 20) => request(`/users/accounts/all?skip=${skip}&limit=${limit}`),
 
-  listStudies: () => request("/studies/"),
+  listStudies: (params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.researcher_id) qs.append("researcher_id", params.researcher_id);
+    if (params.include_closed) qs.append("include_closed", "true");
+    const qStr = qs.toString();
+    return request(`/studies/${qStr ? `?${qStr}` : ""}`);
+  },
   getStudy: (id) => request(`/studies/${id}`),
   createStudy: (payload) => request("/studies/", { method: "POST", body: payload }),
   updateStudy: (id, payload) => request(`/studies/${id}`, { method: "PUT", body: payload }),
@@ -179,6 +207,12 @@ export const api = {
     const isJson = res.headers.get("content-type")?.includes("application/json");
     const data = isJson ? await res.json().catch(() => null) : null;
     if (!res.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem("commhub_token");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("commhub:unauthorized"));
+        }
+      }
       const detail = data?.detail || res.statusText;
       throw new ApiError(typeof detail === "string" ? detail : "Upload failed", res.status, detail);
     }
@@ -197,6 +231,12 @@ export const api = {
     const isJson = res.headers.get("content-type")?.includes("application/json");
     const data = isJson ? await res.json().catch(() => null) : null;
     if (!res.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem("commhub_token");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("commhub:unauthorized"));
+        }
+      }
       const detail = data?.detail || res.statusText;
       throw new ApiError(typeof detail === "string" ? detail : "Upload failed", res.status, detail);
     }
@@ -209,8 +249,13 @@ export const api = {
   listAuditLogs: (skip = 0, limit = 50) => request(`/audit-logs/?skip=${skip}&limit=${limit}`),
 
   // Workshops
-  listWorkshops: (includeCancelled = false) =>
-    request(`/workshops/${includeCancelled ? "?include_cancelled=true" : ""}`, { auth: false }),
+  listWorkshops: (includeCancelled = false, organizerId = null) => {
+    const params = new URLSearchParams();
+    if (includeCancelled) params.append("include_cancelled", "true");
+    if (organizerId) params.append("organizer_id", organizerId);
+    const qs = params.toString();
+    return request(`/workshops/${qs ? `?${qs}` : ""}`, { auth: false });
+  },
   getWorkshop: (id) => request(`/workshops/${id}`, { auth: false }),
   createWorkshop: (payload) => request("/workshops/", { method: "POST", body: payload }),
   updateWorkshop: (id, payload) => request(`/workshops/${id}`, { method: "PATCH", body: payload }),

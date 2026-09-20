@@ -10,7 +10,7 @@ export function getReadAnnouncementIds() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return new Set();
     const parsed = JSON.parse(raw);
-    return new Set(Array.isArray(parsed) ? parsed : []);
+    return new Set(Array.isArray(parsed) ? parsed.map(Number) : []);
   } catch {
     return new Set();
   }
@@ -28,15 +28,16 @@ export function saveReadAnnouncementIds(idsSet) {
 }
 
 export function markAnnouncementAsRead(id) {
+  if (id == null) return;
   const read = getReadAnnouncementIds();
-  read.add(id);
+  read.add(Number(id));
   saveReadAnnouncementIds(read);
 }
 
 export function markAllAnnouncementsAsRead(announcements = []) {
   const read = getReadAnnouncementIds();
   announcements.forEach((a) => {
-    if (a?.id) read.add(a.id);
+    if (a?.id != null) read.add(Number(a.id));
   });
   try {
     localStorage.setItem(LAST_SEEN_KEY, new Date().toISOString());
@@ -57,7 +58,7 @@ export function isAnnouncementRecent(announcement, hours = 48) {
 export function isAnnouncementUnread(announcement, readIds = null) {
   if (!announcement?.id) return false;
   const ids = readIds || getReadAnnouncementIds();
-  return !ids.has(announcement.id);
+  return !ids.has(Number(announcement.id));
 }
 
 export function isAnnouncementNew(announcement, readIds = null) {
@@ -107,7 +108,7 @@ export function useUnreadNotifications(user = null) {
     };
   }, []);
 
-  const unreadCount = announcements.filter((a) => !readIds.has(a.id)).length;
+  const unreadCount = announcements.filter((a) => !readIds.has(Number(a.id))).length;
 
   const markRead = useCallback((id) => {
     markAnnouncementAsRead(id);
@@ -124,9 +125,9 @@ export function useUnreadNotifications(user = null) {
     loading,
     markRead,
     markAllRead,
-    isUnread: (a) => !readIds.has(a?.id),
+    isUnread: (a) => !readIds.has(Number(a?.id)),
     isRecent: (a) => isAnnouncementRecent(a, 48),
-    isNew: (a) => !readIds.has(a?.id),
+    isNew: (a) => !readIds.has(Number(a?.id)),
     refresh: reloadAnnouncements,
   };
 }

@@ -8,6 +8,7 @@ from ..limiter import limiter
 from fastapi import Depends, status, HTTPException, APIRouter, UploadFile, File, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from ..database import get_db
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -76,7 +77,7 @@ async def create_user(request: Request, user: schemas.UserBase, db: Session = De
                             detail="User with this email already exists, please use a different email")
 
     # Check unique username only if a username is explicitly provided
-    if user_dict["username"] and db.query(models.User).filter(models.User.username == user_dict["username"]).first():
+    if user_dict["username"] and db.query(models.User).filter(func.lower(models.User.username) == user_dict["username"].lower()).first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="User with this username already exists, please use a different username")
 
@@ -84,6 +85,10 @@ async def create_user(request: Request, user: schemas.UserBase, db: Session = De
     if not user_dict.get("username"):
         name_source = user_dict.get("display_name") or user_dict.get("email") or "user"
         user_dict["username"] = _generate_username(name_source, db)
+
+    # If display_name was not provided, default it to the username
+    if not user_dict.get("display_name"):
+        user_dict["display_name"] = user_dict["username"]
 
     # Sanitize struggles — the frontend may send the string "null" instead of None
     if user_dict.get("struggles") in (None, "null", "", []):
@@ -191,8 +196,26 @@ async def update_profile(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user),
 ):
-    """Update the authenticated user's display name, bio, and contact details."""
+    """Update the authenticated user's username, display name, bio, and contact details."""
     update_data = payload.model_dump(exclude_none=True)
+
+    if "username" in update_data:
+        new_username = update_data["username"].strip()
+        if new_username.lower() != (current_user.username or "").lower():
+            existing = db.query(models.User).filter(
+                func.lower(models.User.username) == new_username.lower(),
+                models.User.id != current_user.id,
+            ).first()
+            if existing:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Username is already taken, please choose a different username",
+                )
+            if not update_data.get("display_name") and (not current_user.display_name or current_user.display_name == current_user.username):
+                current_user.display_name = new_username
+            current_user.username = new_username
+        update_data.pop("username")
+
     for field, value in update_data.items():
         setattr(current_user, field, value)
     if "phone" in update_data and "contact_phone" not in update_data:
@@ -247,6 +270,34 @@ async def upload_avatar(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.post("/me/change-pin", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def change_pin(
+    request: Request,
+    payload: schemas.ChangePinRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(oauth2.get_current_user),
+):
+    """Change the authenticated user's 5-digit PIN."""
+    if not utils.verify_password(payload.current_pin, current_user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current PIN is incorrect.",
+        )
+    current_user.password = utils.hash_password(payload.new_pin)
+    audit.log_action(
+        db,
+        actor_id=current_user.id,
+        action="user_pin_changed",
+        target_type="user",
+        target_id=current_user.id,
+        details={"username": current_user.username},
+    )
+    db.commit()
+    db.refresh(current_user)
+    return {"message": "PIN changed successfully."}
 
 
 @router.post("/me/request-researcher", status_code=status.HTTP_200_OK, response_model=schemas.PrivateProfileOut)
@@ -578,7 +629,23 @@ async def update_account_credentials(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(oauth2.get_current_user),  # auth guard added
 ):
-    """Update the authenticated user's login email and password."""
+    """Update the authenticated user's login email, username, and password."""
+    if user.username and user.username.strip():
+        new_username = user.username.strip()
+        if new_username.lower() != (current_user.username or "").lower():
+            existing = db.query(models.User).filter(
+                func.lower(models.User.username) == new_username.lower(),
+                models.User.id != current_user.id,
+            ).first()
+            if existing:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Username is already taken, please choose a different username",
+                )
+            if not current_user.display_name or current_user.display_name == current_user.username:
+                current_user.display_name = new_username
+            current_user.username = new_username
+
     current_user.email = user.email
     current_user.password = utils.hash_password(user.password)
     db.commit()

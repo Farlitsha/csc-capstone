@@ -13,33 +13,48 @@ import ServiceRatingModal from "../components/ServiceRatingModal";
 import { api } from "../lib/api";
 import { useUnreadNotifications } from "../lib/notifications";
 import { formatTimeAgo, formatPostedAgo } from "../lib/dateUtils";
+import { useSettings } from "../context/SettingsContext";
+import { useRevealedPhotos, isServicePhotoRevealed, revealServicePhoto } from "../lib/revealedPhotos";
+import { useCacheSync } from "../lib/cache";
 import "./CommunityHomePage.css";
 
 export default function CommunityHomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { unreadCount } = useUnreadNotifications(user);
-  const [services, setServices] = useState([]);
-  const [workshops, setWorkshops] = useState([]);
-  const [announcements, setAnnouncements] = useState([]);
-  const [censusStats, setCensusStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { dataSaver } = useSettings();
+  useRevealedPhotos(); // Subscribe to real-time reveal / dataSaver changes
+  const { unreadCount, markRead, isUnread } = useUnreadNotifications(user);
+
+  // Instant render from local cache if available
+  const [services, setServices] = useState(() => {
+    const cached = api.getCached("/services/");
+    if (!cached || !Array.isArray(cached)) return [];
+    const isOwn = (s) => s.poster_id === user?.id || (user?.username && s.poster_username === user?.username);
+    const otherServices = cached.filter((s) => !isOwn(s));
+    return [...otherServices]
+      .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0))
+      .slice(0, 3);
+  });
+  const [workshops, setWorkshops] = useState(() => {
+    const cached = api.getCached("/workshops/");
+    return Array.isArray(cached) ? cached.slice(0, 3) : [];
+  });
+  const [announcements, setAnnouncements] = useState(() => {
+    const cached = api.getCached("/announcements/");
+    return Array.isArray(cached)
+      ? [...cached].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0))
+      : [];
+  });
+  const [censusStats, setCensusStats] = useState(() => api.getCached("/community/census/stats"));
+  const [loading, setLoading] = useState(() => services.length === 0 && workshops.length === 0);
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [guestModalAction, setGuestModalAction] = useState("");
   const [reportingService, setReportingService] = useState(null);
   const [ratingModalService, setRatingModalService] = useState(null);
-  const [revealedPhotos, setRevealedPhotos] = useState([]);
-  const [newCount, setNewCount] = useState(0);
-  const [lowDataMode] = useState(() => {
-    try {
-      return localStorage.getItem("commhub_low_data") === "true";
-    } catch {
-      return false;
-    }
-  });
 
-  useEffect(() => {
+  function loadHomeData(showSpinner = false) {
+    if (showSpinner) setLoading(true);
     Promise.all([
       api.listServices().catch(() => []),
       api.listWorkshops().catch(() => []),
@@ -48,20 +63,29 @@ export default function CommunityHomePage() {
     ])
       .then(([svc, wList, ann, cStats]) => {
         const isOwn = (s) => s.poster_id === user?.id || (user?.username && s.poster_username === user?.username);
-        const otherServices = svc.filter((s) => !isOwn(s));
+        const otherServices = (svc || []).filter((s) => !isOwn(s));
         const sortedServices = [...otherServices].sort(
           (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0)
         );
-        const sortedAnnouncements = [...ann].sort(
+        const sortedAnnouncements = [...(ann || [])].sort(
           (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0)
         );
         setServices(sortedServices.slice(0, 3));
-        setWorkshops(wList.slice(0, 3));
+        setWorkshops((wList || []).slice(0, 3));
         setAnnouncements(sortedAnnouncements);
         if (cStats) setCensusStats(cStats);
       })
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadHomeData(services.length === 0 && workshops.length === 0);
   }, [user]);
+
+  // Real-time responsiveness: when any service, workshop, or announcement changes
+  useCacheSync("^/(services|workshops|announcements|community)", () => {
+    loadHomeData(false);
+  });
 
   const relevantAnnouncements = announcements.filter((a) => {
     if (!a.audience || a.audience === "All members") return true;
@@ -71,21 +95,9 @@ export default function CommunityHomePage() {
     return false;
   });
 
-  useEffect(() => {
-    if (relevantAnnouncements.length === 0) {
-      setNewCount(0);
-      return;
-    }
-    const lastSeenId = parseInt(localStorage.getItem("commhub_last_seen_announcement_id") || "0", 10);
-    if (lastSeenId > 0) {
-      const unread = relevantAnnouncements.filter((a) => a.id > lastSeenId).length;
-      setNewCount(unread);
-    } else {
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      const recent = relevantAnnouncements.filter((a) => new Date(a.created_at).getTime() > sevenDaysAgo).length;
-      setNewCount(recent > 0 ? recent : 1);
-    }
-  }, [relevantAnnouncements]);
+  const unreadAnnouncements = relevantAnnouncements.filter((a) => isUnread(a));
+  const displayedAnnouncement = unreadAnnouncements[0] || relevantAnnouncements[0];
+  const isDisplayedUnread = displayedAnnouncement ? isUnread(displayedAnnouncement) : false;
 
   return (
     <MobileLayout>
@@ -125,11 +137,16 @@ export default function CommunityHomePage() {
         </section>
       )}
 
-      {relevantAnnouncements.length > 0 && (
+      {relevantAnnouncements.length > 0 && displayedAnnouncement && (
         <section className="ch-announcement-section">
           <div
             className="ch-announcement-banner"
-            onClick={() => navigate("/announcements")}
+            onClick={() => {
+              if (isDisplayedUnread) {
+                markRead(displayedAnnouncement.id);
+              }
+              navigate("/announcements");
+            }}
             style={{ cursor: "pointer" }}
             role="region"
             aria-label="Platform announcement"
@@ -140,29 +157,38 @@ export default function CommunityHomePage() {
                   <Icon name="announcement" size={13} style={{ marginRight: 5 }} />
                   {t("home.announcementsBadge")}
                 </span>
-                {unreadCount > 0 ? (
+                {unreadCount > 0 && (
                   <span className="ch-announcement-new-badge">
                     {unreadCount === 1 ? (t("announcements.oneNew") || "1 New") : `${unreadCount} ${t("announcements.newCount") || "New"}`}
                   </span>
-                ) : (
-                  newCount > 0 && (
-                    <span className="ch-announcement-new-badge">
-                      {newCount === 1 ? (t("announcements.oneNew") || "1 New") : `${newCount} ${t("announcements.newCount") || "New"}`}
-                    </span>
-                  )
                 )}
               </div>
-              <Link
-                to="/announcements"
-                className="ch-announcement-banner__link"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {t("home.viewAll")}
-              </Link>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {isDisplayedUnread && (
+                  <button
+                    type="button"
+                    className="ch-mark-single-read-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markRead(displayedAnnouncement.id);
+                    }}
+                    title="Mark as read"
+                  >
+                    Mark read
+                  </button>
+                )}
+                <Link
+                  to="/announcements"
+                  className="ch-announcement-banner__link"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {t("home.viewAll")}
+                </Link>
+              </div>
             </div>
-            <p>{relevantAnnouncements[0].content}</p>
-            <span className="ch-announcement-banner__meta" title={new Date(relevantAnnouncements[0].created_at).toLocaleString()}>
-              {t("announcements.broadcastBy")} @{relevantAnnouncements[0].author_username} • {formatPostedAgo(relevantAnnouncements[0].created_at) || new Date(relevantAnnouncements[0].created_at).toLocaleDateString()}
+            <p>{displayedAnnouncement.content}</p>
+            <span className="ch-announcement-banner__meta" title={new Date(displayedAnnouncement.created_at).toLocaleString()}>
+              {t("announcements.broadcastBy")} @{displayedAnnouncement.author_username} • {formatPostedAgo(displayedAnnouncement.created_at) || new Date(displayedAnnouncement.created_at).toLocaleDateString()}
             </span>
           </div>
         </section>
@@ -209,9 +235,9 @@ export default function CommunityHomePage() {
                 setGuestModalAction(action);
                 setGuestModalOpen(true);
               }}
-              lowDataMode={lowDataMode}
-              isPhotoRevealed={revealedPhotos.includes(s.id)}
-              onRevealPhoto={(id) => setRevealedPhotos((prev) => (prev.includes(id) ? prev : [...prev, id]))}
+              lowDataMode={dataSaver}
+              isPhotoRevealed={isServicePhotoRevealed(s.id)}
+              onRevealPhoto={(id) => revealServicePhoto(id)}
             />
           ))}
         </div>

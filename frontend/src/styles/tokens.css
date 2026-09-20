@@ -55,10 +55,16 @@ body {
   color: var(--color-ink);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 #root {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 button,
@@ -118,5 +124,160 @@ a {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* User Settings: Reduced Motion Toggle */
+[data-reduce-motion="true"] *,
+[data-reduce-motion="true"] *::before,
+[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* User Settings: Responsive Font Scaling (Fits every device width without horizontal overflow) */
+html[data-font-size="normal"],
+body[data-font-size="normal"] {
+  font-size: 16px;
+  zoom: 1;
+}
+
+html[data-font-size="large"],
+body[data-font-size="large"] {
+  font-size: 18px;
+}
+
+body[data-font-size="large"] {
+  zoom: 1.12;
+}
+
+html[data-font-size="xlarge"],
+body[data-font-size="xlarge"] {
+  font-size: 20px;
+}
+
+body[data-font-size="xlarge"] {
+  zoom: 1.25;
+}
+
+/* Universal Typography Scaling for elements across all layouts and browsers */
+[data-font-size="large"] h1 { font-size: 1.25em !important; }
+[data-font-size="large"] h2 { font-size: 1.2em !important; }
+[data-font-size="large"] h3 { font-size: 1.15em !important; }
+[data-font-size="large"] h4 { font-size: 1.1em !important; }
+[data-font-size="large"] .ch-card__title,
+[data-font-size="large"] .ch-mobile__title {
+  font-size: 18px !important;
+}
+[data-font-size="large"] p,
+[data-font-size="large"] .ch-settings__desc,
+[data-font-size="large"] .ch-profile__desc,
+[data-font-size="large"] .ch-service-desc {
+  font-size: 15px !important;
+}
+[data-font-size="large"] .ch-settings__title,
+[data-font-size="large"] .ch-profile__title {
+  font-size: 16.5px !important;
+}
+[data-font-size="large"] .ch-btn {
+  font-size: 15px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+[data-font-size="large"] .ch-field__input {
+  font-size: 17.5px !important;
+}
+[data-font-size="large"] .ch-field__label {
+  font-size: 14.5px !important;
+}
+[data-font-size="large"] .ch-chip,
+[data-font-size="large"] .ch-settings__opt-btn {
+  font-size: 15px !important;
+}
+
+[data-font-size="xlarge"] h1 { font-size: 1.35em !important; }
+[data-font-size="xlarge"] h2 { font-size: 1.3em !important; }
+[data-font-size="xlarge"] h3 { font-size: 1.25em !important; }
+[data-font-size="xlarge"] h4 { font-size: 1.2em !important; }
+[data-font-size="xlarge"] .ch-card__title,
+[data-font-size="xlarge"] .ch-mobile__title {
+  font-size: 21px !important;
+}
+[data-font-size="xlarge"] p,
+[data-font-size="xlarge"] .ch-settings__desc,
+[data-font-size="xlarge"] .ch-profile__desc,
+[data-font-size="xlarge"] .ch-service-desc {
+  font-size: 17px !important;
+}
+[data-font-size="xlarge"] .ch-settings__title,
+[data-font-size="xlarge"] .ch-profile__title {
+  font-size: 18.5px !important;
+}
+[data-font-size="xlarge"] .ch-btn {
+  font-size: 16.5px !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+[data-font-size="xlarge"] .ch-field__input {
+  font-size: 19.5px !important;
+}
+[data-font-size="xlarge"] .ch-field__label {
+  font-size: 16px !important;
+}
+[data-font-size="xlarge"] .ch-chip,
+[data-font-size="xlarge"] .ch-settings__opt-btn {
+  font-size: 16.5px !important;
+}
+
+/* User Settings: High-Contrast Outdoor Sunlight Mode */
+[data-theme="high-contrast"] {
+  --color-paper: #ffffff;
+  --color-white: #ffffff;
+  --color-ink: #000000;
+  --color-sage: #1a1a1a;
+  --color-line: #000000;
+  --color-teal-700: #00363a;
+  --color-teal-700-hover: #001f22;
+  --color-sand: #f0f0f0;
+  --color-border-input: #000000;
+}
+
+[data-theme="high-contrast"] .ch-card,
+[data-theme="high-contrast"] .ch-btn,
+[data-theme="high-contrast"] .ch-field__input {
+  border-width: 2px !important;
+  border-color: #000000 !important;
+}
+
+/* User Settings: Dark Mode / Battery Saver */
+[data-theme="dark"] {
+  --color-paper: #121817;
+  --color-white: #1b2423;
+  --color-ink: #f1f5f9;
+  --color-sage: #94a3b8;
+  --color-sage-dim: #1e3a35;
+  --color-sand: #24302e;
+  --color-line: #334155;
+  --color-border-input: #475569;
+  --color-teal-700: #2dd4bf;
+  --color-teal-700-hover: #14b8a6;
+  --color-positive-text: #a7f3d0;
+  --color-neutral-text: #e2e8f0;
+}
+
+[data-theme="dark"] .ch-mobile__topbar {
+  background: #17201f !important;
+  border-bottom-color: #273533 !important;
+}
+
+[data-theme="dark"] .ch-mobile__bottom-nav {
+  background: #17201f !important;
+  border-top-color: #273533 !important;
+}
+
+[data-theme="dark"] .ch-card {
+  background: #1b2423 !important;
+  border-color: #2a3836 !important;
 }
 

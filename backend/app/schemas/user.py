@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -24,6 +25,19 @@ class UserBase(BaseModel):
     struggles: Optional[List[str]] = None
     website_hp: Optional[str] = None
     submission_duration_ms: Optional[int] = None
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if not v:
+                return None
+            if len(v) < 3:
+                raise ValueError("Username must be at least 3 characters long")
+            if not re.match(r"^[a-zA-Z0-9_\.\-]+$", v):
+                raise ValueError("Username may only contain letters, numbers, underscores, dashes, and periods")
+        return v
 
     @field_validator("password")
     @classmethod
@@ -86,11 +100,25 @@ class PublicProfileOut(BaseModel):
 
 class ProfileUpdate(BaseModel):
     """Body for PATCH /users/me/profile — all fields are optional."""
+    username: Optional[str] = None
     display_name: Optional[str] = None
     bio: Optional[str] = None
     phone: Optional[str] = None
     contact_phone: Optional[str] = None
     contact_email: Optional[str] = None
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if not v:
+                raise ValueError("Username cannot be empty")
+            if len(v) < 3:
+                raise ValueError("Username must be at least 3 characters long")
+            if not re.match(r"^[a-zA-Z0-9_\.\-]+$", v):
+                raise ValueError("Username may only contain letters, numbers, underscores, dashes, and periods")
+        return v
 
     @field_validator("bio", "display_name")
     @classmethod
@@ -115,5 +143,17 @@ class ReactivateRequest(BaseModel):
 
 class ResearcherApplicationRequest(BaseModel):
     phone: Optional[str] = None
+
+
+class ChangePinRequest(BaseModel):
+    current_pin: str
+    new_pin: str
+
+    @field_validator("new_pin")
+    @classmethod
+    def validate_new_pin(cls, v: str) -> str:
+        if not v or not v.isdigit() or len(v) != 5:
+            raise ValueError("New PIN must be exactly 5 digits")
+        return v
 
 

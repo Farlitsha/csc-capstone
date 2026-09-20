@@ -86,3 +86,33 @@ def test_rate_limiting_login(client):
             hit_limit = True
             break
     assert hit_limit, "Expected 429 Too Many Requests after exceeding 15 attempts/min"
+
+
+def test_change_pin_flow(client, community_user_auth_headers, community_user):
+    # 1. Invalid current PIN returns 400
+    bad_current = {"current_pin": "99999", "new_pin": "54321"}
+    resp = client.post("/users/me/change-pin", json=bad_current, headers=community_user_auth_headers)
+    assert resp.status_code == 400
+    assert "Current PIN is incorrect" in resp.json()["detail"]
+
+    # 2. Non-5-digit new PIN returns 422
+    bad_length = {"current_pin": "12345", "new_pin": "123"}
+    resp = client.post("/users/me/change-pin", json=bad_length, headers=community_user_auth_headers)
+    assert resp.status_code == 422
+
+    # 3. Successful PIN change
+    valid_change = {"current_pin": "12345", "new_pin": "54321"}
+    resp = client.post("/users/me/change-pin", json=valid_change, headers=community_user_auth_headers)
+    assert resp.status_code == 200
+    assert "PIN changed successfully" in resp.json()["message"]
+
+    # 4. Login with new PIN succeeds
+    from app.limiter import limiter
+    limiter.reset()
+    resp = client.post(
+        "/users/login",
+        data={"username": community_user.username, "password": "54321"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert resp.status_code == 200
+    assert "access_token" in resp.json()

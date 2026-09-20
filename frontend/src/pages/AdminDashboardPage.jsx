@@ -601,10 +601,9 @@ export default function AdminDashboardPage() {
                   </div>
 
                   <div className="ch-role-control">
-                    <StatusChip
-                      label={roleLabel(u.role)}
-                      tone={u.role === "admin" ? "warning" : u.role === "researcher" ? "positive" : "neutral"}
-                    />
+                    <span className="ch-role-text" style={{ fontSize: "13px", fontWeight: "600", color: "var(--color-ink)" }}>
+                      {roleLabel(u.role)}
+                    </span>
                     <select
                       className="ch-role-select"
                       value={u.role}

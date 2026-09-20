@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { LanguageProvider } from "./i18n/LanguageContext";
+import { SettingsProvider } from "./context/SettingsContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import NonAdminRoute from "./auth/NonAdminRoute";
 
@@ -13,6 +14,7 @@ import WorkshopsDirectoryPage from "./pages/WorkshopsDirectoryPage";
 import PostServicePage from "./pages/PostServicePage";
 import AnnouncementsPage from "./pages/AnnouncementsPage";
 import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 import CommunityStatsPage from "./pages/CommunityStatsPage";
 import CommunityCensusPage from "./pages/CommunityCensusPage";
 import ResearcherDashboardPage from "./pages/ResearcherDashboardPage";
@@ -31,14 +33,16 @@ export default function App() {
     <BrowserRouter>
       <LanguageProvider>
         <AuthProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/admin-login" element={<AdminLoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/terms" element={<NonAdminRoute><TermsPage /></NonAdminRoute>} />
-            <Route path="/privacy" element={<NonAdminRoute><PrivacyPolicyPage /></NonAdminRoute>} />
-            <Route path="/tutorials" element={<NonAdminRoute><TutorialsPage /></NonAdminRoute>} />
+          <SettingsProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/admin-login" element={<AdminLoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/terms" element={<NonAdminRoute><TermsPage /></NonAdminRoute>} />
+              <Route path="/privacy" element={<NonAdminRoute><PrivacyPolicyPage /></NonAdminRoute>} />
+              <Route path="/tutorials" element={<NonAdminRoute><TutorialsPage /></NonAdminRoute>} />
+              <Route path="/settings" element={<NonAdminRoute><SettingsPage /></NonAdminRoute>} />
 
             {/* Root Route: renders AdminDashboardPage for admin, Researcher for researcher, Community for member/guest */}
             <Route path="/" element={<HomeRouter />} />
@@ -111,6 +115,7 @@ export default function App() {
               }
             />
           </Routes>
+          </SettingsProvider>
         </AuthProvider>
       </LanguageProvider>
     </BrowserRouter>

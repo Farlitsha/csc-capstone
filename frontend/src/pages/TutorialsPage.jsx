@@ -3,6 +3,7 @@ import MobileLayout from "../layouts/MobileLayout";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import Icon from "../components/Icon";
+import HelpCentreCard from "../components/HelpCentreCard";
 import { useLanguage } from "../i18n/LanguageContext";
 import "./TutorialsPage.css";
 
@@ -60,20 +61,18 @@ export default function TutorialsPage() {
       actionLabel: t("tutorials.step4Action") || "Go to Profile",
       actionPath: "/profile",
     },
-    //   {
-    //   step: 5,
-    //   category: "Workshop Management",
-    //   icon: "edit",
-    //   title:
-    //     t("tutorials.step5Title") || "How to Create and Manage Workshops",
-    //   description:
-    //     t("tutorials.step5Desc") ||
-    //     "Learn how to create your own workshops as a Researcher and manage them.",
-    //   video: "/videos/manage_workshops.mp4",
-    //   actionLabel: t("tutorials.step3Action") || "View Workshops",
-    //   actionPath: "/workshops",
-    // },
-
+    {
+      step: 5,
+      category: "Workshop Management",
+      icon: "edit",
+      title: t("tutorials.step5Title") || "How to Create and Manage Workshops",
+      description:
+        t("tutorials.step5Desc") ||
+        "Learn how to create your own workshops as a Researcher and manage them.",
+      video: "/videos/manage_workshops.mp4",
+      actionLabel: t("tutorials.step3Action") || "View Workshops",
+      actionPath: "/workshops",
+    },
   ];
 
   return (
@@ -135,31 +134,8 @@ export default function TutorialsPage() {
           ))}
         </main>
 
-        <section className="ch-tutorials-help-card">
-          <Card title={t("tutorials.helpTitle") || "Need More Assistance?"}>
-            <p className="ch-tutorials-help-text">
-              {t("tutorials.helpDesc") ||
-                "Check our community guidelines or read our data privacy policy to learn more about how CommHub works."}
-            </p>
-            <div className="ch-tutorials-help-links">
-              <Button
-                variant="secondary"
-                onClick={() => navigate("/terms")}
-                className="ch-tutorials-help-btn"
-              >
-                <Icon name="document" size={15} />
-                <span>{t("tutorials.termsLink") || "Terms & Guidelines"}</span>
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => navigate("/privacy")}
-                className="ch-tutorials-help-btn"
-              >
-                <Icon name="info" size={15} />
-                <span>{t("tutorials.privacyLink") || "Privacy Policy (POPIA)"}</span>
-              </Button>
-            </div>
-          </Card>
+        <section className="ch-tutorials-help-section">
+          <HelpCentreCard showPolicyLinks={true} />
         </section>
       </div>
     </MobileLayout>

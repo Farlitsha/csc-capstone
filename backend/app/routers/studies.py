@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 from fastapi import APIRouter, Depends, status, HTTPException, Body, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -76,19 +76,29 @@ async def create_study(
 
 
 @router.get("/studies/", response_model=List[study_schemas.StudyListingOut])
-async def list_studies(db: Session = Depends(get_db)):
-    """Browse all currently open (live) studies, sorted with newest studies first."""
-    rows = (
+async def list_studies(
+    researcher_id: Optional[int] = None,
+    include_closed: bool = False,
+    db: Session = Depends(get_db),
+):
+    """Browse open (live) studies, or filter by researcher_id (optionally including closed studies)."""
+    query = (
         db.query(models.StudyListing, models.User.username, models.User.display_name, models.User.avatar_url)
         .join(models.User, models.StudyListing.researcher_id == models.User.id)
-        .filter(
-            models.StudyListing.state == models.StudyState.LIVE,
+    )
+
+    if not include_closed:
+        query = query.filter(models.StudyListing.state == models.StudyState.LIVE)
+
+    if researcher_id is not None:
+        query = query.filter(models.StudyListing.researcher_id == researcher_id)
+    else:
+        query = query.filter(
             models.User.role == models.UserRole.RESEARCHER,
             models.User.verification_status == models.VerificationStatus.VERIFIED,
         )
-        .order_by(models.StudyListing.created_at.desc())
-        .all()
-    )
+
+    rows = query.order_by(models.StudyListing.created_at.desc()).all()
 
     survey_counts = dict(
         db.query(models.Survey.study_id, func.count(models.SurveyResponse.id))

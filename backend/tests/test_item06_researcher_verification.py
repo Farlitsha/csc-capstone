@@ -194,3 +194,25 @@ def test_downgraded_researcher_studies_hidden_from_public(client, verified_resea
     assert any(s["title"] == "Public Visibility Study" for s in list_after_restore)
 
 
+def test_researcher_only_sees_their_own_studies_when_filtered(client, verified_researcher, verified_researcher_auth_headers):
+    """Researcher dashboard filter isolates studies to the specified researcher_id."""
+    res = client.post("/studies/", json={
+        "title": "Isolated Researcher Study",
+        "description": "Exclusive study for isolation test",
+        "target_group": "Community",
+    }, headers=verified_researcher_auth_headers)
+    assert res.status_code == 201
+
+    r_id = verified_researcher.id
+    resp = client.get(f"/studies/?researcher_id={r_id}&include_closed=true")
+    assert resp.status_code == 200
+    studies = resp.json()
+    assert len(studies) >= 1
+    assert all(s["researcher_id"] == r_id for s in studies)
+
+    resp_empty = client.get("/studies/?researcher_id=99999&include_closed=true")
+    assert resp_empty.status_code == 200
+    assert resp_empty.json() == []
+
+
+

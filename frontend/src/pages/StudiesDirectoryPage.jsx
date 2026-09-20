@@ -6,6 +6,7 @@ import Button from "../components/Button";
 import Icon from "../components/Icon";
 import Spinner from "../components/Spinner";
 import { api, ApiError, API_BASE_URL } from "../lib/api";
+import { useCacheSync } from "../lib/cache";
 import { useLanguage } from "../i18n/LanguageContext";
 import { useAuth } from "../auth/AuthContext";
 import GuestAuthModal from "../components/GuestAuthModal";
@@ -41,14 +42,18 @@ export default function StudiesDirectoryPage() {
   const locale = { en: "en-ZA", af: "af-ZA", xh: "xh-ZA", zu: "zu-ZA" }[lang] || "en-ZA";
   const [tab, setTab] = useState("open");
 
-  const [studies, setStudies] = useState([]);
-  const [studiesLoading, setStudiesLoading] = useState(true);
+  // Instant render from local cache if available
+  const [studies, setStudies] = useState(() => api.getCached("/studies/") || []);
+  const [studiesLoading, setStudiesLoading] = useState(() => studies.length === 0);
   const [studiesError, setStudiesError] = useState("");
   const [applyingId, setApplyingId] = useState(null);
-  const [appliedIds, setAppliedIds] = useState([]);
 
-  const [myApplications, setMyApplications] = useState([]);
-  const [myAppsLoading, setMyAppsLoading] = useState(true);
+  const [myApplications, setMyApplications] = useState(() => (user ? api.getCached("/applications/me") || [] : []));
+  const [appliedIds, setAppliedIds] = useState(() => {
+    const cachedApps = user ? api.getCached("/applications/me") || [] : [];
+    return cachedApps.map((a) => a.study_id);
+  });
+  const [myAppsLoading, setMyAppsLoading] = useState(() => !myApplications.length && Boolean(user));
   const [myAppsError, setMyAppsError] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [clearingAll, setClearingAll] = useState(false);
@@ -63,8 +68,11 @@ export default function StudiesDirectoryPage() {
     completed: t("studies.statusCompleted") || "Completed",
   };
 
-  function loadData() {
-    setStudiesLoading(true);
+  function loadData(showSpinner = false) {
+    if (showSpinner) {
+      setStudiesLoading(true);
+      setMyAppsLoading(true);
+    }
     setStudiesError("");
     setMyAppsError("");
 
@@ -75,8 +83,8 @@ export default function StudiesDirectoryPage() {
 
     Promise.all(promises)
       .then(([studiesData, myAppsData]) => {
-        setStudies(studiesData);
-        setMyApplications(myAppsData);
+        setStudies(studiesData || []);
+        setMyApplications(myAppsData || []);
         if (myAppsData && myAppsData.length > 0) {
           setAppliedIds(myAppsData.map((a) => a.study_id));
         } else {
@@ -91,8 +99,13 @@ export default function StudiesDirectoryPage() {
   }
 
   useEffect(() => {
-    loadData();
+    loadData(studies.length === 0);
   }, [user]);
+
+  // Real-time responsiveness: when any study is applied to, created, or closed
+  useCacheSync("^/(studies|applications)", () => {
+    loadData(false);
+  });
 
   function loadMyApplications() {
     if (!user) {

@@ -64,10 +64,11 @@ async def create_workshop(
 @router.get("/", response_model=List[schemas.WorkshopOut])
 async def list_workshops(
     include_cancelled: bool = False,
+    organizer_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
     """
-    Browse scheduled/upcoming workshops.
+    Browse scheduled/upcoming workshops, optionally filtered by organizer_id.
     """
     query = (
         db.query(
@@ -89,6 +90,9 @@ async def list_workshops(
         )
         .group_by(models.Workshop.id, models.User.username, models.User.display_name)
     )
+
+    if organizer_id is not None:
+        query = query.filter(models.Workshop.organizer_id == organizer_id)
 
     if not include_cancelled:
         query = query.filter(models.Workshop.status == models.WorkshopStatus.SCHEDULED)

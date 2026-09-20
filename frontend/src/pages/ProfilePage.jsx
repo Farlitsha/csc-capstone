@@ -4,6 +4,7 @@ import MobileLayout from "../layouts/MobileLayout";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import StatusChip from "../components/StatusChip";
+import HelpCentreCard from "../components/HelpCentreCard";
 import { api, ApiError, API_BASE_URL } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -45,6 +46,7 @@ export default function ProfilePage() {
 
   // Profile form state
   const [form, setForm] = useState({
+    username: user?.username ?? "",
     display_name: user?.display_name ?? "",
     phone: user?.phone ?? user?.contact_phone ?? "",
     contact_phone: user?.contact_phone ?? user?.phone ?? "",
@@ -80,6 +82,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (user && !showEdit) {
       setForm({
+        username: user.username ?? "",
         display_name: user.display_name ?? "",
         phone: user.phone ?? user.contact_phone ?? "",
         contact_phone: user.contact_phone ?? user.phone ?? "",
@@ -144,9 +147,19 @@ export default function ProfilePage() {
 
   async function handleSaveProfile(e) {
     e.preventDefault();
-    setSaving(true);
     setSaveMessage("");
     setSaveError("");
+
+    if (form.username && form.username.trim().length < 3) {
+      setSaveError("Username must be at least 3 characters long.");
+      return;
+    }
+    if (form.username && !/^[a-zA-Z0-9_\.\-]+$/.test(form.username.trim())) {
+      setSaveError("Username may only contain letters, numbers, underscores, dashes, and periods.");
+      return;
+    }
+
+    setSaving(true);
     try {
       // Only send fields that are non-empty strings, to avoid overwriting with blanks
       const payload = {};
@@ -328,6 +341,20 @@ export default function ProfilePage() {
           <Card title="Edit Profile">
             <form className="ch-profile__form" onSubmit={handleSaveProfile}>
               <label className="ch-profile__field">
+                <span className="ch-profile__label">Username</span>
+                <input
+                  className="ch-profile__input"
+                  name="username"
+                  type="text"
+                  placeholder="e.g. nomvula_k"
+                  value={form.username}
+                  onChange={handleFormChange}
+                  maxLength={50}
+                  required
+                />
+              </label>
+
+              <label className="ch-profile__field">
                 <span className="ch-profile__label">Display Name</span>
                 <input
                   className="ch-profile__input"
@@ -396,10 +423,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <span className="ch-profile__label">{t("profile.role")}</span>
-              <StatusChip
-                label={ROLE_LABEL[user?.role] || user?.role || "—"}
-                tone={user?.role === "admin" ? "warning" : "positive"}
-              />
+              <p className="ch-profile__value">{ROLE_LABEL[user?.role] || user?.role || "—"}</p>
             </div>
           </div>
         </Card>
@@ -653,6 +677,9 @@ export default function ProfilePage() {
           </Card>
         )}
 
+        {/* Community Help Centre Card */}
+        <HelpCentreCard showPolicyLinks={false} />
+
         <Button variant="secondary" fullWidth onClick={logout}>
           {t("common.logout")}
         </Button>
@@ -814,7 +841,7 @@ export default function ProfilePage() {
               You will return to a standard Community Member account. All your studies, surveys, and researcher data will be preserved for 6 months but hidden from public view.
             </p>
             <p className="ch-profile-modal-text" style={{ fontSize: "12.5px", color: "var(--color-teal-800, #115e59)", fontWeight: 600, background: "var(--color-surface, #f0fdfa)", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ccfbf1" }}>
-              💡 If you apply again within 6 months, you will not need admin re-verification—your account and data will be immediately restored!
+               If you apply again within 6 months, you will not need admin re-verification—your account and data will be immediately restored!
             </p>
             {downgradeError && (
               <p className="ch-profile__error" style={{ marginBottom: "12px" }} role="alert">

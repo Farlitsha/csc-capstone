@@ -134,6 +134,14 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
                 </span>
               )}
             </Link>
+            <Link
+              to="/settings"
+              className="ch-mobile__notif-btn"
+              title="Settings & Accessibility"
+              aria-label="Settings & Accessibility"
+            >
+              <Icon name="settings" size={17} />
+            </Link>
             <LanguageSwitcher />
           </div>
         </div>
@@ -173,7 +181,7 @@ export default function MobileLayout({ title, children, hideNav = false, onBack 
       <ResearcherMobileNoticeModal />
 
       {/* Main Landmark for Accessibility */}
-      <main id="main-content" tabIndex="-1" className="ch-mobile__body">
+      <main id="main-content" tabIndex="-1" className={`ch-mobile__body ${shouldHideNav ? "ch-mobile__body--no-nav" : ""}`}>
         <div className="ch-mobile__body-inner">
           {children}
         </div>

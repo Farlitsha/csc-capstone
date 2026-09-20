@@ -171,3 +171,17 @@ def test_view_workshop_roster(client, future_workshop, verified_researcher_auth_
     assert len(data) == 1
     assert data[0]["participant_username"] == community_user.username
 
+
+def test_workshops_filtered_by_organizer_id(client, future_workshop, verified_researcher):
+    """DoD: Workshops list can be filtered strictly by organizer_id for researcher dashboard."""
+    res = client.get(f"/workshops/?include_cancelled=true&organizer_id={verified_researcher.id}")
+    assert res.status_code == 200
+    workshops = res.json()
+    assert len(workshops) >= 1
+    assert all(w["organizer_id"] == verified_researcher.id for w in workshops)
+
+    res_empty = client.get("/workshops/?include_cancelled=true&organizer_id=99999")
+    assert res_empty.status_code == 200
+    assert res_empty.json() == []
+
+

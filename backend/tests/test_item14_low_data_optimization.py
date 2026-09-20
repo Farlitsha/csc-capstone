@@ -51,3 +51,19 @@ def test_static_uploads_mount_available(client):
     response = client.get("/uploads/avatars/non_existent.jpg")
     assert response.status_code == 404
 
+
+def test_etag_and_304_conditional_caching_for_low_data(client):
+    """DoD: GET requests return an ETag header, and conditional If-None-Match requests
+    return 304 Not Modified with 0 body bytes to preserve bandwidth."""
+    # Initial request gets 200 and sets ETag
+    res1 = client.get("/")
+    assert res1.status_code == 200
+    etag = res1.headers.get("etag")
+    assert etag is not None, "ETag header must be returned on GET responses"
+
+    # Revalidation request sends If-None-Match and receives 304 with 0 bytes body
+    res2 = client.get("/", headers={"if-none-match": etag})
+    assert res2.status_code == 304
+    assert len(res2.content) == 0, f"Expected 0 body bytes on 304, got {len(res2.content)}"
+
+

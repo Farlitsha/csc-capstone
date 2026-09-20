@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isDataSaverActive } from "../context/SettingsContext";
 
 // In-memory Set of service IDs whose photos have been loaded by the user.
 // Persists across client-side page navigations, category filters, and tab switches,
@@ -8,6 +9,10 @@ const listeners = new Set();
 
 export function isServicePhotoRevealed(serviceId) {
   if (!serviceId) return false;
+  // When Data Saver is OFF (Wi-Fi mode), auto-reveal photos without requiring a click
+  if (!isDataSaverActive()) {
+    return true;
+  }
   return revealedPhotoIds.has(String(serviceId));
 }
 
@@ -29,8 +34,13 @@ export function useRevealedPhotos() {
   useEffect(() => {
     const notify = () => setTick((t) => t + 1);
     listeners.add(notify);
+
+    const onDataSaverChange = () => notify();
+    window.addEventListener("commhub_datasaver_changed", onDataSaverChange);
+
     return () => {
       listeners.delete(notify);
+      window.removeEventListener("commhub_datasaver_changed", onDataSaverChange);
     };
   }, []);
 

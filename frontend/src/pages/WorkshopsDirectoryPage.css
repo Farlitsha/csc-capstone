@@ -1,11 +1,6 @@
-.ch-workshops-page {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px 20px 24px;
-}
+/* Workshops Directory Page - Unified CommHub Design System */
 
-/* Tabs: Matching Services Directory */
+/* Top segmented tab row matching Services and Studies */
 .ch-service-tabs-row {
   display: flex;
   background: var(--color-sand);
@@ -35,92 +30,224 @@
   background: var(--color-white);
   color: var(--color-teal-700);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
 }
 
-.ch-workshops-card {
-  background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 12px;
+/* Search bar matching Services */
+.ch-workshops-search {
+  padding: 12px 16px 8px;
+  background: var(--color-paper);
+}
+
+.ch-workshops-search input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line);
+  background: var(--color-white);
+  color: var(--color-ink);
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ch-workshops-search input:focus {
+  border-color: var(--color-teal-700);
+  box-shadow: 0 0 0 2px rgba(27, 75, 79, 0.15);
+}
+
+/* Grid layout matching Studies Directory */
+.ch-workshops-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 16px 20px 24px;
+  box-sizing: border-box;
+}
+
+/* Workshop Card matching Study & Service Cards */
+.ch-workshop-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-card);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
 }
 
-.ch-workshops-card:hover {
+.ch-workshop-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-.ch-workshops-card__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.ch-workshops-card__title {
-  margin: 0 0 4px 0;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--color-text, #111827);
-}
-
-.ch-workshops-card__organizer {
-  font-size: 13px;
-  color: var(--color-muted, #6b7280);
-}
-
-.ch-workshops-card__desc {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--color-text-secondary, #374151);
-}
-
-.ch-workshops-card__details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 10px 12px;
-  background: var(--color-bg-subtle, #f9fafb);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--color-text-secondary, #4b5563);
-}
-
-.ch-workshops-card__detail-item {
+.ch-workshop-card__header-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.ch-workshops-card__actions {
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-.ch-workshops-spots {
-  font-size: 13px;
+.ch-workshop-card__header-date {
+  font-size: 11.5px;
+  color: var(--color-sage);
   font-weight: 500;
 }
 
-.ch-workshops-spots--open {
-  color: var(--color-primary, #059669);
+.ch-workshop-card h3 {
+  margin: 4px 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-ink);
+  line-height: 1.35;
 }
 
-.ch-workshops-spots--full {
-  color: var(--color-danger, #dc2626);
+.ch-workshop-card p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--color-sage);
+  line-height: 1.5;
 }
 
+/* Poster row matching Services & Studies */
+.ch-poster-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ch-poster-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ch-poster-avatar--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-sand);
+  color: var(--color-teal-700);
+  font-size: 11px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+.ch-poster-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-sage);
+}
+
+/* Metadata pills matching Study Cards */
+.ch-workshop-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.ch-workshop-card__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-teal-700);
+  background: var(--color-sand);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.ch-workshop-card__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-sand);
+  flex-wrap: wrap;
+}
+
+.ch-workshop-spots-badge {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.ch-workshop-spots-badge--open {
+  color: #047857;
+}
+
+.ch-workshop-spots-badge--full {
+  color: var(--color-danger);
+}
+
+/* Feedback banners */
+.ch-workshops-feedback {
+  margin: 12px 20px 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.ch-workshops-feedback--success {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+
+.ch-workshops-feedback--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+/* Empty states */
+.ch-workshops-empty {
+  text-align: center;
+  color: var(--color-sage);
+  font-size: 13.5px;
+  padding: 36px 16px;
+  grid-column: 1 / -1;
+  background: var(--color-white);
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-lg);
+  margin: 8px 0;
+}
+
+.ch-workshops-empty--error {
+  color: var(--color-danger);
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+/* Responsive grid scaling */
 @media (min-width: 640px) {
-  .ch-workshops-page {
+  .ch-workshops-search {
+    padding: 16px 24px 8px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ch-workshops-list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     padding: 20px 24px 32px;
     gap: 20px;
+  }
+
+  .ch-workshops-feedback {
+    margin: 16px 24px 0;
   }
 }

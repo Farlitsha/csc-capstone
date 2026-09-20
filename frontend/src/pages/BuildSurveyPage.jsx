@@ -7,6 +7,7 @@ import Card from "../components/Card";
 import Icon from "../components/Icon";
 import Spinner from "../components/Spinner";
 import { api, ApiError } from "../lib/api";
+import { useAuth } from "../auth/AuthContext";
 import "./BuildSurveyPage.css";
 
 // CommHub's own in-house survey builder - questions are stored and rendered by
@@ -36,6 +37,7 @@ function makeQuestion() {
 
 export default function BuildSurveyPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { studyId } = useParams();
   const isEditMode = Boolean(studyId);
 
@@ -65,6 +67,12 @@ export default function BuildSurveyPage() {
       api.getStudySurveyResponses(studyId).catch(() => ({ responses: [] })),
     ])
       .then(([studyData, surveyData, responsesData]) => {
+        // Enforce ownership: researchers cannot view/edit other researchers' studies
+        if (user && studyData.researcher_id && studyData.researcher_id !== user.id && user.role !== "admin") {
+          setError("You do not have permission to view or edit another researcher's study.");
+          return;
+        }
+
         setForm({
           title: studyData.title || "",
           description: studyData.description || "",
@@ -95,7 +103,7 @@ export default function BuildSurveyPage() {
         setError(err instanceof ApiError ? err.detail : "Could not load study details.");
       })
       .finally(() => setLoadingStudy(false));
-  }, [studyId]);
+  }, [studyId, user]);
 
   function update(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -224,6 +232,19 @@ export default function BuildSurveyPage() {
         <div style={{ textAlign: "center", padding: "60px 20px" }}>
           <Spinner />
           <p style={{ marginTop: "12px", color: "var(--color-sage)" }}>Loading study details…</p>
+        </div>
+      </DesktopLayout>
+    );
+  }
+
+  if (error && isEditMode && !form.title) {
+    return (
+      <DesktopLayout eyebrow="STUDY & SURVEY BUILDER">
+        <div style={{ textAlign: "center", padding: "60px 20px" }}>
+          <p className="ch-survey-error" style={{ fontSize: "16px", marginBottom: "20px" }}>{error}</p>
+          <Button variant="secondary" onClick={() => navigate("/researcher")}>
+            Return to Researcher Dashboard
+          </Button>
         </div>
       </DesktopLayout>
     );

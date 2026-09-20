@@ -39,8 +39,18 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
-    if (!form.display_name.trim()) {
-      setError("Please enter your Full Name.");
+    if (!form.username.trim()) {
+      setError("Please enter a username.");
+      return;
+    }
+
+    if (form.username.trim().length < 3) {
+      setError("Username must be at least 3 characters long.");
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_\.\-]+$/.test(form.username.trim())) {
+      setError("Username may only contain letters, numbers, underscores, dashes, and periods.");
       return;
     }
 
@@ -67,11 +77,12 @@ export default function SignupPage() {
 
     setSubmitting(true);
     try {
+      const usernameClean = form.username.trim();
       const payload = {
-        display_name: form.display_name.trim(),
+        username: usernameClean,
+        display_name: form.display_name?.trim() || usernameClean,
         password: form.password,
         role: form.role,
-        username: form.username.trim() || undefined,
         email: form.email.trim() || undefined,
         phone: form.phone.trim() || undefined,
         website_hp: websiteHp || undefined,
@@ -79,7 +90,7 @@ export default function SignupPage() {
       };
 
       const userCreated = await api.createAccount(payload);
-      const loginIdentifier = userCreated?.username || form.display_name.trim();
+      const loginIdentifier = userCreated?.username || usernameClean;
       const result = await login(loginIdentifier, form.password);
       if (result.ok) {
         navigate("/", { replace: true });
@@ -124,12 +135,20 @@ export default function SignupPage() {
           </div>
 
           <Field
-            label={t("signup.fullName") || "Full Name"}
+            label={t("signup.username") || "Username"}
+            id="username"
+            placeholder={t("signup.usernamePlaceholder") || "e.g. nomvula_k"}
+            value={form.username}
+            onChange={update("username")}
+            autoComplete="username"
+            required
+          />
+          <Field
+            label={t("signup.fullName") || "Full Name (optional)"}
             id="display_name"
             placeholder="e.g. Nomvula Khumalo"
             value={form.display_name}
             onChange={update("display_name")}
-            required
           />
           <Field
             label={t("signup.email")}
@@ -154,7 +173,6 @@ export default function SignupPage() {
             inputMode="numeric"
             pattern="[0-9]{5}"
             maxLength={5}
-            placeholder="e.g. 12345"
             value={form.password}
             onChange={update("password")}
             required

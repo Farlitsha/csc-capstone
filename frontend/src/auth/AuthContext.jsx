@@ -20,8 +20,15 @@ export function AuthProvider({ children }) {
     try {
       const me = await api.me();
       setUser(me);
-    } catch {
-      // Token invalid/expired — fall back to the JWT payload if we can, else log out.
+    } catch (err) {
+      // If server explicitly returned 401/403, the session is definitely invalid/expired
+      if (err?.status === 401 || err?.status === 403) {
+        localStorage.removeItem(TOKEN_KEY);
+        setToken(null);
+        setUser(null);
+        return;
+      }
+      // Offline fallback: only when completely disconnected/network error
       const claims = decodeJwt(currentToken);
       if (claims?.user_id) {
         setUser({
@@ -44,6 +51,16 @@ export function AuthProvider({ children }) {
     loadUser(token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      localStorage.removeItem(TOKEN_KEY);
+      setToken(null);
+      setUser(null);
+    };
+    window.addEventListener("commhub:unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("commhub:unauthorized", handleUnauthorized);
+  }, []);
 
   const login = useCallback(async (username, password) => {
     try {

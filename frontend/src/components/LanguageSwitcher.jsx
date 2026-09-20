@@ -2,23 +2,37 @@ import { useLanguage } from "../i18n/LanguageContext";
 import { LANGUAGES } from "../i18n/translations";
 import "./LanguageSwitcher.css";
 
-const FLAG = { en: "🇬🇧", af: "🇿🇦", xh: "🇿🇦", zu: "🇿🇦" };
+const SHORT_CODE = { en: "EN", af: "AF", xh: "XH", zu: "ZU" };
+
+const LANGUAGE_LABELS = {
+  en: "English",
+  af: "Afrikaans",
+  xh: "isiXhosa",
+  zu: "isiZulu",
+};
 
 export default function LanguageSwitcher({ className = "" }) {
   const { lang, setLang, t } = useLanguage();
+  const currentCode = SHORT_CODE[lang] || lang.toUpperCase();
 
   return (
-    <select
-      className={`ch-lang-switcher ${className}`}
-      value={lang}
-      onChange={(e) => setLang(e.target.value)}
-      aria-label={t("language.label")}
-    >
-      {LANGUAGES.map((code) => (
-        <option key={code} value={code}>
-          {FLAG[code]} {t(`language.${{ en: "english", af: "afrikaans", xh: "xhosa", zu: "zulu" }[code]}`)}
-        </option>
-      ))}
-    </select>
+    <div className={`ch-lang-picker ${className}`} title={t("language.label") || "Change language"}>
+      <div className="ch-lang-picker__badge" aria-hidden="true">
+        <span className="ch-lang-picker__code">{currentCode}</span>
+        <span className="ch-lang-picker__arrow">▾</span>
+      </div>
+      <select
+        className="ch-lang-picker__select"
+        value={lang}
+        onChange={(e) => setLang(e.target.value)}
+        aria-label={t("language.label") || "Change language"}
+      >
+        {LANGUAGES.map((code) => (
+          <option key={code} value={code}>
+            {SHORT_CODE[code]} - {LANGUAGE_LABELS[code] || code}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }

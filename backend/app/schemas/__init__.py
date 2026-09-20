@@ -26,6 +26,7 @@ from .user import (
     RoleUpdate,
     PhoneUpdate,
     ResearcherApplicationRequest,
+    ChangePinRequest,
 )
 from .studies import (
     StudyListingBase,

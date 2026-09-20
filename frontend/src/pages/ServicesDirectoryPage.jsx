@@ -16,6 +16,9 @@ import ServiceCard from "../components/ServiceCard";
 import ReportServiceModal from "../components/ReportServiceModal";
 import ServiceRatingModal from "../components/ServiceRatingModal";
 import { formatPostedAgo } from "../lib/dateUtils";
+import { useSettings } from "../context/SettingsContext";
+import { useRevealedPhotos, isServicePhotoRevealed, revealServicePhoto } from "../lib/revealedPhotos";
+import { useCacheSync } from "../lib/cache";
 import "./ServicesDirectoryPage.css";
 
 const CATEGORIES = ["All", "Home repair", "Tutoring", "Food", "Other"];
@@ -74,15 +77,34 @@ export default function ServicesDirectoryPage() {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("explore"); // "explore" (others' services) or "mine" (own services)
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [category, setCategory] = useState("All");
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // Instant render from local cache if available
+  const [services, setServices] = useState(() => {
+    const cached = api.getCached("/services/");
+    if (cached && Array.isArray(cached)) {
+      return [...cached].sort(
+        (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0)
+      );
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(() => services.length === 0);
   const [error, setError] = useState("");
-  const [lowDataMode, setLowDataMode] = useState(() => localStorage.getItem("commhub_low_data") === "true");
-  const [revealedPhotos, setRevealedPhotos] = useState([]);
+  const { dataSaver, setDataSaver } = useSettings();
+  useRevealedPhotos(); // Listen for instant updates
   const [guestModalOpen, setGuestModalOpen] = useState(false);
   const [guestModalAction, setGuestModalAction] = useState("");
   const [ratingModalService, setRatingModalService] = useState(null);
+
+  // Debounce search query by 300ms to save mobile bandwidth on typing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [query]);
 
   function handleRatingSubmitted(serviceId, { average_rating, rating_count }) {
     setServices((prev) =>
@@ -105,34 +127,33 @@ export default function ServicesDirectoryPage() {
   const editFileInputRef = useRef(null);
 
   function toggleLowData() {
-    setLowDataMode((prev) => {
-      const next = !prev;
-      localStorage.setItem("commhub_low_data", String(next));
-      return next;
-    });
+    setDataSaver(!dataSaver);
   }
 
-  function revealPhoto(id) {
-    setRevealedPhotos((prev) => [...prev, id]);
-  }
-
-  function loadServices() {
-    setLoading(true);
+  function loadServices(showSpinner = false) {
+    if (showSpinner) setLoading(true);
     api
-      .listServices({ category, query })
+      .listServices({ category, query: debouncedQuery })
       .then((data) => {
         const sorted = [...(data || [])].sort(
           (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0) || (b.id || 0) - (a.id || 0)
         );
         setServices(sorted);
+        setError("");
       })
       .catch(() => setError("Could not load services from the server."))
       .finally(() => setLoading(false));
   }
 
   useEffect(() => {
-    loadServices();
-  }, [category, query]);
+    // Show spinner only on initial load if we don't have cached data yet
+    loadServices(services.length === 0);
+  }, [category, debouncedQuery]);
+
+  // Real-time responsiveness: when any service is created/edited/deleted, instantly revalidate
+  useCacheSync("^/services", () => {
+    loadServices(false);
+  });
 
   // Reporting Modal State
   const [reportingService, setReportingService] = useState(null);
@@ -273,13 +294,13 @@ export default function ServicesDirectoryPage() {
         </div>
         <button
           type="button"
-          className={`ch-low-data-btn ${lowDataMode ? "ch-low-data-btn--active" : ""}`}
+          className={`ch-low-data-btn ${dataSaver ? "ch-low-data-btn--active" : ""}`}
           onClick={toggleLowData}
-          aria-pressed={lowDataMode}
+          aria-pressed={dataSaver}
           title="Toggle low data optimization"
         >
-          <Icon name={lowDataMode ? "lightning" : "image"} size={13} style={{ marginRight: 6 }} />
-          {lowDataMode ? t("services.lowDataOn") : t("services.lowDataOff")}
+          <Icon name={dataSaver ? "lightning" : "image"} size={13} style={{ marginRight: 6 }} />
+          {dataSaver ? t("services.lowDataOn") : t("services.lowDataOff")}
         </button>
       </div>
 
@@ -354,9 +375,9 @@ export default function ServicesDirectoryPage() {
               setGuestModalAction(action);
               setGuestModalOpen(true);
             }}
-            lowDataMode={lowDataMode}
-            isPhotoRevealed={revealedPhotos.includes(s.id)}
-            onRevealPhoto={revealPhoto}
+            lowDataMode={dataSaver}
+            isPhotoRevealed={isServicePhotoRevealed(s.id)}
+            onRevealPhoto={(id) => revealServicePhoto(id)}
           />
         ))}
       </div>

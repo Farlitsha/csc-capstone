@@ -1,12 +1,52 @@
+import { useEffect } from "react";
+
 /**
  * CommHub Offline Cache Engine
  * Lightweight, zero-dependency localStorage cache supporting:
- * - Stale-While-Revalidate (SWR) with timestamps
+ * - Stale-While-Revalidate (SWR) with timestamps & ETags
  * - Strict Cache-First with TTL (Time-to-Live)
  * - Automatic mutation pattern invalidation
+ * - Real-time Pub/Sub notification across active views and browser tabs
  */
 
 const CACHE_PREFIX = "commhub_cache_";
+
+// Cross-tab broadcast channel
+let broadcastChannel = null;
+if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+  try {
+    broadcastChannel = new BroadcastChannel("commhub_cache_channel");
+  } catch {
+    broadcastChannel = null;
+  }
+}
+
+const listeners = new Set();
+
+if (broadcastChannel) {
+  broadcastChannel.onmessage = (e) => {
+    if (e.data?.event && e.data?.pattern) {
+      notifyLocal(e.data.event, e.data.pattern, false);
+    }
+  };
+}
+
+function notifyLocal(event, pattern, broadcast = true) {
+  for (const listener of listeners) {
+    try {
+      listener({ event, pattern });
+    } catch {
+      // Ignore listener error
+    }
+  }
+  if (broadcast && broadcastChannel) {
+    try {
+      broadcastChannel.postMessage({ event, pattern });
+    } catch {
+      // Ignore broadcast error
+    }
+  }
+}
 
 export const cache = {
   /**
@@ -34,6 +74,7 @@ export const cache = {
         etag,
       };
       localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(entry));
+      notifyLocal("set", key, false);
     } catch (e) {
       // If quota exceeded, clear older cache items
       if (e.name === "QuotaExceededError") {
@@ -59,6 +100,7 @@ export const cache = {
   remove(key) {
     try {
       localStorage.removeItem(`${CACHE_PREFIX}${key}`);
+      notifyLocal("remove", key);
     } catch {
       // Ignore
     }
@@ -71,6 +113,7 @@ export const cache = {
   invalidatePattern(pattern) {
     try {
       const regex = typeof pattern === "string" ? new RegExp(pattern) : pattern;
+      const patternStr = typeof pattern === "string" ? pattern : pattern.source;
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const fullKey = localStorage.key(i);
@@ -82,9 +125,18 @@ export const cache = {
         }
       }
       keysToRemove.forEach((k) => localStorage.removeItem(k));
+      notifyLocal("invalidate", patternStr);
     } catch {
       // Ignore
     }
+  },
+
+  /**
+   * Subscribe to cache invalidation/update events.
+   */
+  subscribe(callback) {
+    listeners.add(callback);
+    return () => listeners.delete(callback);
   },
 
   /**
@@ -124,3 +176,17 @@ export const cache = {
   },
 };
 
+/**
+ * React hook to react instantly when a cache pattern is invalidated or updated.
+ */
+export function useCacheSync(pattern, onInvalidate) {
+  useEffect(() => {
+    const regex = typeof pattern === "string" ? new RegExp(pattern) : pattern;
+    const unsubscribe = cache.subscribe(({ event, pattern: changedPattern }) => {
+      if (event === "invalidate" && (regex.test(changedPattern) || changedPattern === ".*")) {
+        onInvalidate?.();
+      }
+    });
+    return unsubscribe;
+  }, [pattern, onInvalidate]);
+}
